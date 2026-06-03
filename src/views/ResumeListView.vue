@@ -1,9 +1,10 @@
 <template>
   <div class="resume-list-page">
-    <div class="hero">
+    <div class="xt-section-head hero">
       <div class="hero-text">
-        <h1 class="title">我的简历</h1>
-        <p class="subtitle">管理已入库的简历草稿，支持解析上传或从空白开始填写。</p>
+        <p class="xt-eyebrow list-eyebrow">星途 · 简历库</p>
+        <h1 class="xt-section-title">我的简历</h1>
+        <p class="xt-section-desc">管理已入库的简历草稿，支持解析上传或从空白开始填写。</p>
       </div>
       <div class="hero-actions">
         <el-button type="primary" size="large" @click="goUpload">
@@ -20,14 +21,14 @@
     <el-skeleton v-if="loading" :rows="6" animated class="skel" />
 
     <template v-else>
-      <el-empty v-if="!items.length" description="暂无已保存的简历" class="empty">
+      <el-empty v-if="!items.length" description="暂无已保存的简历，开启你的第一份星途简历" class="empty">
         <el-button type="primary" @click="goUpload">上传第一份简历</el-button>
         <el-button @click="goBlank">从空白创建</el-button>
       </el-empty>
 
       <el-row v-else :gutter="20" class="grid">
         <el-col v-for="row in items" :key="row.resumeId" :xs="24" :sm="12" :lg="8">
-          <el-card class="resume-card" shadow="hover" @click="goDetail(row.resumeId)">
+          <el-card class="resume-card xt-clickable" shadow="hover" @click="goDetail(row.resumeId)">
             <div class="card-top">
               <h2 class="card-title">{{ row.title || '未命名简历' }}</h2>
               <el-tag v-if="row.isDefault === 1" type="success" effect="dark" size="small">默认</el-tag>
@@ -131,39 +132,19 @@ async function onDelete(row: ResumeListItemVO) {
   gap: 24px;
 }
 
-.hero {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 24px 26px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
-  border: 1px solid #e0e7ff;
-  box-shadow: 0 4px 24px rgba(37, 99, 235, 0.06);
-}
-
-.title {
-  margin: 0 0 8px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.02em;
-}
-
-.subtitle {
-  margin: 0;
-  max-width: 520px;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #64748b;
+.list-eyebrow {
+  color: var(--xt-primary);
+  margin-bottom: 6px;
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+.hero-actions :deep(.el-button) {
+  cursor: pointer;
 }
 
 .btn-icon {
@@ -177,9 +158,6 @@ async function onDelete(row: ResumeListItemVO) {
 
 .empty {
   padding: 48px 16px;
-  background: #fff;
-  border-radius: 16px;
-  border: 1px dashed #cbd5e1;
 }
 
 .grid {
@@ -187,15 +165,7 @@ async function onDelete(row: ResumeListItemVO) {
 }
 
 .resume-card {
-  border-radius: 14px;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
   height: 100%;
-  border: 1px solid var(--el-border-color-lighter);
-}
-
-.resume-card:hover {
-  transform: translateY(-2px);
 }
 
 .card-top {
@@ -210,7 +180,7 @@ async function onDelete(row: ResumeListItemVO) {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--xt-text);
   line-height: 1.35;
   flex: 1;
 }
@@ -218,7 +188,7 @@ async function onDelete(row: ResumeListItemVO) {
 .card-name {
   margin: 0 0 8px;
   font-size: 14px;
-  color: #475569;
+  color: var(--xt-text-secondary);
 }
 
 .card-time {
@@ -227,15 +197,19 @@ async function onDelete(row: ResumeListItemVO) {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--xt-text-muted);
 }
 
 .card-actions {
   padding-top: 12px;
-  border-top: 1px solid var(--el-border-color-lighter);
+  border-top: 1px solid var(--xt-border);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 12px;
+}
+
+.card-actions :deep(.el-button) {
+  cursor: pointer;
 }
 </style>

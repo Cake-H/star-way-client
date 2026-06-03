@@ -1,6 +1,7 @@
 import axios, { type AxiosError, type AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
 import { API_BASE_URL, AUTH_TOKEN_KEY } from '@/config'
+import { clearSession } from '@/auth/session'
 import type { ApiEnvelope } from './types'
 
 function getToken(): string | null {
@@ -31,15 +32,26 @@ http.interceptors.request.use((config) => {
   return config
 })
 
+/** 与后端 ResponseDTO 一致：优先 code === 0，其次 ok / success */
 function isBizSuccess(body: ApiEnvelope): boolean {
-  if (typeof body.success === 'boolean') return body.success
   const c = body.code
-  if (c === undefined) return true
-  return c === 200 || c === 0
+  if (c !== undefined) return c === 0
+  if (typeof body.ok === 'boolean') return body.ok
+  if (typeof body.success === 'boolean') return body.success
+  return true
 }
 
 function pickMessage(body: ApiEnvelope, fallback: string): string {
   return body.message || body.msg || fallback
+}
+
+function handleUnauthorized() {
+  clearSession()
+  import('@/router').then(({ router }) => {
+    if (router.currentRoute.value.name === 'login') return
+    const redirect = router.currentRoute.value.fullPath
+    router.replace({ name: 'login', query: { redirect } })
+  })
 }
 
 http.interceptors.response.use(
@@ -48,7 +60,7 @@ http.interceptors.response.use(
     if (body === null || body === undefined) {
       return res
     }
-    if (typeof body === 'object' && 'code' in body) {
+    if (typeof body === 'object' && ('code' in body || 'ok' in body || 'success' in body)) {
       if (!isBizSuccess(body)) {
         const msg = pickMessage(body, '请求失败')
         ElMessage.error(msg)
@@ -59,6 +71,11 @@ http.interceptors.response.use(
     return res
   },
   (err: AxiosError<ApiEnvelope | { message?: string }>) => {
+    if (err.response?.status === 401) {
+      ElMessage.error('登录已失效，请重新登录')
+      handleUnauthorized()
+      return Promise.reject(err)
+    }
     const data = err.response?.data
     let msg = err.message || '网络异常'
     if (data && typeof data === 'object') {
@@ -73,7 +90,7 @@ http.interceptors.response.use(
   },
 )
 
-/** 取出业务 data；成功时由拦截器保证 code/success 合法 */
+/** 取出业务 data；成功时由拦截器保证 code/ok 合法 */
 export function unwrapData<T>(res: AxiosResponse<ApiEnvelope<T>>): T | undefined {
   return res.data.data as T | undefined
 }

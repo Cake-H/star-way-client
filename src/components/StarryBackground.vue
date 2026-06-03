@@ -1,11 +1,12 @@
 <template>
-  <div class="starry-root" aria-hidden="true">
+  <div class="starry-root" :class="variant" aria-hidden="true">
     <div class="aurora" />
     <div class="glow" />
     <div
       v-for="(s, i) in stars"
       :key="i"
       class="star"
+      :class="{ 'star-static': reducedMotion }"
       :style="{
         top: s.top,
         left: s.left,
@@ -15,25 +16,39 @@
         animationDelay: `${s.delay}s`,
       }"
     />
-    <div class="meteor meteor-a" />
-    <div class="meteor meteor-b" />
+    <div v-if="showMeteors" class="meteor meteor-a" />
+    <div v-if="showMeteors" class="meteor meteor-b" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 type Star = { top: string; left: string; size: number; delay: number; opacity: number }
 
+const props = withDefaults(
+  defineProps<{
+    /** dark：登录全屏深空；subtle：主应用浅色星空 */
+    variant?: 'dark' | 'subtle'
+  }>(),
+  { variant: 'dark' },
+)
+
 const stars = ref<Star[]>([])
+const reducedMotion = ref(false)
+
+const showMeteors = computed(() => props.variant === 'dark' && !reducedMotion.value)
 
 onMounted(() => {
-  stars.value = Array.from({ length: 160 }, () => ({
+  reducedMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const count = props.variant === 'dark' ? 160 : 72
+  const opacityBase = props.variant === 'dark' ? 0.25 : 0.35
+  stars.value = Array.from({ length: count }, () => ({
     top: `${Math.random() * 100}%`,
     left: `${Math.random() * 100}%`,
-    size: Math.random() * 2.2 + 0.6,
+    size: props.variant === 'dark' ? Math.random() * 2.2 + 0.6 : Math.random() * 1.8 + 0.4,
     delay: Math.random() * 5,
-    opacity: 0.25 + Math.random() * 0.75,
+    opacity: opacityBase + Math.random() * (props.variant === 'dark' ? 0.75 : 0.45),
   }))
 })
 </script>
@@ -44,26 +59,55 @@ onMounted(() => {
   inset: 0;
   z-index: 0;
   overflow: hidden;
+  pointer-events: none;
+}
+
+.starry-root.dark {
   background: radial-gradient(ellipse 120% 80% at 50% 0%, #1b2a6a 0%, #0b1028 45%, #050814 100%);
+}
+
+.starry-root.subtle {
+  background:
+    radial-gradient(ellipse 100% 60% at 50% -10%, rgba(99, 102, 241, 0.12), transparent 55%),
+    radial-gradient(ellipse 80% 50% at 100% 0%, rgba(56, 189, 248, 0.08), transparent 50%),
+    linear-gradient(180deg, #eef2ff 0%, #f5f3ff 38%, #f8fafc 100%);
 }
 
 .aurora {
   position: absolute;
   inset: -20% -10% auto;
   height: 55%;
-  background: radial-gradient(ellipse at 50% 0%, rgba(99, 179, 255, 0.35), transparent 60%),
-    radial-gradient(ellipse at 30% 20%, rgba(168, 120, 255, 0.22), transparent 55%);
   filter: blur(2px);
   opacity: 0.85;
   pointer-events: none;
+}
+
+.dark .aurora {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(99, 179, 255, 0.35), transparent 60%),
+    radial-gradient(ellipse at 30% 20%, rgba(168, 120, 255, 0.22), transparent 55%);
+}
+
+.subtle .aurora {
+  height: 40%;
+  opacity: 0.55;
+  background: radial-gradient(ellipse at 40% 0%, rgba(129, 140, 248, 0.18), transparent 65%);
 }
 
 .glow {
   position: absolute;
   inset: auto 10% -25%;
   height: 45%;
-  background: radial-gradient(ellipse at 50% 100%, rgba(40, 120, 255, 0.18), transparent 65%);
   pointer-events: none;
+}
+
+.dark .glow {
+  background: radial-gradient(ellipse at 50% 100%, rgba(40, 120, 255, 0.18), transparent 65%);
+}
+
+.subtle .glow {
+  height: 30%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(99, 102, 241, 0.06), transparent 70%);
 }
 
 .star {
@@ -72,6 +116,15 @@ onMounted(() => {
   background: #fff;
   box-shadow: 0 0 6px rgba(200, 230, 255, 0.9);
   animation: twinkle 4s ease-in-out infinite;
+}
+
+.subtle .star {
+  background: #6366f1;
+  box-shadow: 0 0 4px rgba(99, 102, 241, 0.35);
+}
+
+.star-static {
+  animation: none !important;
 }
 
 @keyframes twinkle {
@@ -123,6 +176,16 @@ onMounted(() => {
   }
   100% {
     opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star {
+    animation: none;
+  }
+
+  .meteor {
+    display: none;
   }
 }
 </style>

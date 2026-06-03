@@ -1,47 +1,69 @@
 <template>
   <div class="home">
-    <section class="hero">
-      <div class="hero-inner">
-        <p class="eyebrow">智能简历投递助手</p>
-        <h1 class="hero-title">高效管理简历，一键解析与入库</h1>
-        <p class="hero-desc">
+    <section class="xt-hero hero">
+      <div class="xt-hero-inner hero-inner">
+        <p class="xt-eyebrow">星途 · 智能简历投递助手</p>
+        <h1 class="xt-hero-title">踏上职业星途，从一份好简历开始</h1>
+        <p class="xt-hero-desc">
           上传 PDF / Word 由大模型生成结构化草稿，或从空白开始填写；保存后与「我的简历」列表、详情、编辑全链路打通。
         </p>
         <div class="hero-cta">
-          <el-button type="primary" size="large" @click="goList">
+          <el-button type="primary" size="large" class="cta-primary" @click="goList">
             <el-icon class="ico"><FolderOpened /></el-icon>
             我的简历
           </el-button>
-          <el-button size="large" @click="goUpload">
+          <el-button size="large" class="cta-secondary" @click="goInterview">
+            <el-icon class="ico"><ChatLineSquare /></el-icon>
+            面试复盘
+          </el-button>
+          <el-button size="large" class="cta-secondary" @click="goUpload">
             <el-icon class="ico"><Upload /></el-icon>
             上传解析
           </el-button>
-          <el-button size="large" plain @click="goBlank">
+          <el-button size="large" plain class="cta-ghost" @click="goBlank">
             <el-icon class="ico"><DocumentAdd /></el-icon>
             空白新建
           </el-button>
         </div>
       </div>
+      <div class="hero-deco" aria-hidden="true">
+        <StarLogo size="lg" :glow="true" />
+      </div>
     </section>
 
     <el-row :gutter="20" class="tiles">
-      <el-col :xs="24" :md="8">
-        <el-card class="tile" shadow="hover" @click="goList">
-          <el-icon class="tile-icon" :size="28"><FolderOpened /></el-icon>
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="tile xt-clickable" shadow="hover" @click="goList">
+          <div class="tile-icon-wrap">
+            <el-icon class="tile-icon" :size="26"><FolderOpened /></el-icon>
+          </div>
           <h2 class="tile-title">我的简历</h2>
           <p class="tile-text">查看已保存列表、默认标记与最近更新时间，进入详情或继续编辑。</p>
         </el-card>
       </el-col>
-      <el-col :xs="24" :md="8">
-        <el-card class="tile" shadow="hover" @click="goUpload">
-          <el-icon class="tile-icon" :size="28"><Upload /></el-icon>
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="tile xt-clickable" shadow="hover" @click="goInterview">
+          <div class="tile-icon-wrap interview">
+            <el-icon class="tile-icon" :size="26"><ChatLineSquare /></el-icon>
+          </div>
+          <h2 class="tile-title">面试复盘</h2>
+          <p class="tile-text">语音或手动记录面试题，AI 总结评价与参考答案，练习模式自测。</p>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="tile xt-clickable" shadow="hover" @click="goUpload">
+          <div class="tile-icon-wrap accent">
+            <el-icon class="tile-icon" :size="26"><Upload /></el-icon>
+          </div>
           <h2 class="tile-title">上传智能解析</h2>
           <p class="tile-text">支持 .pdf / .docx，解析完成后核对草稿并保存到云端。</p>
         </el-card>
       </el-col>
-      <el-col :xs="24" :md="8">
-        <el-card class="tile" shadow="hover" @click="goBlank">
-          <el-icon class="tile-icon" :size="28"><DocumentAdd /></el-icon>
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="tile xt-clickable" shadow="hover" @click="goBlank">
+          <div class="tile-icon-wrap">
+            <el-icon class="tile-icon" :size="26"><DocumentAdd /></el-icon>
+          </div>
           <h2 class="tile-title">空白简历</h2>
           <p class="tile-text">不经过解析，直接结构化填写并首次保存入库。</p>
         </el-card>
@@ -50,7 +72,7 @@
 
     <el-card v-if="profile" class="session-card" shadow="never">
       <template #header>
-        <span>当前会话</span>
+        <span class="session-head">当前会话</span>
       </template>
       <el-descriptions :column="2" size="small" border>
         <el-descriptions-item label="用户 ID">{{ profile.userId }}</el-descriptions-item>
@@ -70,7 +92,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { DocumentAdd, FolderOpened, Upload } from '@element-plus/icons-vue'
+import { ChatLineSquare, DocumentAdd, FolderOpened, Upload } from '@element-plus/icons-vue'
+import StarLogo from '@/components/StarLogo.vue'
 import { getProfile } from '@/auth/session'
 
 const router = useRouter()
@@ -85,6 +108,9 @@ function goUpload() {
 function goBlank() {
   router.push({ name: 'resume-new' })
 }
+function goInterview() {
+  router.push({ name: 'interview-list' })
+}
 </script>
 
 <style scoped>
@@ -96,39 +122,22 @@ function goBlank() {
 }
 
 .hero {
-  border-radius: 20px;
-  padding: 32px 28px;
-  background: linear-gradient(125deg, #1d4ed8 0%, #3b82f6 42%, #6366f1 100%);
-  color: #fff;
-  box-shadow: 0 20px 50px rgba(37, 99, 235, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
 .hero-inner {
-  max-width: 720px;
+  flex: 1;
+  min-width: 260px;
 }
 
-.eyebrow {
-  margin: 0 0 10px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.hero-deco {
+  flex-shrink: 0;
   opacity: 0.85;
-}
-
-.hero-title {
-  margin: 0 0 12px;
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: -0.02em;
-}
-
-.hero-desc {
-  margin: 0 0 22px;
-  font-size: 14px;
-  line-height: 1.65;
-  opacity: 0.92;
+  padding-right: 8px;
 }
 
 .hero-cta {
@@ -137,16 +146,42 @@ function goBlank() {
   gap: 12px;
 }
 
-.hero-cta :deep(.el-button--primary) {
-  background: #fff;
-  color: #1d4ed8;
-  border-color: #fff;
+.hero-cta :deep(.el-button) {
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.cta-primary {
+  background: #fff !important;
+  color: var(--xt-primary-dark) !important;
+  border-color: #fff !important;
   font-weight: 600;
 }
 
-.hero-cta :deep(.el-button--primary:hover) {
-  background: #eff6ff;
-  color: #1e40af;
+.cta-primary:hover {
+  background: #eef2ff !important;
+  color: #4338ca !important;
+}
+
+.cta-secondary {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  color: #fff !important;
+}
+
+.cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
+}
+
+.cta-ghost {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.cta-ghost:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
 }
 
 .ico {
@@ -159,37 +194,59 @@ function goBlank() {
 }
 
 .tile {
-  border-radius: 14px;
   height: 100%;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-  border: 1px solid var(--el-border-color-lighter);
 }
 
-.tile:hover {
-  transform: translateY(-2px);
+.tile-icon-wrap {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  background: var(--el-color-primary-light-9);
+}
+
+.tile-icon-wrap.interview {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.tile-icon-wrap.interview .tile-icon {
+  color: var(--xt-primary-dark);
+}
+
+.tile-icon-wrap.accent {
+  background: var(--xt-accent-soft);
 }
 
 .tile-icon {
-  color: var(--el-color-primary);
-  margin-bottom: 12px;
+  color: var(--xt-primary);
+}
+
+.tile-icon-wrap.accent .tile-icon {
+  color: #d97706;
 }
 
 .tile-title {
   margin: 0 0 8px;
   font-size: 17px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--xt-text);
 }
 
 .tile-text {
   margin: 0;
   font-size: 13px;
   line-height: 1.55;
-  color: #64748b;
+  color: var(--xt-text-secondary);
 }
 
 .session-card {
-  border-radius: 14px;
+  border-radius: var(--xt-radius-md);
+}
+
+.session-head {
+  font-weight: 600;
+  color: var(--xt-text);
 }
 </style>

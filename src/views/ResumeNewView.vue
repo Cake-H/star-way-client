@@ -86,15 +86,17 @@ async function onSave() {
 }
 
 .page-title {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
+  color: var(--xt-text);
 }
 
 .tip {
-  border-radius: 12px;
+  border-radius: var(--xt-radius-md);
+  border: 1px solid var(--xt-border);
 }
 
 .form-card {
-  border-radius: 14px;
+  border-radius: var(--xt-radius-md);
 }
 </style>

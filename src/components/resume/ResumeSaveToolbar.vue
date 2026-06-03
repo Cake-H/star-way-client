@@ -48,8 +48,12 @@ const isDefault = defineModel<number>('isDefault', { default: 0 })
 
 <style scoped>
 .save-toolbar {
-  border-radius: 12px;
+  border-radius: var(--xt-radius-md);
   margin-bottom: 16px;
+  border: 1px solid var(--xt-border);
+  background: var(--xt-surface);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--xt-shadow-sm);
 }
 
 .save-toolbar-inner {

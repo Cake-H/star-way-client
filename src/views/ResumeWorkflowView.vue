@@ -347,21 +347,19 @@ function resetAll() {
 .head .title {
   margin: 0 0 8px;
   font-size: 22px;
-  color: #111827;
+  color: var(--xt-text);
+  font-weight: 700;
 }
 
 .head .desc {
   margin: 0;
-  color: #6b7280;
+  color: var(--xt-text-secondary);
   line-height: 1.6;
   font-size: 14px;
 }
 
 .steps {
-  background: #fff;
-  padding: 16px 12px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  /* 样式由 xt-main-content 全局提供 */
 }
 
 .card {

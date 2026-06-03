@@ -45,6 +45,28 @@ export const router = createRouter({
           name: 'resume-list',
           component: () => import('@/views/ResumeListView.vue'),
         },
+        // --- 面试复盘（语音录入 + 问题列表 + 练习模式）---
+        {
+          path: 'interview',
+          name: 'interview-list',
+          component: () => import('@/views/InterviewListView.vue'),
+        },
+        // 须放在 interview/:sessionId 之前，避免 "new" 被当作 sessionId
+        {
+          path: 'interview/new',
+          name: 'interview-new',
+          component: () => import('@/views/InterviewNewView.vue'),
+        },
+        {
+          path: 'interview/:sessionId',
+          name: 'interview-session',
+          component: () => import('@/views/InterviewSessionView.vue'),
+        },
+        {
+          path: 'interview/:sessionId/q/:questionId',
+          name: 'interview-question',
+          component: () => import('@/views/InterviewQuestionDetailView.vue'),
+        },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },

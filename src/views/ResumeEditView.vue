@@ -141,12 +141,13 @@ onMounted(async () => {
 }
 
 .page-title {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
+  color: var(--xt-text);
 }
 
 .form-card {
-  border-radius: 14px;
+  border-radius: var(--xt-radius-md);
 }
 
 .danger-zone {
@@ -155,9 +156,10 @@ onMounted(async () => {
   align-items: center;
   gap: 12px 16px;
   padding: 12px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--el-color-danger-light-5);
-  background: var(--el-color-danger-light-9);
+  border-radius: var(--xt-radius-md);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(254, 226, 226, 0.45);
+  backdrop-filter: blur(8px);
 }
 
 .danger-hint {

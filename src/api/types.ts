@@ -1,6 +1,8 @@
-/** 与 Spring ResponseDTO 等常见包装对齐，按需扩展 */
+/** 与 Spring ResponseDTO 对齐（ida-app-server） */
 export interface ApiEnvelope<T = unknown> {
+  /** 0 表示成功 */
   code?: number
+  ok?: boolean
   success?: boolean
   message?: string
   msg?: string

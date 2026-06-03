@@ -131,12 +131,13 @@ onMounted(async () => {
 }
 
 .page-title {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
+  color: var(--xt-text);
 }
 
 .head-card {
-  border-radius: 14px;
+  border-radius: var(--xt-radius-md);
 }
 
 .head-row {
@@ -150,7 +151,8 @@ onMounted(async () => {
 .resume-title {
   margin: 0 0 10px;
   font-size: 22px;
-  color: #0f172a;
+  color: var(--xt-text);
+  font-weight: 700;
 }
 
 .meta-line {
@@ -167,7 +169,7 @@ onMounted(async () => {
 }
 
 .muted {
-  color: #64748b;
+  color: var(--xt-text-muted);
 }
 
 .head-btns {
@@ -176,8 +178,12 @@ onMounted(async () => {
   gap: 10px;
 }
 
+.head-btns :deep(.el-button) {
+  cursor: pointer;
+}
+
 .full-card {
-  border-radius: 14px;
+  border-radius: var(--xt-radius-md);
 }
 
 .full-card :deep(.resume-draft) {
