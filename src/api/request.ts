@@ -20,6 +20,14 @@ http.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  // multipart 需由浏览器自动带 boundary，不能沿用默认 application/json
+  if (config.data instanceof FormData && config.headers) {
+    if (typeof (config.headers as { delete?: (k: string) => void }).delete === 'function') {
+      ;(config.headers as { delete: (k: string) => void }).delete('Content-Type')
+    } else {
+      delete (config.headers as Record<string, unknown>)['Content-Type']
+    }
+  }
   return config
 })
 
