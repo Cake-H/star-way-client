@@ -80,7 +80,7 @@ export async function deleteInterviewQuestion(sessionId: number, questionId: num
 }
 
 /**
- * 语音 AI 总结：仅生成结构化草稿，不入库。
+ * 语音 AI 总结（听写 + DeepSeek 结构化）：仅返回草稿，不入库。
  * - 有 audioFile：multipart，字段 file + 可选 rawTranscript
  * - 无 audioFile：JSON { rawTranscript }
  * 用户核对后需再调 createInterviewQuestion 保存。
@@ -91,9 +91,8 @@ export async function summarizeInterviewVoice(
 ) {
   if (payload.audioFile) {
     const fd = new FormData()
-    fd.append('file', payload.audioFile)
+    fd.append('file', payload.audioFile, payload.audioFile.name)
     if (payload.rawTranscript?.trim()) {
-      // 浏览器 Web Speech 转写，供后端 STT 校正或直送 LLM
       fd.append('rawTranscript', payload.rawTranscript.trim())
     }
     const res = await http.post<ApiEnvelope<InterviewVoiceSummarizeResultVO>>(

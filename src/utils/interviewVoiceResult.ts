@@ -1,17 +1,26 @@
 import type {
   InterviewExtractedSessionVO,
   InterviewQuestionCreateRequest,
+  InterviewQuestionDraftItem,
   InterviewVoiceSummarizeResultVO,
 } from '@/api/interviewTypes'
+
+/** 与后端 voice-summarize min-transcript-chars 默认 10 对齐 */
+export const VOICE_MIN_TRANSCRIPT_CHARS = 10
 
 function str(v: unknown): string {
   if (v == null) return ''
   return String(v).trim()
 }
 
+/** 去空白后 ≥ 10 字时随 multipart 传 rawTranscript，服务端不再对 file 听写 */
+export function shouldAttachRawTranscript(text: string): boolean {
+  return text.replace(/\s/g, '').length >= VOICE_MIN_TRANSCRIPT_CHARS
+}
+
 /** 将 AI 草稿条目转为创建问题请求体 */
 export function draftToCreateRequest(
-  item: InterviewQuestionCreateRequest,
+  item: InterviewQuestionCreateRequest | InterviewQuestionDraftItem,
   sortOrder?: number,
 ): InterviewQuestionCreateRequest {
   return {
@@ -49,6 +58,26 @@ export function normalizeVoiceSummarizeQuestions(
       otherNotes: str(result.otherNotes),
     }),
   ]
+}
+
+/** 无专用转写接口时，将 AI 草稿拼成可编辑的口述文稿（供核对） */
+export function plainTranscriptFromSummarize(result: InterviewVoiceSummarizeResultVO): string {
+  const recognized = str(result.recognizedTranscript)
+  if (recognized) return recognized
+
+  const items = normalizeVoiceSummarizeQuestions(result)
+  if (!items.length) return ''
+
+  return items
+    .map((item, index) => {
+      const head = items.length > 1 ? `【第 ${index + 1} 题】\n` : ''
+      const lines: string[] = []
+      if (item.question) lines.push(`问题：${item.question}`)
+      if (item.myAnswer) lines.push(`我的回答：${item.myAnswer}`)
+      if (item.otherNotes) lines.push(`其他：${item.otherNotes}`)
+      return head + lines.join('\n')
+    })
+    .join('\n\n')
 }
 
 /** extractedSession 是否有可展示/可应用的非空字段 */

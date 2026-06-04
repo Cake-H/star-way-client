@@ -65,6 +65,15 @@ function touchSession(s: InterviewSessionDetailVO) {
 }
 
 /** 本地 mock：结构与线上一致（questions + extractedSession） */
+/** 本地 mock：模拟 Whisper 转写正文 */
+export function mockVoiceTranscribe(): string {
+  return (
+    '面试官问我之前项目里负责什么，我说主要负责订单模块的开发，' +
+    '用了 Spring Boot 和 Redis 做缓存，上线后接口响应从 800 毫秒降到 200 毫秒左右。' +
+    '他又追问了缓存穿透怎么处理，我说用了布隆过滤器和空值缓存。'
+  )
+}
+
 export function mockVoiceSummarize(transcript: string): InterviewVoiceSummarizeResultVO {
   const t = transcript.trim()
   const question =
