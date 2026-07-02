@@ -10,6 +10,9 @@
 
     <template v-else-if="question">
       <div class="toolbar">
+        <div class="toolbar-orbit">
+          <OrbitProgress :steps="2" :active="practiceMode ? 1 : 0" size="sm" />
+        </div>
         <el-switch
           v-model="practiceMode"
           inline-prompt
@@ -17,7 +20,7 @@
           inactive-text="全文"
           aria-label="练习模式"
         />
-        <span class="toolbar-hint">{{ practiceMode ? '答案已遮盖，点击各区块可揭开' : '显示完整复盘内容' }}</span>
+        <span class="toolbar-hint">{{ practiceMode ? '答案已遮盖，点击各区块可揭开/遮盖' : '显示完整复盘内容' }}</span>
         <el-button v-if="!editing" type="primary" link @click="editing = true">编辑</el-button>
       </div>
 
@@ -31,15 +34,18 @@
           <div class="block-head">
             <h2 class="block-title">我的回答</h2>
             <el-button
-              v-if="practiceMode && !revealed.myAnswer"
+              v-if="practiceMode"
               type="primary"
               link
-              @click="revealed.myAnswer = true"
+              @click="revealed.myAnswer = !revealed.myAnswer"
             >
-              揭开
+              {{ revealed.myAnswer ? '遮盖' : '揭开' }}
             </el-button>
           </div>
-          <p v-if="!practiceMode || revealed.myAnswer" class="block-body">{{ question.myAnswer || '—' }}</p>
+          <ConstellationReveal v-if="practiceMode && revealed.myAnswer" :revealed="true">
+            <p class="block-body">{{ question.myAnswer || '—' }}</p>
+          </ConstellationReveal>
+          <p v-else-if="!practiceMode" class="block-body">{{ question.myAnswer || '—' }}</p>
           <p v-else class="cover-placeholder">已遮盖 · 先尝试用自己的话回答一遍</p>
         </section>
 
@@ -47,15 +53,18 @@
           <div class="block-head">
             <h2 class="block-title">回答评价</h2>
             <el-button
-              v-if="practiceMode && !revealed.answerEvaluation"
+              v-if="practiceMode"
               type="primary"
               link
-              @click="revealed.answerEvaluation = true"
+              @click="revealed.answerEvaluation = !revealed.answerEvaluation"
             >
-              揭开
+              {{ revealed.answerEvaluation ? '遮盖' : '揭开' }}
             </el-button>
           </div>
-          <p v-if="!practiceMode || revealed.answerEvaluation" class="block-body">{{ question.answerEvaluation || '—' }}</p>
+          <ConstellationReveal v-if="practiceMode && revealed.answerEvaluation" :revealed="true">
+            <p class="block-body">{{ question.answerEvaluation || '—' }}</p>
+          </ConstellationReveal>
+          <p v-else-if="!practiceMode" class="block-body">{{ question.answerEvaluation || '—' }}</p>
           <p v-else class="cover-placeholder">已遮盖</p>
         </section>
 
@@ -63,15 +72,18 @@
           <div class="block-head">
             <h2 class="block-title">参考答案</h2>
             <el-button
-              v-if="practiceMode && !revealed.referenceAnswer"
+              v-if="practiceMode"
               type="primary"
               link
-              @click="revealed.referenceAnswer = true"
+              @click="revealed.referenceAnswer = !revealed.referenceAnswer"
             >
-              揭开
+              {{ revealed.referenceAnswer ? '遮盖' : '揭开' }}
             </el-button>
           </div>
-          <p v-if="!practiceMode || revealed.referenceAnswer" class="block-body">{{ question.referenceAnswer || '—' }}</p>
+          <ConstellationReveal v-if="practiceMode && revealed.referenceAnswer" :revealed="true">
+            <p class="block-body">{{ question.referenceAnswer || '—' }}</p>
+          </ConstellationReveal>
+          <p v-else-if="!practiceMode" class="block-body">{{ question.referenceAnswer || '—' }}</p>
           <p v-else class="cover-placeholder">已遮盖 · 自答后再对照参考思路</p>
         </section>
 
@@ -79,15 +91,18 @@
           <div class="block-head">
             <h2 class="block-title">其他交流信息</h2>
             <el-button
-              v-if="practiceMode && !revealed.otherNotes"
+              v-if="practiceMode"
               type="primary"
               link
-              @click="revealed.otherNotes = true"
+              @click="revealed.otherNotes = !revealed.otherNotes"
             >
-              揭开
+              {{ revealed.otherNotes ? '遮盖' : '揭开' }}
             </el-button>
           </div>
-          <p v-if="!practiceMode || revealed.otherNotes" class="block-body">{{ question.otherNotes || '—' }}</p>
+          <ConstellationReveal v-if="practiceMode && revealed.otherNotes" :revealed="true">
+            <p class="block-body">{{ question.otherNotes || '—' }}</p>
+          </ConstellationReveal>
+          <p v-else-if="!practiceMode" class="block-body">{{ question.otherNotes || '—' }}</p>
           <p v-else class="cover-placeholder">已遮盖</p>
         </section>
 
@@ -129,6 +144,8 @@ import {
   getInterviewSessionDetail,
   updateInterviewQuestion,
 } from '@/services/interviewService'
+import ConstellationReveal from '@/components/ConstellationReveal.vue'
+import OrbitProgress from '@/components/OrbitProgress.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -274,6 +291,16 @@ async function onDelete() {
   border-radius: var(--xt-radius-md);
   background: var(--xt-surface);
   border: 1px solid var(--xt-border);
+}
+
+.toolbar-orbit {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 50%;
+  background: var(--xt-surface-solid);
+  border: 1px solid var(--xt-border);
+  box-shadow: var(--xt-shadow-sm);
 }
 
 .toolbar-hint {

@@ -13,17 +13,19 @@
     </div>
     <h3 class="q-title">{{ question.question || '（未填写问题）' }}</h3>
 
-    <template v-if="!practiceMode">
-      <p v-if="question.myAnswer" class="q-preview">
-        <span class="lbl">我的回答</span>
-        {{ preview(question.myAnswer) }}
-      </p>
-      <p v-if="question.answerEvaluation" class="q-preview eval">
-        <span class="lbl">评价</span>
-        {{ preview(question.answerEvaluation) }}
-      </p>
-    </template>
-    <p v-else class="practice-hint">点击查看详情；当前仅展示问题，答案已隐藏便于自测</p>
+    <ConstellationReveal :revealed="!practiceMode">
+      <template v-if="!practiceMode">
+        <p v-if="question.myAnswer" class="q-preview">
+          <span class="lbl">我的回答</span>
+          {{ preview(question.myAnswer) }}
+        </p>
+        <p v-if="question.answerEvaluation" class="q-preview eval">
+          <span class="lbl">评价</span>
+          {{ preview(question.answerEvaluation) }}
+        </p>
+      </template>
+    </ConstellationReveal>
+    <p v-if="practiceMode" class="practice-hint">点击查看详情；当前仅展示问题，答案已隐藏便于自测</p>
 
     <div class="q-foot">
       <span class="time">{{ formatDateTime(question.updatedAt) }}</span>
@@ -40,6 +42,7 @@
 import { ArrowRight } from '@element-plus/icons-vue'
 import type { InterviewQuestionVO } from '@/api/interviewTypes'
 import { formatDateTime } from '@/utils/format'
+import ConstellationReveal from '@/components/ConstellationReveal.vue'
 
 defineProps<{
   question: InterviewQuestionVO

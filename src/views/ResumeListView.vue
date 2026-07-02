@@ -4,13 +4,13 @@
       <div class="hero-text">
         <p class="xt-eyebrow list-eyebrow">星途 · 简历库</p>
         <h1 class="xt-section-title">我的简历</h1>
-        <p class="xt-section-desc">管理已入库的简历草稿，支持解析上传或从空白开始填写。</p>
+        <p class="xt-section-desc">管理已保存的简历，支持解析上传或从空白开始填写。</p>
       </div>
       <div class="hero-actions">
-        <el-button type="primary" size="large" @click="goUpload">
+        <StarLaunchButton type="primary" size="large" @click="goUpload">
           <el-icon class="btn-icon"><Upload /></el-icon>
           上传解析
-        </el-button>
+        </StarLaunchButton>
         <el-button size="large" @click="goBlank">
           <el-icon class="btn-icon"><DocumentAdd /></el-icon>
           空白简历
@@ -28,7 +28,12 @@
 
       <el-row v-else :gutter="20" class="grid">
         <el-col v-for="row in items" :key="row.resumeId" :xs="24" :sm="12" :lg="8">
-          <el-card class="resume-card xt-clickable" shadow="hover" @click="goDetail(row.resumeId)">
+          <OrbitalCard
+            class="resume-card"
+            clickable
+            shadow="hover"
+            @click="goDetail(row.resumeId)"
+          >
             <div class="card-top">
               <h2 class="card-title">{{ row.title || '未命名简历' }}</h2>
               <el-tag v-if="row.isDefault === 1" type="success" effect="dark" size="small">默认</el-tag>
@@ -50,7 +55,7 @@
                 删除
               </el-button>
             </div>
-          </el-card>
+          </OrbitalCard>
         </el-col>
       </el-row>
     </template>
@@ -65,6 +70,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { ResumeListItemVO } from '@/api/resumeTypes'
 import { deleteResume, listMyResumes } from '@/api/resume'
 import { formatDateTime } from '@/utils/format'
+import OrbitalCard from '@/components/OrbitalCard.vue'
+import StarLaunchButton from '@/components/StarLaunchButton.vue'
 
 const router = useRouter()
 const loading = ref(true)
@@ -135,6 +142,10 @@ async function onDelete(row: ResumeListItemVO) {
 .list-eyebrow {
   color: var(--xt-primary);
   margin-bottom: 6px;
+}
+
+.hero {
+  position: relative;
 }
 
 .hero-actions {

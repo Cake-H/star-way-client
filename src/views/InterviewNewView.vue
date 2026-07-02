@@ -23,7 +23,7 @@
             <span class="card-title">语音录入</span>
             <span class="card-badge">推荐</span>
           </div>
-          <span class="card-sub">点麦克风口述，停止后自动听写并 AI 整理（草稿不入库，确认后再保存）</span>
+          <span class="card-sub">点麦克风口述，停止后自动听写并 AI 整理（草稿不保存，确认后再保存）</span>
         </div>
       </template>
 

@@ -1,6 +1,7 @@
 <template>
-  <div class="workflow">
-    <el-page-header class="page-head" @back="goList">
+  <ResumePageLayout full-width :show-nav="!!parseResult">
+    <div class="workflow">
+      <el-page-header class="page-head" @back="goList">
       <template #content>
         <span class="page-head-title">上传解析</span>
       </template>
@@ -13,10 +14,14 @@
       </p>
     </div>
 
+    <div class="orbit-stepper">
+      <OrbitProgress :steps="3" :active="step" size="md" :labels="['上传', '解析', '保存']" />
+    </div>
+
     <el-steps :active="step" align-center finish-status="success" class="steps">
       <el-step title="上传简历" description="仅支持 .pdf / .docx" />
-      <el-step title="智能解析" description="OSS 存储 + 模型抽取" />
-      <el-step title="核对并保存" description="核对草稿后可保存入库，支持再次保存更新" />
+      <el-step title="智能解析" description="上传文件并由 AI 抽取简历信息" />
+      <el-step title="核对并保存" description="核对草稿后可保存，支持后续更新" />
     </el-steps>
 
     <el-card class="card upload-card" shadow="never">
@@ -31,7 +36,7 @@
         <transition name="parse-fade">
           <div v-if="parsing" class="parse-overlay" role="status" aria-live="polite">
             <div class="parse-overlay-card">
-              <el-icon class="parse-spin" :size="40"><Loading /></el-icon>
+              <div class="parse-spin" aria-hidden="true"></div>
               <p class="parse-title">正在智能解析中，请稍候</p>
               <p class="parse-desc">
                 文件已提交，正在上传至云端并由大模型抽取结构化信息。此过程通常需要数十秒至数分钟，取决于文件大小与服务负载，
@@ -71,37 +76,26 @@
         </el-upload>
 
         <div v-if="parseResult" class="parse-meta">
-        <el-descriptions :column="2" border size="small" title="本次解析摘要">
-          <el-descriptions-item label="原始文件名">
-            {{ parseResult.originalFilename }}
-          </el-descriptions-item>
-          <el-descriptions-item label="MIME">{{ parseResult.contentType }}</el-descriptions-item>
-          <el-descriptions-item label="纯文本长度">
-            {{ parseResult.plainTextCharLength }} 字符
-          </el-descriptions-item>
-          <el-descriptions-item label="OSS Bucket">{{ parseResult.ossBucket }}</el-descriptions-item>
-          <el-descriptions-item label="对象键" :span="2">
-            <span class="mono">{{ parseResult.ossObjectKey }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item v-if="parseResult.ossPublicUrl" label="可访问 URL" :span="2">
-            <el-link :href="parseResult.ossPublicUrl" target="_blank" type="primary">
-              {{ parseResult.ossPublicUrl }}
-            </el-link>
-          </el-descriptions-item>
-        </el-descriptions>
-
-        <div v-if="parseResult.parseNotes?.length" class="notes">
-          <div class="notes-title">解析提示（非错误）</div>
           <el-alert
-            v-for="(n, i) in parseResult.parseNotes"
-            :key="i"
-            :title="n"
-            type="warning"
+            title="解析完成"
+            type="success"
             show-icon
             :closable="false"
-            class="note-line"
+            description="已生成结构化草稿，请核对下方内容并保存。"
           />
-        </div>
+
+          <div v-if="parseResult.parseNotes?.length" class="notes">
+            <div class="notes-title">解析提示（非错误）</div>
+            <el-alert
+              v-for="(n, i) in parseResult.parseNotes"
+              :key="i"
+              :title="n"
+              type="warning"
+              show-icon
+              :closable="false"
+              class="note-line"
+            />
+          </div>
         </div>
 
         <div v-if="parseResult" class="actions">
@@ -115,40 +109,43 @@
         v-model:title="resumeListTitle"
         v-model:isDefault="resumeIsDefault"
         :saving="savingDraft"
-        :save-label="savedResumeId == null ? '保存新简历（首次入库）' : '保存更新'"
+        :save-label="savedResumeId == null ? '保存为新简历' : '保存更新'"
         @save="onSaveDraft"
       />
+
+      <MeteorLine class="save-meteor" :active="meteorActive" />
 
       <el-card class="card form-card" shadow="never">
         <template #header>
           <div class="form-card-head">
             <span>简历信息（草稿）</span>
-            <el-tag v-if="savedResumeId != null" type="success" effect="plain" size="small">
-              已入库 · ID {{ savedResumeId }}
-            </el-tag>
           </div>
         </template>
         <p v-if="savedResumeId != null" class="saved-hint">
-          当前会话已关联云端简历，再次保存将执行更新。
+          已保存到云端，再次保存将更新此简历。
           <el-button type="primary" link @click="goEditSaved">在独立编辑页打开</el-button>
         </p>
         <ResumeDraftForm :draft="draft" />
       </el-card>
     </template>
-  </div>
+    </div>
+  </ResumePageLayout>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Loading, UploadFilled } from '@element-plus/icons-vue'
+import { UploadFilled } from '@element-plus/icons-vue'
 import type { UploadRequestOptions } from 'element-plus'
 import type { ResumeParseDraftDto, ResumeParseResultVO } from '@/api/resumeTypes'
 import { saveResumeDraft, updateResume, uploadAndParseResumeData } from '@/api/resume'
 import { buildDraftFromParseResult, emptyDraft } from '@/utils/resumeDraft'
 import { getResumeSaveValidationErrors } from '@/utils/resumeValidation'
 import ResumeDraftForm from '@/components/resume/ResumeDraftForm.vue'
+import ResumePageLayout from '@/components/resume/ResumePageLayout.vue'
 import ResumeSaveToolbar from '@/components/resume/ResumeSaveToolbar.vue'
+import OrbitProgress from '@/components/OrbitProgress.vue'
+import MeteorLine from '@/components/MeteorLine.vue'
 import { ElMessage } from 'element-plus'
 
 const maxMb = 20
@@ -168,6 +165,8 @@ const savedResumeId = ref<number | null>(null)
 const resumeListTitle = ref('')
 const resumeIsDefault = ref(0)
 const savingDraft = ref(false)
+const meteorActive = ref(false)
+let meteorTimer: ReturnType<typeof setTimeout> | null = null
 
 function goList() {
   router.push({ name: 'resume-list' })
@@ -204,7 +203,8 @@ async function onSaveDraft() {
         ossObjectKey: pr.ossObjectKey,
       })
       savedResumeId.value = r.resumeId
-      ElMessage.success('已首次保存，可在「我的简历」中查看或继续在此编辑后更新')
+      ElMessage.success('已保存，可在「我的简历」中查看或继续编辑后更新')
+      triggerMeteor()
     } else {
       await updateResume(savedResumeId.value, {
         title: resumeListTitle.value || undefined,
@@ -215,10 +215,22 @@ async function onSaveDraft() {
         ossObjectKey: pr.ossObjectKey,
       })
       ElMessage.success('已更新保存')
+      triggerMeteor()
     }
   } finally {
     savingDraft.value = false
   }
+}
+
+function triggerMeteor() {
+  if (meteorTimer) clearTimeout(meteorTimer)
+  meteorActive.value = false
+  void nextTick(() => {
+    meteorActive.value = true
+    meteorTimer = setTimeout(() => {
+      meteorActive.value = false
+    }, 900)
+  })
 }
 
 function clearParseProgressTimer() {
@@ -362,6 +374,16 @@ function resetAll() {
   /* 样式由 xt-main-content 全局提供 */
 }
 
+.orbit-stepper {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+}
+
+.save-meteor {
+  margin-top: 8px;
+}
+
 .card {
   border-radius: 12px;
 }
@@ -398,9 +420,21 @@ function resetAll() {
 }
 
 .parse-spin {
-  margin-bottom: 12px;
-  color: var(--el-color-primary);
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(99, 102, 241, 0.15);
+  border-top-color: var(--xt-primary);
   animation: parse-spin-rotate 0.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parse-spin {
+    animation: none;
+    border-color: var(--xt-primary);
+    opacity: 0.6;
+  }
 }
 
 @keyframes parse-spin-rotate {

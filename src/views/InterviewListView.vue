@@ -8,10 +8,10 @@
           面试结束后快速复盘：支持手动录入或语音口述，AI 帮你整理问题、回答、评价与参考答案，随时进入练习模式自测。
         </p>
       </div>
-      <el-button type="primary" size="large" @click="goNew">
+      <StarLaunchButton type="primary" size="large" @click="goNew">
         <el-icon class="btn-ico"><Microphone /></el-icon>
         语音新建复盘
-      </el-button>
+      </StarLaunchButton>
     </div>
 
     <el-skeleton v-if="loading" :rows="5" animated />
@@ -25,7 +25,12 @@
 
     <el-row v-else :gutter="20" class="grid">
       <el-col v-for="row in items" :key="row.sessionId" :xs="24" :sm="12" :lg="8">
-        <el-card class="session-card xt-clickable" shadow="hover" @click="goSession(row.sessionId)">
+        <OrbitalCard
+          class="session-card"
+          clickable
+          shadow="hover"
+          @click="goSession(row.sessionId)"
+        >
           <div class="card-top">
             <h2 class="card-title">{{ row.title }}</h2>
             <el-tag type="info" size="small">{{ row.questionCount }} 题</el-tag>
@@ -44,7 +49,7 @@
               删除
             </el-button>
           </div>
-        </el-card>
+        </OrbitalCard>
       </el-col>
     </el-row>
   </div>
@@ -59,6 +64,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { InterviewSessionListItemVO } from '@/api/interviewTypes'
 import { deleteInterviewSession, listInterviewSessions } from '@/services/interviewService'
 import { formatDateTime } from '@/utils/format'
+import OrbitalCard from '@/components/OrbitalCard.vue'
+import StarLaunchButton from '@/components/StarLaunchButton.vue'
 
 const router = useRouter()
 const loading = ref(true)
@@ -116,6 +123,10 @@ async function onDelete(row: InterviewSessionListItemVO) {
 .list-eyebrow {
   color: var(--xt-primary);
   margin-bottom: 6px;
+}
+
+.hero {
+  position: relative;
 }
 
 .hero :deep(.el-button) {

@@ -19,6 +19,7 @@ export const router = createRouter({
           path: '',
           name: 'home',
           component: () => import('@/views/HomeView.vue'),
+          meta: { hideStarry: true },
         },
         {
           path: 'resume/upload',
@@ -66,6 +67,28 @@ export const router = createRouter({
           path: 'interview/:sessionId/q/:questionId',
           name: 'interview-question',
           component: () => import('@/views/InterviewQuestionDetailView.vue'),
+        },
+        // --- 模拟面试（基于简历生成面试题 + 练习模式）---
+        {
+          path: 'mock-interview',
+          name: 'mock-interview-list',
+          component: () => import('@/views/MockInterviewListView.vue'),
+        },
+        // 须放在 mock-interview/:mockInterviewId 之前，避免 "new" 被当作 mockInterviewId
+        {
+          path: 'mock-interview/new',
+          name: 'mock-interview-new',
+          component: () => import('@/views/MockInterviewGenerateView.vue'),
+        },
+        {
+          path: 'mock-interview/:mockInterviewId/practice',
+          name: 'mock-interview-practice',
+          component: () => import('@/views/MockInterviewPracticeView.vue'),
+        },
+        {
+          path: 'mock-interview/:mockInterviewId',
+          name: 'mock-interview-detail',
+          component: () => import('@/views/MockInterviewDetailView.vue'),
         },
       ],
     },

@@ -5,23 +5,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* 品牌色 */
+  /* 品牌色：潮流电光靛紫 + 赛博青 + 活力珊瑚粉 */
   --xt-primary: #6366f1;
   --xt-primary-dark: #4f46e5;
   --xt-primary-light: #818cf8;
-  --xt-secondary: #38bdf8;
-  --xt-accent: #fbbf24;
-  --xt-accent-soft: rgba(251, 191, 36, 0.15);
+  --xt-secondary: #22d3ee;
+  --xt-accent: #fb7185;
+  --xt-accent-soft: rgba(251, 113, 133, 0.16);
 
-  /* 深空 */
+  /* 深空：冷调紫蓝，避免沉闷的海军蓝 */
   --xt-space-deep: #050814;
-  --xt-space-mid: #0b1028;
-  --xt-space-glow: #1b2a6a;
+  --xt-space-mid: #0b0a1f;
+  --xt-space-glow: #312e81;
 
   /* 内容区（高可读性浅色） */
-  --xt-surface: rgba(255, 255, 255, 0.92);
+  --xt-surface: rgba(255, 255, 255, 0.94);
   --xt-surface-solid: #ffffff;
-  --xt-surface-muted: rgba(255, 255, 255, 0.72);
+  --xt-surface-muted: rgba(248, 250, 252, 0.88);
   --xt-border: rgba(99, 102, 241, 0.14);
   --xt-border-strong: rgba(99, 102, 241, 0.28);
 
@@ -29,8 +29,8 @@
   --xt-text: #0f172a;
   --xt-text-secondary: #475569;
   --xt-text-muted: #64748b;
-  --xt-text-on-dark: #e8ecff;
-  --xt-text-on-dark-muted: rgba(232, 236, 255, 0.72);
+  --xt-text-on-dark: #f5f3ff;
+  --xt-text-on-dark-muted: rgba(245, 243, 255, 0.72);
 
   /* 圆角与阴影 */
   --xt-radius-sm: 10px;
@@ -39,6 +39,17 @@
   --xt-shadow-sm: 0 4px 20px rgba(15, 23, 42, 0.06);
   --xt-shadow-md: 0 12px 40px rgba(79, 70, 229, 0.12);
   --xt-shadow-glow: 0 0 40px rgba(99, 102, 241, 0.18);
+
+  /* 星轨与发射 */
+  --xt-orbit-ring: rgba(99, 102, 241, 0.12);
+  --xt-orbit-ring-strong: rgba(99, 102, 241, 0.32);
+  --xt-orbit-dot: #a5b4fc;
+  --xt-orbit-path: rgba(129, 140, 248, 0.22);
+  --xt-launch-glow: rgba(251, 113, 133, 0.22);
+  --xt-launch-trail: rgba(251, 113, 133, 0.45);
+
+  /* 背景图片（由 StarryBackground 自动检测启用） */
+  --xt-bg-image: none;
 
   /* Element Plus 主题对齐 */
   --el-color-primary: var(--xt-primary);
@@ -71,6 +82,14 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .xt-constellation-reveal > *,
+  .xt-constellation-reveal > *::before,
+  .xt-constellation-reveal > *::after {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
   }
 }
 
@@ -134,10 +153,10 @@ body {
   color: var(--xt-text-on-dark);
   background: linear-gradient(
     125deg,
-    var(--xt-space-glow) 0%,
-    var(--xt-primary-dark) 38%,
-    #4338ca 72%,
-    #312e81 100%
+    #4f46e5 0%,
+    #312e81 38%,
+    #1e1b4b 72%,
+    #0f0a1f 100%
   );
   box-shadow: var(--xt-shadow-md), var(--xt-shadow-glow);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -148,8 +167,8 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 15% 25%, rgba(251, 191, 36, 0.12), transparent 40%),
-    radial-gradient(circle at 85% 15%, rgba(56, 189, 248, 0.2), transparent 45%);
+    radial-gradient(circle at 15% 25%, rgba(251, 113, 133, 0.18), transparent 40%),
+    radial-gradient(circle at 85% 15%, rgba(34, 211, 238, 0.22), transparent 45%);
   pointer-events: none;
 }
 
@@ -240,4 +259,109 @@ body {
 .xt-glass-dark .el-input__count-inner {
   background: transparent;
   color: rgba(232, 236, 255, 0.65);
+}
+
+/* —— 星轨与发射主题工具类 —— */
+
+.xt-orbit-ring {
+  position: relative;
+}
+
+.xt-orbit-ring::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 0.5px solid var(--xt-orbit-ring);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease, border-color 0.25s ease;
+}
+
+.xt-orbit-ring:hover::before {
+  opacity: 1;
+  border-color: var(--xt-orbit-ring-strong);
+}
+
+.xt-launch-btn {
+  position: relative;
+  transition: box-shadow 0.25s ease, transform 0.15s ease;
+}
+
+.xt-launch-btn:not(:active) {
+  box-shadow: 0 0 18px var(--xt-launch-glow);
+}
+
+.xt-launch-btn:active {
+  animation: launch-pulse 0.55s ease-out;
+}
+
+.xt-constellation-reveal > * {
+  opacity: 0;
+  transform: translateY(6px);
+  animation: constellation-fade 0.5s ease forwards;
+}
+
+.xt-constellation-reveal > *:nth-child(1) { animation-delay: 0ms; }
+.xt-constellation-reveal > *:nth-child(2) { animation-delay: 70ms; }
+.xt-constellation-reveal > *:nth-child(3) { animation-delay: 140ms; }
+.xt-constellation-reveal > *:nth-child(4) { animation-delay: 210ms; }
+.xt-constellation-reveal > *:nth-child(5) { animation-delay: 280ms; }
+.xt-constellation-reveal > *:nth-child(6) { animation-delay: 350ms; }
+.xt-constellation-reveal > *:nth-child(7) { animation-delay: 420ms; }
+.xt-constellation-reveal > *:nth-child(8) { animation-delay: 490ms; }
+
+.xt-glass-strong {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+}
+
+/* —— 关键帧 —— */
+
+@keyframes orbit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes launch-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 var(--xt-launch-glow);
+  }
+  40% {
+    transform: scale(0.98);
+    box-shadow: 0 0 0 10px rgba(251, 113, 133, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(251, 113, 133, 0);
+  }
+}
+
+@keyframes constellation-fade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes meteor-streak {
+  0% {
+    transform: translateX(-120%) rotate(-35deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120%) rotate(-35deg);
+    opacity: 0;
+  }
 }

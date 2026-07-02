@@ -21,6 +21,9 @@
             <p class="meta muted">共 {{ session.questions.length }} 题 · 更新于 {{ formatDateTime(session.updatedAt) }}</p>
           </div>
           <div class="head-actions">
+            <div class="practice-orbit">
+              <OrbitProgress :steps="2" :active="practiceMode ? 1 : 0" size="sm" />
+            </div>
             <div class="practice-toggle">
               <span class="toggle-lbl">练习模式</span>
               <el-switch
@@ -31,10 +34,10 @@
                 aria-label="练习模式：开启后列表仅显示问题，隐藏答案"
               />
             </div>
-            <el-button type="primary" @click="goAddQuestion">
+            <StarLaunchButton type="primary" @click="goAddQuestion">
               <el-icon class="btn-ico"><Microphone /></el-icon>
               语音添加问题
-            </el-button>
+            </StarLaunchButton>
             <el-button type="danger" plain :loading="deleting" @click="onDeleteSession">删除复盘</el-button>
           </div>
         </div>
@@ -93,6 +96,8 @@ import {
   getInterviewSessionDetail,
 } from '@/services/interviewService'
 import { formatDateTime } from '@/utils/format'
+import OrbitProgress from '@/components/OrbitProgress.vue'
+import StarLaunchButton from '@/components/StarLaunchButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -216,6 +221,16 @@ async function onDeleteSession() {
 
 .btn-ico {
   margin-right: 4px;
+}
+
+.practice-orbit {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 50%;
+  background: var(--xt-surface-solid);
+  border: 1px solid var(--xt-border);
+  box-shadow: var(--xt-shadow-sm);
 }
 
 .practice-toggle {

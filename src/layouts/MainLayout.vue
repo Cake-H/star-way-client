@@ -1,6 +1,39 @@
 <template>
   <div class="layout">
-    <StarryBackground variant="subtle" />
+    <StarryBackground v-if="!hideStarry" variant="subtle" />
+    <el-alert
+      v-if="needRefresh"
+      :closable="false"
+      type="success"
+      show-icon
+      class="pwa-update-toast"
+    >
+      <template #title>
+        <span class="pwa-update-text">发现新版本，是否立即更新？</span>
+        <el-button type="primary" size="small" @click="acceptUpdate">立即更新</el-button>
+        <el-button size="small" text @click="dismissUpdate">稍后</el-button>
+      </template>
+    </el-alert>
+    <el-alert
+      v-if="showInstallPrompt"
+      :closable="false"
+      type="info"
+      show-icon
+      class="pwa-install-toast"
+    >
+      <template #title>
+        <span class="pwa-install-text">安装到主屏幕，使用更方便</span>
+        <template v-if="isIOS">
+          <span class="ios-hint">iPhone 请点底部</span>
+          <el-icon class="ios-share-icon"><Share /></el-icon>
+          <span class="ios-hint">，再选「添加到主屏幕」</span>
+        </template>
+        <template v-else>
+          <el-button type="primary" size="small" @click="installPWA">立即安装</el-button>
+        </template>
+        <el-button size="small" text @click="dismissInstall">暂不</el-button>
+      </template>
+    </el-alert>
     <header class="bar">
       <div class="left">
         <router-link class="brand" to="/">
@@ -14,6 +47,7 @@
           <router-link class="nav-link" to="/" :class="{ active: isHome }">首页</router-link>
           <router-link class="nav-link" to="/resume" :class="{ active: isResumeSection }">我的简历</router-link>
           <router-link class="nav-link" to="/interview" :class="{ active: isInterviewSection }">面试复盘</router-link>
+          <router-link class="nav-link" to="/mock-interview" :class="{ active: isMockInterviewSection }">模拟面试</router-link>
         </nav>
       </div>
       <el-button class="logout-btn" type="primary" plain @click="onLogout">退出登录</el-button>
@@ -28,16 +62,33 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Share } from '@element-plus/icons-vue'
 import StarLogo from '@/components/StarLogo.vue'
 import StarryBackground from '@/components/StarryBackground.vue'
+import { usePWA } from '@/composables/usePWA'
+import { usePWAInstall } from '@/composables/usePWAInstall'
 import { logout as logoutApi } from '@/api/auth'
 import { clearSession } from '@/auth/session'
 
 const router = useRouter()
 const route = useRoute()
+const { needRefresh, acceptUpdate, dismissUpdate } = usePWA()
+const { isInstallable, isIOS, install: installPWA, dismiss: dismissInstall } = usePWAInstall()
+
+const isStandalone = computed(() => {
+  if (typeof window === 'undefined') return false
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as { standalone?: boolean }).standalone === true
+  )
+})
+
+const showInstallPrompt = computed(() => isInstallable.value && !isStandalone.value)
+const hideStarry = computed(() => !!(route.meta.hideStarry as boolean | undefined))
 const isHome = computed(() => route.name === 'home')
 const isResumeSection = computed(() => typeof route.path === 'string' && route.path.startsWith('/resume'))
 const isInterviewSection = computed(() => typeof route.path === 'string' && route.path.startsWith('/interview'))
+const isMockInterviewSection = computed(() => typeof route.path === 'string' && route.path.startsWith('/mock-interview'))
 
 async function onLogout() {
   let remoteOk = false
@@ -175,7 +226,49 @@ async function onLogout() {
   padding: 20px 16px 48px;
 }
 
+.pwa-install-toast {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  min-width: 320px;
+  max-width: 90vw;
+}
+
+.pwa-install-text {
+  margin-right: 8px;
+}
+
+.ios-hint {
+  margin: 0 4px;
+  font-size: 13px;
+  color: var(--xt-text-secondary);
+}
+
+.ios-share-icon {
+  vertical-align: middle;
+  color: var(--el-color-primary);
+}
+
 @media (max-width: 640px) {
+  .pwa-update-toast,
+  .pwa-install-toast {
+    top: 8px;
+    min-width: auto;
+    width: calc(100vw - 20px);
+  }
+
+  .pwa-update-text,
+  .pwa-install-text {
+    display: block;
+    margin: 0 0 8px;
+  }
+
+  .ios-hint {
+    display: inline;
+  }
+
   .bar {
     margin: 8px 10px 0;
     padding: 10px 14px;

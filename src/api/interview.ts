@@ -1,7 +1,7 @@
 /**
  * 面试复盘 · HTTP 层
  *
- * Base: {VITE_API_BASE_URL}/interview → 默认 http://localhost:8088/api/v1/app/interview
+ * Base: {VITE_API_BASE_URL}/interview → 生产默认 /api/v1/app/interview
  * 鉴权: Authorization: Bearer <token>
  */
 import { http, unwrapData } from './request'

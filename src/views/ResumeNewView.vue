@@ -1,6 +1,7 @@
 <template>
-  <div class="new-page">
-    <el-page-header class="page-head" @back="goBack">
+  <ResumePageLayout full-width>
+    <div class="new-page">
+      <el-page-header class="page-head" @back="goBack">
       <template #content>
         <span class="page-title">新建空白简历</span>
       </template>
@@ -12,7 +13,7 @@
       show-icon
       :closable="false"
       title="从空白草稿开始"
-      description="下方表单与解析结果结构一致，填写完成后点击保存即可首次入库。之后可在「我的简历」中继续编辑。"
+      description="下方表单与解析结果结构一致，填写完成后点击保存。之后可在「我的简历」中继续编辑。"
     />
 
     <ResumeSaveToolbar
@@ -29,7 +30,8 @@
       </template>
       <ResumeDraftForm :draft="draft" />
     </el-card>
-  </div>
+    </div>
+  </ResumePageLayout>
 </template>
 
 <script setup lang="ts">
@@ -39,6 +41,7 @@ import { ElMessage } from 'element-plus'
 import type { ResumeParseDraftDto } from '@/api/resumeTypes'
 import { saveResumeDraft } from '@/api/resume'
 import ResumeDraftForm from '@/components/resume/ResumeDraftForm.vue'
+import ResumePageLayout from '@/components/resume/ResumePageLayout.vue'
 import ResumeSaveToolbar from '@/components/resume/ResumeSaveToolbar.vue'
 import { emptyDraft } from '@/utils/resumeDraft'
 import { getResumeSaveValidationErrors } from '@/utils/resumeValidation'

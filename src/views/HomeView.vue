@@ -1,115 +1,150 @@
 <template>
-  <div class="home">
-    <section class="xt-hero hero">
-      <div class="xt-hero-inner hero-inner">
-        <p class="xt-eyebrow">星途 · 智能简历投递助手</p>
-        <h1 class="xt-hero-title">踏上职业星途，从一份好简历开始</h1>
-        <p class="xt-hero-desc">
-          上传 PDF / Word 由大模型生成结构化草稿，或从空白开始填写；保存后与「我的简历」列表、详情、编辑全链路打通。
-        </p>
-        <div class="hero-cta">
-          <el-button type="primary" size="large" class="cta-primary" @click="goList">
-            <el-icon class="ico"><FolderOpened /></el-icon>
-            我的简历
-          </el-button>
-          <el-button size="large" class="cta-secondary" @click="goInterview">
-            <el-icon class="ico"><ChatLineSquare /></el-icon>
-            面试复盘
-          </el-button>
-          <el-button size="large" class="cta-secondary" @click="goUpload">
-            <el-icon class="ico"><Upload /></el-icon>
-            上传解析
-          </el-button>
-          <el-button size="large" plain class="cta-ghost" @click="goBlank">
-            <el-icon class="ico"><DocumentAdd /></el-icon>
-            空白新建
-          </el-button>
+  <div ref="homeRoot" class="home">
+    <section class="home-hero">
+      <HomeStarfield class="hero-particles" :parallax-x="starPx" :parallax-y="starPy" />
+
+      <div class="hero-grid">
+        <div class="hero-copy constellation-reveal">
+          <p class="xt-eyebrow hero-eyebrow">星途 · AI 驱动的简历与面试闭环</p>
+          <h1 class="xt-hero-title hero-title">让每一次投递，都成为职业星途上的光点</h1>
+          <p class="xt-hero-desc hero-desc">
+            从 AI 解析简历、结构化管理，到模拟面试与复盘沉淀，星途把「写简历」和「准备面试」串成一条可进化的星轨。
+          </p>
+
+          <div class="hero-actions">
+            <StarLaunchButton
+              type="primary"
+              size="large"
+              class="hero-primary-cta"
+              @click="goCta"
+            >
+              <el-icon class="cta-ico"><component :is="primaryCta.icon" /></el-icon>
+              {{ primaryCta.label }}
+            </StarLaunchButton>
+
+            <el-button
+              type="info"
+              link
+              size="large"
+              class="hero-link"
+              @click="go('resume-list')"
+            >
+              查看简历
+            </el-button>
+          </div>
         </div>
-      </div>
-      <div class="hero-deco" aria-hidden="true">
-        <StarLogo size="lg" :glow="true" />
+
+        <div class="hero-visual" :style="visualStyle" aria-hidden="true">
+          <div class="orbit-ring orbit-ring--outer" />
+          <div class="orbit-ring orbit-ring--mid" />
+          <div class="orbit-ring orbit-ring--inner" />
+          <div class="orbit-pulse" />
+          <div class="logo-wrapper">
+            <StarLogo size="lg" :glow="true" class="hero-logo" />
+          </div>
+          <div class="orbit-dots">
+            <div v-for="n in 6" :key="n" class="dot-arm" :class="`dot-arm-${n}`">
+              <span class="dot" :class="dotColorClass(n)" />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <el-row :gutter="20" class="tiles">
-      <el-col :xs="24" :sm="12" :lg="6">
-        <el-card class="tile xt-clickable" shadow="hover" @click="goList">
-          <div class="tile-icon-wrap">
-            <el-icon class="tile-icon" :size="26"><FolderOpened /></el-icon>
-          </div>
-          <h2 class="tile-title">我的简历</h2>
-          <p class="tile-text">查看已保存列表、默认标记与最近更新时间，进入详情或继续编辑。</p>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :lg="6">
-        <el-card class="tile xt-clickable" shadow="hover" @click="goInterview">
-          <div class="tile-icon-wrap interview">
-            <el-icon class="tile-icon" :size="26"><ChatLineSquare /></el-icon>
-          </div>
-          <h2 class="tile-title">面试复盘</h2>
-          <p class="tile-text">语音或手动记录面试题，AI 总结评价与参考答案，练习模式自测。</p>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :lg="6">
-        <el-card class="tile xt-clickable" shadow="hover" @click="goUpload">
-          <div class="tile-icon-wrap accent">
-            <el-icon class="tile-icon" :size="26"><Upload /></el-icon>
-          </div>
-          <h2 class="tile-title">上传智能解析</h2>
-          <p class="tile-text">支持 .pdf / .docx，解析完成后核对草稿并保存到云端。</p>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :lg="6">
-        <el-card class="tile xt-clickable" shadow="hover" @click="goBlank">
-          <div class="tile-icon-wrap">
-            <el-icon class="tile-icon" :size="26"><DocumentAdd /></el-icon>
-          </div>
-          <h2 class="tile-title">空白简历</h2>
-          <p class="tile-text">不经过解析，直接结构化填写并首次保存入库。</p>
-        </el-card>
-      </el-col>
-    </el-row>
+    <StarJourneyTimeline :stage="stage" :counts="counts" />
 
-    <el-card v-if="profile" class="session-card" shadow="never">
-      <template #header>
-        <span class="session-head">当前会话</span>
-      </template>
-      <el-descriptions :column="2" size="small" border>
-        <el-descriptions-item label="用户 ID">{{ profile.userId }}</el-descriptions-item>
-        <el-descriptions-item label="是否新用户">
-          <el-tag :type="profile.newUser ? 'warning' : 'success'" size="small">
-            {{ profile.newUser ? '是' : '否' }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="会话剩余" :span="2">
-          约 {{ profile.expiresInSeconds }} 秒（以服务端为准）
-        </el-descriptions-item>
-      </el-descriptions>
-    </el-card>
+    <PlanetaryFeatureGrid />
+
+    <RecentActivityFeed :loading="loading" :activities="activities" @continue="goItem" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ChatLineSquare, DocumentAdd, FolderOpened, Upload } from '@element-plus/icons-vue'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { usePreferredReducedMotion } from '@vueuse/core'
 import StarLogo from '@/components/StarLogo.vue'
-import { getProfile } from '@/auth/session'
+import StarLaunchButton from '@/components/StarLaunchButton.vue'
+import HomeStarfield from '@/components/home/HomeStarfield.vue'
+import StarJourneyTimeline from '@/components/home/StarJourneyTimeline.vue'
+import PlanetaryFeatureGrid from '@/components/home/PlanetaryFeatureGrid.vue'
+import RecentActivityFeed from '@/components/home/RecentActivityFeed.vue'
+import { useHomeJourney, type ActivityItem } from '@/composables/useHomeJourney'
+import { useStarParallax } from '@/composables/useStarParallax'
 
 const router = useRouter()
-const profile = computed(() => getProfile())
+const prefersReducedMotion = usePreferredReducedMotion()
+const { loading, stage, counts, activities, primaryCta } = useHomeJourney()
+const { px, py } = useStarParallax(16)
 
-function goList() {
-  router.push({ name: 'resume-list' })
+const starPx = computed(() => px.value * 0.5)
+const starPy = computed(() => py.value * 0.5)
+const visualStyle = computed(() => ({
+  transform: `translate3d(${px.value}px, ${py.value}px, 0)`,
+}))
+
+onMounted(() => {
+  if (prefersReducedMotion.value) return
+  gsap.registerPlugin(ScrollTrigger)
+
+  const tl = gsap.timeline({ defaults: { ease: 'power2.out' } })
+  tl.from('.hero-eyebrow', { y: 16, opacity: 0, duration: 0.5 })
+    .from('.hero-title', { y: 24, opacity: 0, duration: 0.6 }, '-=0.3')
+    .from('.hero-desc', { y: 16, opacity: 0, duration: 0.5 }, '-=0.35')
+    .from('.hero-actions', { y: 16, opacity: 0, duration: 0.5 }, '-=0.3')
+    .from('.hero-visual', { scale: 0.85, opacity: 0, duration: 0.8, ease: 'back.out(1.4)' }, '-=0.6')
+
+  gsap.from('.journey-section', {
+    scrollTrigger: { trigger: '.journey-section', start: 'top 85%' },
+    y: 30,
+    opacity: 0,
+    duration: 0.7,
+  })
+
+  gsap.from('.feature-tile', {
+    scrollTrigger: { trigger: '.features-section', start: 'top 85%' },
+    y: 24,
+    opacity: 0,
+    duration: 0.5,
+    stagger: 0.08,
+  })
+
+  gsap.from('.activity-row', {
+    scrollTrigger: { trigger: '.activity-section', start: 'top 85%' },
+    x: -16,
+    opacity: 0,
+    duration: 0.4,
+    stagger: 0.06,
+  })
+})
+
+onUnmounted(() => {
+  ScrollTrigger.getAll().forEach((t) => t.kill())
+})
+
+function go(routeName: string) {
+  router.push({ name: routeName })
 }
-function goUpload() {
-  router.push({ name: 'resume-upload' })
+
+function goCta() {
+  router.push({
+    name: primaryCta.value.routeName,
+    params: primaryCta.value.routeParams,
+  })
 }
-function goBlank() {
-  router.push({ name: 'resume-new' })
+
+function goItem(item: ActivityItem) {
+  router.push({
+    name: item.routeName,
+    params: item.routeParams,
+  })
 }
-function goInterview() {
-  router.push({ name: 'interview-list' })
+
+function dotColorClass(index: number) {
+  const classes = ['dot-indigo', 'dot-cyan', 'dot-rose', 'dot-amber', 'dot-silver', 'dot-indigo']
+  return classes[index - 1] || 'dot-indigo'
 }
 </script>
 
@@ -118,135 +153,336 @@ function goInterview() {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
 }
 
-.hero {
+.home-hero {
+  position: relative;
+  min-height: 420px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
+  padding: 56px 48px;
+  border-radius: var(--xt-radius-lg);
+  background: radial-gradient(
+      ellipse 80% 70% at 70% 50%,
+      rgba(99, 102, 241, 0.35) 0%,
+      transparent 60%
+    ),
+    linear-gradient(160deg, #0f0a2a 0%, #241e6b 50%, #0f0a2a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--xt-shadow-md);
+  overflow: hidden;
 }
 
-.hero-inner {
-  flex: 1;
-  min-width: 260px;
+.hero-particles {
+  position: absolute;
+  inset: 0;
 }
 
-.hero-deco {
-  flex-shrink: 0;
-  opacity: 0.85;
-  padding-right: 8px;
+.hero-grid {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 48px;
+  align-items: center;
 }
 
-.hero-cta {
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hero-eyebrow {
+  color: var(--xt-primary-light);
+  margin: 0;
+  font-size: 15px;
+}
+
+.hero-title {
+  margin: 0;
+  max-width: 620px;
+  color: var(--xt-text-on-dark);
+  font-size: clamp(30px, 5vw, 42px);
+}
+
+.hero-desc {
+  margin: 0;
+  max-width: 560px;
+  color: rgba(245, 243, 255, 0.86);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  margin-top: 8px;
 }
 
-.hero-cta :deep(.el-button) {
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.cta-primary {
+.hero-primary-cta {
   background: #fff !important;
   color: var(--xt-primary-dark) !important;
   border-color: #fff !important;
   font-weight: 600;
+  font-size: 16px;
 }
 
-.cta-primary:hover {
+.hero-primary-cta:hover {
   background: #eef2ff !important;
   color: #4338ca !important;
 }
 
-.cta-secondary {
-  background: rgba(255, 255, 255, 0.14) !important;
-  border-color: rgba(255, 255, 255, 0.28) !important;
-  color: #fff !important;
-}
-
-.cta-secondary:hover {
-  background: rgba(255, 255, 255, 0.22) !important;
-}
-
-.cta-ghost {
-  background: transparent !important;
-  border-color: rgba(255, 255, 255, 0.35) !important;
+.hero-quick-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
   color: rgba(255, 255, 255, 0.92) !important;
 }
 
-.cta-ghost:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
+.hero-quick-btn:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.32) !important;
   color: #fff !important;
 }
 
-.ico {
+.hero-link {
+  color: rgba(255, 255, 255, 0.8) !important;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.hero-link:hover {
+  color: #fff !important;
+}
+
+.cta-ico {
   margin-right: 6px;
   vertical-align: middle;
 }
 
-.tiles {
-  margin: 0 !important;
-}
-
-.tile {
-  height: 100%;
-}
-
-.tile-icon-wrap {
-  width: 44px;
-  height: 44px;
+.hero-visual {
+  position: relative;
   display: grid;
   place-items: center;
-  border-radius: 12px;
-  margin-bottom: 14px;
-  background: var(--el-color-primary-light-9);
+  min-height: 280px;
+  will-change: transform;
 }
 
-.tile-icon-wrap.interview {
-  background: rgba(99, 102, 241, 0.12);
+.orbit-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.35);
 }
 
-.tile-icon-wrap.interview .tile-icon {
-  color: var(--xt-primary-dark);
+.orbit-ring--outer {
+  width: 280px;
+  height: 280px;
+  animation: spin 28s linear infinite;
 }
 
-.tile-icon-wrap.accent {
-  background: var(--xt-accent-soft);
+.orbit-ring--mid {
+  width: 220px;
+  height: 220px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.22);
+  animation: spin-reverse 20s linear infinite;
 }
 
-.tile-icon {
-  color: var(--xt-primary);
+.orbit-ring--inner {
+  width: 160px;
+  height: 160px;
+  border-color: rgba(255, 255, 255, 0.16);
+  animation: spin 14s linear infinite;
 }
 
-.tile-icon-wrap.accent .tile-icon {
-  color: #d97706;
+.orbit-pulse {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.32), transparent 70%);
+  animation: pulse-glow 3s ease-in-out infinite;
 }
 
-.tile-title {
-  margin: 0 0 8px;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--xt-text);
+.logo-wrapper {
+  position: relative;
+  z-index: 2;
+  transform: scale(1.6);
 }
 
-.tile-text {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--xt-text-secondary);
+.hero-logo {
+  animation: logo-float 6s ease-in-out infinite;
 }
 
-.session-card {
-  border-radius: var(--xt-radius-md);
+.orbit-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
-.session-head {
-  font-weight: 600;
-  color: var(--xt-text);
+.dot-arm {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: var(--orbit-radius);
+  margin-left: -1px;
+  transform-origin: top center;
+  transform: rotate(var(--start-angle));
+  animation: orbit-rotate var(--duration) linear infinite;
+  animation-delay: var(--delay);
+}
+
+.dot {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.7);
+}
+
+.dot-indigo {
+  background: #c7d2fe;
+  box-shadow: 0 0 16px 3px rgba(129, 140, 248, 0.7);
+}
+
+.dot-cyan {
+  background: #a5f3fc;
+  box-shadow: 0 0 16px 3px rgba(34, 211, 238, 0.7);
+}
+
+.dot-rose {
+  background: #fda4af;
+  box-shadow: 0 0 16px 3px rgba(251, 113, 133, 0.7);
+}
+
+.dot-amber {
+  background: #fde68a;
+  box-shadow: 0 0 16px 3px rgba(251, 191, 36, 0.7);
+}
+
+.dot-silver {
+  background: #e2e8f0;
+  box-shadow: 0 0 16px 3px rgba(148, 163, 184, 0.7);
+}
+
+.dot-arm-1 { --orbit-radius: 140px; --duration: 16s; --delay: 0s; --start-angle: 0deg; }
+.dot-arm-2 { --orbit-radius: 140px; --duration: 22s; --delay: -8s; --start-angle: 120deg; }
+.dot-arm-3 { --orbit-radius: 110px; --duration: 14s; --delay: -3s; --start-angle: 60deg; }
+.dot-arm-4 { --orbit-radius: 110px; --duration: 18s; --delay: -10s; --start-angle: 180deg; }
+.dot-arm-5 { --orbit-radius: 80px; --duration: 12s; --delay: -6s; --start-angle: 240deg; }
+.dot-arm-6 { --orbit-radius: 80px; --duration: 15s; --delay: -12s; --start-angle: 300deg; }
+
+@keyframes orbit-rotate {
+  from { transform: rotate(var(--start-angle)); }
+  to { transform: rotate(calc(var(--start-angle) + 360deg)); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.15); opacity: 0.35; }
+}
+
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(3deg); }
+}
+
+.constellation-reveal > * {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fade-in-up 0.6s ease forwards;
+}
+
+.constellation-reveal > *:nth-child(1) { animation-delay: 0ms; }
+.constellation-reveal > *:nth-child(2) { animation-delay: 100ms; }
+.constellation-reveal > *:nth-child(3) { animation-delay: 200ms; }
+.constellation-reveal > *:nth-child(4) { animation-delay: 300ms; }
+
+@keyframes fade-in-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .home-hero {
+    padding: 40px 24px;
+    min-height: auto;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .hero-visual {
+    order: -1;
+    min-height: 200px;
+  }
+
+  .orbit-ring--outer {
+    width: 200px;
+    height: 200px;
+  }
+
+  .orbit-ring--mid {
+    width: 155px;
+    height: 155px;
+  }
+
+  .orbit-ring--inner {
+    width: 110px;
+    height: 110px;
+  }
+
+  .orbit-pulse {
+    width: 110px;
+    height: 110px;
+  }
+
+  .logo-wrapper {
+    transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-ring,
+  .orbit-ring-secondary,
+  .constellation-reveal > *,
+  .hero-logo,
+  .dot-arm {
+    animation: none;
+  }
+
+  .constellation-reveal > * {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-logo,
+  .dot-arm {
+    transform: none;
+  }
 }
 </style>

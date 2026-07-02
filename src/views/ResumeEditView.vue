@@ -1,6 +1,7 @@
 <template>
-  <div class="edit-page">
-    <el-page-header class="page-head" @back="goBack">
+  <ResumePageLayout full-width>
+    <div class="edit-page">
+      <el-page-header class="page-head" @back="goBack">
       <template #content>
         <span class="page-title">编辑简历</span>
       </template>
@@ -35,7 +36,8 @@
         <el-button type="primary" @click="goBack">返回列表</el-button>
       </template>
     </el-result>
-  </div>
+    </div>
+  </ResumePageLayout>
 </template>
 
 <script setup lang="ts">
@@ -45,6 +47,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { ResumeParseDraftDto } from '@/api/resumeTypes'
 import { deleteResume, getResumeDetail, updateResume } from '@/api/resume'
 import ResumeDraftForm from '@/components/resume/ResumeDraftForm.vue'
+import ResumePageLayout from '@/components/resume/ResumePageLayout.vue'
 import ResumeSaveToolbar from '@/components/resume/ResumeSaveToolbar.vue'
 import { assignFullDraft, emptyDraft } from '@/utils/resumeDraft'
 import { getResumeSaveValidationErrors } from '@/utils/resumeValidation'
