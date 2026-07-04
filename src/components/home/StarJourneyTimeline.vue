@@ -1,8 +1,8 @@
 <template>
   <section class="journey-section">
     <div class="section-header">
-      <p class="xt-eyebrow journey-eyebrow">星途旅程</p>
-      <h2 class="xt-section-title">四步开启职业星图</h2>
+      <h2 class="section-title">星途旅程</h2>
+      <p class="section-subtitle">四步开启职业星图</p>
     </div>
 
     <div class="journey-svg-wrap">
@@ -169,9 +169,18 @@ const progressDashoffset = computed(() => 0)
   text-align: center;
 }
 
-.journey-eyebrow {
-  color: var(--xt-accent);
-  margin: 0 0 8px;
+.section-title {
+  margin: 0 0 6px;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--xt-text);
+  letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+  margin: 0;
+  font-size: 15px;
+  color: var(--xt-text-secondary);
 }
 
 .journey-svg-wrap {

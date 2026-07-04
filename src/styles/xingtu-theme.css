@@ -257,8 +257,19 @@ body {
 
 .xt-glass-dark .el-input__count,
 .xt-glass-dark .el-input__count-inner {
-  background: transparent;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: rgba(232, 236, 255, 0.65) !important;
+}
+
+.xt-glass-dark .el-input__clear,
+.xt-glass-dark .el-input__password {
   color: rgba(232, 236, 255, 0.65);
+}
+
+.xt-glass-dark .el-input__clear:hover,
+.xt-glass-dark .el-input__password:hover {
+  color: #fff;
 }
 
 /* —— 星轨与发射主题工具类 —— */

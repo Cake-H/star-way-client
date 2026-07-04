@@ -2,8 +2,8 @@
   <section class="activity-section">
     <div class="section-header">
       <div class="section-title-wrap">
-        <p class="xt-eyebrow activity-eyebrow">最近星轨</p>
-        <h2 class="xt-section-title">从上次离开的地方继续</h2>
+        <h2 class="section-title">最近星轨</h2>
+        <p class="section-subtitle">从上次离开的地方继续</p>
       </div>
       <el-button v-if="activities.length" type="primary" link @click="emit('continue', activities[0])"
         >刷新
@@ -93,17 +93,26 @@ function goUpload() {
 .section-header {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: center;
   gap: 16px;
 }
 
 .section-title-wrap {
-  flex: 1;
+  text-align: center;
 }
 
-.activity-eyebrow {
-  color: var(--xt-accent);
-  margin: 0 0 8px;
+.section-title {
+  margin: 0 0 6px;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--xt-text);
+  letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+  margin: 0;
+  font-size: 15px;
+  color: var(--xt-text-secondary);
 }
 
 .activity-content {

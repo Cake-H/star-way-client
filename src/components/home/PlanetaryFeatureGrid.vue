@@ -1,9 +1,8 @@
 <template>
   <section class="features-section">
     <div class="section-header">
-      <p class="xt-eyebrow features-eyebrow">能力星球</p>
-      <h2 class="xt-section-title">探索你的星途工具</h2>
-      <p class="xt-section-desc">每一项能力都是一颗星球，点击即可启航。</p>
+      <h2 class="section-title">能力星球</h2>
+      <p class="section-subtitle">探索你的星途工具</p>
     </div>
 
     <el-row :gutter="20" class="feature-grid">
@@ -66,9 +65,18 @@ function go(routeName: string) {
   text-align: center;
 }
 
-.features-eyebrow {
-  color: var(--xt-primary-light);
+.section-title {
+  margin: 0 0 6px;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--xt-text);
+  letter-spacing: -0.02em;
+}
+
+.section-subtitle {
   margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--xt-text-secondary);
 }
 
 .feature-grid {

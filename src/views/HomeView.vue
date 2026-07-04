@@ -158,10 +158,10 @@ function dotColorClass(index: number) {
 
 .home-hero {
   position: relative;
-  min-height: 420px;
+  min-height: 520px;
   display: flex;
   align-items: center;
-  padding: 56px 48px;
+  padding: 56px 50px;
   border-radius: var(--xt-radius-lg);
   background: radial-gradient(
       ellipse 80% 70% at 70% 50%,
@@ -184,7 +184,7 @@ function dotColorClass(index: number) {
   z-index: 1;
   width: 100%;
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1.6fr 0.8fr;
   gap: 48px;
   align-items: center;
 }
@@ -192,7 +192,7 @@ function dotColorClass(index: number) {
 .hero-copy {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .hero-eyebrow {
@@ -203,7 +203,7 @@ function dotColorClass(index: number) {
 
 .hero-title {
   margin: 0;
-  max-width: 620px;
+  max-width: 840px;
   color: var(--xt-text-on-dark);
   font-size: clamp(30px, 5vw, 42px);
 }
@@ -342,8 +342,8 @@ function dotColorClass(index: number) {
   position: absolute;
   top: 100%;
   left: 50%;
-  width: 10px;
-  height: 10px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   background: rgba(255, 255, 255, 0.95);
@@ -463,6 +463,18 @@ function dotColorClass(index: number) {
 
   .logo-wrapper {
     transform: scale(1.25);
+  }
+
+  .dot-arm-1 { --orbit-radius: 100px; }
+  .dot-arm-2 { --orbit-radius: 100px; }
+  .dot-arm-3 { --orbit-radius: 77px; }
+  .dot-arm-4 { --orbit-radius: 77px; }
+  .dot-arm-5 { --orbit-radius: 55px; }
+  .dot-arm-6 { --orbit-radius: 55px; }
+
+  .dot {
+    width: 9px;
+    height: 9px;
   }
 }
 

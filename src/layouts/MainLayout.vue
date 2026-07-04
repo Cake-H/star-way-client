@@ -52,7 +52,7 @@
       </div>
       <el-button class="logout-btn" type="primary" plain @click="onLogout">退出登录</el-button>
     </header>
-    <main class="content xt-main-content">
+    <main class="content xt-main-content" :class="{ 'content--wide': isHome }">
       <router-view />
     </main>
   </div>
@@ -224,6 +224,21 @@ async function onLogout() {
   max-width: 1100px;
   margin: 0 auto;
   padding: 20px 16px 48px;
+}
+
+.content--wide {
+  max-width: none;
+  width: calc(100% - 180px);
+  margin: 0 100px;
+  padding: 20px 0 48px;
+}
+
+@media (max-width: 640px) {
+  .content--wide {
+    width: calc(100% - 40px);
+    margin: 0 20px;
+    padding: 16px 0 32px;
+  }
 }
 
 .pwa-install-toast {
