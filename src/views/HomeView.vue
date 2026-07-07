@@ -8,7 +8,7 @@
           <p class="xt-eyebrow hero-eyebrow">星途 · AI 驱动的简历与面试闭环</p>
           <h1 class="xt-hero-title hero-title">让每一次投递，都成为职业星途上的光点</h1>
           <p class="xt-hero-desc hero-desc">
-            从 AI 解析简历、结构化管理，到模拟面试与复盘沉淀，星途把「写简历」和「准备面试」串成一条可进化的星轨。
+            从 AI 解析简历、结构化管理，到浏览器插件一键填入网申、模拟面试与复盘沉淀，星途把「写简历」和「准备面试」串成一条可进化的星轨。
           </p>
 
           <div class="hero-actions">
@@ -51,16 +51,18 @@
       </div>
     </section>
 
-    <StarJourneyTimeline :stage="stage" :counts="counts" />
+    <StarJourneyTimeline :stage="stage" :counts="counts" @open-plugin-guide="pluginGuideVisible = true" />
 
-    <PlanetaryFeatureGrid />
+    <PlanetaryFeatureGrid @open-plugin-guide="pluginGuideVisible = true" />
 
     <RecentActivityFeed :loading="loading" :activities="activities" @continue="goItem" />
+
+    <PluginGuideDialog v-model="pluginGuideVisible" :resume-count="counts.resumes" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -71,6 +73,7 @@ import HomeStarfield from '@/components/home/HomeStarfield.vue'
 import StarJourneyTimeline from '@/components/home/StarJourneyTimeline.vue'
 import PlanetaryFeatureGrid from '@/components/home/PlanetaryFeatureGrid.vue'
 import RecentActivityFeed from '@/components/home/RecentActivityFeed.vue'
+import PluginGuideDialog from '@/components/home/PluginGuideDialog.vue'
 import { useHomeJourney, type ActivityItem } from '@/composables/useHomeJourney'
 import { useStarParallax } from '@/composables/useStarParallax'
 
@@ -78,6 +81,7 @@ const router = useRouter()
 const prefersReducedMotion = usePreferredReducedMotion()
 const { loading, stage, counts, activities, primaryCta } = useHomeJourney()
 const { px, py } = useStarParallax(16)
+const pluginGuideVisible = ref(false)
 
 const starPx = computed(() => px.value * 0.5)
 const starPy = computed(() => py.value * 0.5)

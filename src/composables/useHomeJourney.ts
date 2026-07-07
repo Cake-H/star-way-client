@@ -8,6 +8,7 @@ import { computed, onMounted, ref } from 'vue'
 import type { Component } from 'vue'
 import {
   ChatLineSquare,
+  ChromeFilled,
   DocumentAdd,
   FolderOpened,
   MagicStick,
@@ -64,9 +65,9 @@ export function useHomeJourney() {
   onMounted(load)
 
   const stage = computed(() => {
-    if (interviews.value.length) return 3
-    if (mocks.value.length) return 2
-    if (resumes.value.length) return 1
+    if (interviews.value.length) return 4
+    if (mocks.value.length) return 3
+    if (resumes.value.length) return 2
     return 0
   })
 
@@ -215,11 +216,20 @@ export const featureItems = [
     routeName: 'resume-new',
     planetClass: 'planet-silver',
   },
+  {
+    key: 'plugin',
+    title: '简历一键填入',
+    desc: '安装浏览器插件，在网申页一键同步并填入星途简历。',
+    icon: ChromeFilled,
+    routeName: 'plugin-guide',
+    planetClass: 'planet-emerald',
+  },
 ]
 
 export const journeySteps = [
   { label: '智能解析', desc: '上传简历，AI 自动解析为结构化草稿', routeName: 'resume-upload', icon: Upload },
   { label: '简历管理', desc: '查看、编辑、管理你的所有简历', routeName: 'resume-list', icon: FolderOpened },
+  { label: '一键网申', desc: '安装插件，在招聘页一键填入简历', routeName: 'plugin-guide', icon: ChromeFilled },
   { label: '模拟面试', desc: '基于简历生成面试题并练习', routeName: 'mock-interview-list', icon: MagicStick },
   { label: '面试复盘', desc: '记录真实面试，沉淀经验', routeName: 'interview-list', icon: Microphone },
 ]

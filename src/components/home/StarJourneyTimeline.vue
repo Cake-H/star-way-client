@@ -52,7 +52,7 @@
           :key="step.routeName"
           class="journey-node"
           :class="nodeClass(i)"
-          @click="goStep(step.routeName)"
+          @click="goStep(step)"
         >
           <circle
             class="node-bg"
@@ -126,6 +126,10 @@ const props = defineProps<{
   counts: { resumes: number; mocks: number; interviews: number }
 }>()
 
+const emit = defineEmits<{
+  (e: 'open-plugin-guide'): void
+}>()
+
 const router = useRouter()
 const steps = journeySteps
 const totalWidth = 800
@@ -143,8 +147,12 @@ function nodeClass(index: number) {
   return 'future'
 }
 
-function goStep(routeName: string) {
-  router.push({ name: routeName })
+function goStep(step: (typeof steps)[number]) {
+  if (step.routeName === 'plugin-guide') {
+    emit('open-plugin-guide')
+    return
+  }
+  router.push({ name: step.routeName })
 }
 
 const trackLength = computed(() => usableWidth)

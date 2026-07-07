@@ -23,6 +23,10 @@
           </div>
           <div class="head-btns">
             <el-button type="primary" @click="goEdit">编辑</el-button>
+            <el-button @click="openPluginGuide">
+              <el-icon class="btn-icon"><ChromeFilled /></el-icon>
+              去网申填入
+            </el-button>
             <el-button type="danger" plain :loading="deleting" @click="onDelete">删除简历</el-button>
             <el-button @click="goBack">返回列表</el-button>
           </div>
@@ -42,6 +46,8 @@
         <el-button type="primary" @click="goBack">返回列表</el-button>
       </template>
     </el-result>
+
+    <PluginGuideDialog v-model="pluginGuideVisible" :resume-count="1" />
     </div>
   </ResumePageLayout>
 </template>
@@ -49,11 +55,13 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ChromeFilled } from '@element-plus/icons-vue'
 import type { ResumeDetailVO, ResumeParseDraftDto } from '@/api/resumeTypes'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { deleteResume, getResumeDetail } from '@/api/resume'
 import ResumeDraftForm from '@/components/resume/ResumeDraftForm.vue'
 import ResumePageLayout from '@/components/resume/ResumePageLayout.vue'
+import PluginGuideDialog from '@/components/home/PluginGuideDialog.vue'
 import { formatDateTime } from '@/utils/format'
 import { assignFullDraft, emptyDraft } from '@/utils/resumeDraft'
 
@@ -64,6 +72,7 @@ const loading = ref(true)
 const deleting = ref(false)
 const detail = ref<ResumeDetailVO | null>(null)
 const draft = reactive<ResumeParseDraftDto>(emptyDraft())
+const pluginGuideVisible = ref(false)
 
 const resumeId = () => Number(route.params.resumeId)
 
@@ -81,6 +90,10 @@ function goBack() {
 
 function goEdit() {
   router.push({ name: 'resume-edit', params: { resumeId: String(resumeId()) } })
+}
+
+function openPluginGuide() {
+  pluginGuideVisible.value = true
 }
 
 async function onDelete() {
@@ -183,6 +196,11 @@ onMounted(async () => {
 
 .head-btns :deep(.el-button) {
   cursor: pointer;
+}
+
+.btn-icon {
+  margin-right: 4px;
+  vertical-align: middle;
 }
 
 .full-card {

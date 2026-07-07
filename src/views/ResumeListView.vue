@@ -22,11 +22,30 @@
 
     <template v-else>
       <el-empty v-if="!items.length" description="暂无已保存的简历，开启你的第一份星途简历" class="empty">
+        <p class="empty-plugin-hint">
+          <el-icon><ChromeFilled /></el-icon>
+          创建简历后，可在浏览器安装「智能投递助手」插件，在网申页一键填入。
+        </p>
         <el-button type="primary" @click="goUpload">上传第一份简历</el-button>
         <el-button @click="goBlank">从空白创建</el-button>
       </el-empty>
 
-      <el-row v-else :gutter="20" class="grid">
+      <OrbitalCard v-else class="plugin-banner" shadow="never" @click="openPluginGuide">
+        <div class="plugin-banner-content">
+          <div class="plugin-banner-text">
+            <h3 class="plugin-banner-title">
+              <el-icon><ChromeFilled /></el-icon>
+              去网申页一键填入
+            </h3>
+            <p class="plugin-banner-desc">
+              安装浏览器插件后，在招聘网站申请表中打开「智能投递助手」，即可把星途简历自动同步填入。
+            </p>
+          </div>
+          <el-button type="primary" @click.stop="openPluginGuide">查看使用说明</el-button>
+        </div>
+      </OrbitalCard>
+
+      <el-row v-if="items.length" :gutter="20" class="grid">
         <el-col v-for="row in items" :key="row.resumeId" :xs="24" :sm="12" :lg="8">
           <OrbitalCard
             class="resume-card"
@@ -59,24 +78,28 @@
         </el-col>
       </el-row>
     </template>
+
+    <PluginGuideDialog v-model="pluginGuideVisible" :resume-count="items.length" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Clock, DocumentAdd, Upload } from '@element-plus/icons-vue'
+import { ChromeFilled, Clock, DocumentAdd, Upload } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { ResumeListItemVO } from '@/api/resumeTypes'
 import { deleteResume, listMyResumes } from '@/api/resume'
 import { formatDateTime } from '@/utils/format'
 import OrbitalCard from '@/components/OrbitalCard.vue'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
+import PluginGuideDialog from '@/components/home/PluginGuideDialog.vue'
 
 const router = useRouter()
 const loading = ref(true)
 const items = ref<ResumeListItemVO[]>([])
 const deletingId = ref<number | null>(null)
+const pluginGuideVisible = ref(false)
 
 async function load() {
   loading.value = true
@@ -103,6 +126,10 @@ function goDetail(id: number) {
 
 function goEdit(id: number) {
   router.push({ name: 'resume-edit', params: { resumeId: String(id) } })
+}
+
+function openPluginGuide() {
+  pluginGuideVisible.value = true
 }
 
 async function onDelete(row: ResumeListItemVO) {
@@ -169,6 +196,60 @@ async function onDelete(row: ResumeListItemVO) {
 
 .empty {
   padding: 48px 16px;
+}
+
+.empty-plugin-hint {
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--xt-text-secondary);
+}
+
+.plugin-banner {
+  cursor: pointer;
+  background: linear-gradient(100deg, rgba(99, 102, 241, 0.06) 0%, rgba(52, 211, 153, 0.06) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+}
+
+.plugin-banner :deep(.el-card__body) {
+  padding: 18px 22px;
+}
+
+.plugin-banner-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.plugin-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plugin-banner-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--xt-text);
+}
+
+.plugin-banner-title .el-icon {
+  color: var(--xt-primary);
+}
+
+.plugin-banner-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--xt-text-secondary);
 }
 
 .grid {

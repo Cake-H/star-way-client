@@ -46,10 +46,18 @@ import { useRouter } from 'vue-router'
 import { featureItems } from '@/composables/useHomeJourney'
 import OrbitalCard from '@/components/OrbitalCard.vue'
 
+const emit = defineEmits<{
+  (e: 'open-plugin-guide'): void
+}>()
+
 const router = useRouter()
 const items = featureItems
 
 function go(routeName: string) {
+  if (routeName === 'plugin-guide') {
+    emit('open-plugin-guide')
+    return
+  }
   router.push({ name: routeName })
 }
 </script>
@@ -255,6 +263,16 @@ function go(routeName: string) {
 }
 .planet-silver .planet-ring {
   border-color: rgba(148, 163, 184, 0.55);
+}
+
+.planet-emerald .planet {
+  background: radial-gradient(circle at 30% 30%, #34d399, #059669 45%, #064e3b);
+}
+.planet-emerald .planet-glow {
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.45), transparent 70%);
+}
+.planet-emerald .planet-ring {
+  border-color: rgba(52, 211, 153, 0.55);
 }
 
 .featured .tile-visual {
