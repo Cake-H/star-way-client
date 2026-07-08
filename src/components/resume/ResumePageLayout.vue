@@ -26,12 +26,12 @@ provideResumeSectionNav()
 .resume-page-layout {
   display: flex;
   align-items: flex-start;
+  gap: 16px;
 }
 
 .resume-page-main {
   flex: 1;
   min-width: 0;
-  margin-left: 188px;
   display: flex;
   flex-direction: column;
   gap: 20px;

@@ -29,9 +29,10 @@ const nav = useResumeSectionNav()
 
 <style scoped>
 .resume-section-nav {
-  position: fixed;
-  left: 16px;
+  position: sticky;
   top: 85px;
+  align-self: flex-start;
+  flex-shrink: 0;
   z-index: 10;
   width: 180px;
   max-height: calc(100vh - 100px);
@@ -108,6 +109,12 @@ const nav = useResumeSectionNav()
   transform: scale(1.25);
 }
 
+.nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* 窄屏：变成顶部横向导航 */
 @media (max-width: 991px) {
   .resume-section-nav {
@@ -123,13 +130,14 @@ const nav = useResumeSectionNav()
   .nav-list {
     flex-direction: row;
     flex-wrap: wrap;
+    gap: 8px;
   }
 
   .nav-item {
     width: auto;
-    flex: 1 1 auto;
-    min-width: 96px;
-    justify-content: center;
+    flex: 0 1 auto;
+    min-width: auto;
+    justify-content: flex-start;
   }
 }
 

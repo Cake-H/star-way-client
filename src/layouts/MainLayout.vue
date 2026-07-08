@@ -176,6 +176,7 @@ async function onLogout() {
 
 .nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
 }
@@ -187,6 +188,7 @@ async function onLogout() {
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
@@ -291,6 +293,15 @@ async function onLogout() {
 
   .brand-tag {
     display: none;
+  }
+
+  .nav {
+    gap: 4px;
+  }
+
+  .nav-link {
+    padding: 6px 10px;
+    font-size: 13px;
   }
 }
 </style>
