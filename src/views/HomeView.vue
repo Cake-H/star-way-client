@@ -210,6 +210,7 @@ function dotColorClass(index: number) {
   max-width: 840px;
   color: var(--xt-text-on-dark);
   font-size: clamp(30px, 5vw, 42px);
+  white-space: nowrap;
 }
 
 .hero-desc {
