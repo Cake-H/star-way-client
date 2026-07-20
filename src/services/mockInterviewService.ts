@@ -39,8 +39,7 @@ export async function getMockInterviewDetail(mockInterviewId: number): Promise<M
 
 export async function createMockInterview(resumeId: number, title?: string): Promise<number> {
   if (useApi) {
-    const r = await mockApi.createMockInterview({ resumeId, title })
-    return r.mockInterviewId
+    return mockApi.createMockInterview({ resumeId, title })
   }
   return mockInterviewLocalStore.createInterview(resumeId, title)
 }
@@ -51,15 +50,26 @@ export async function deleteMockInterview(mockInterviewId: number) {
 }
 
 export async function updateMockInterviewStatus(mockInterviewId: number, status: MockInterviewStatus) {
-  if (useApi) return mockApi.updateMockInterviewStatus(mockInterviewId, { status })
+  if (useApi) return mockApi.updateMockInterviewStatus(mockInterviewId, status)
   mockInterviewLocalStore.updateStatus(mockInterviewId, status)
+}
+
+function normalizeAnswerRevealed(value: boolean | number): boolean {
+  return typeof value === 'number' ? value === 1 : value
+}
+
+function toProgressPayload(progress: MockInterviewPracticeProgress) {
+  return {
+    currentQuestionId: progress.currentQuestionId,
+    answerRevealed: normalizeAnswerRevealed(progress.answerRevealed) ? 1 : 0,
+  }
 }
 
 export async function savePracticeProgress(
   mockInterviewId: number,
   progress: MockInterviewPracticeProgress,
 ) {
-  if (useApi) return mockApi.updateMockInterviewProgress(mockInterviewId, progress)
+  if (useApi) return mockApi.updateMockInterviewProgress(mockInterviewId, toProgressPayload(progress))
   mockInterviewLocalStore.saveProgress(mockInterviewId, progress)
 }
 
@@ -68,7 +78,12 @@ export async function loadPracticeProgress(
 ): Promise<MockInterviewPracticeProgress | null> {
   if (useApi) {
     const detail = await mockApi.getMockInterviewDetail(mockInterviewId)
-    return detail.practiceProgress ?? null
+    const p = detail.mockInterviewProgress
+    if (!p) return null
+    return {
+      currentQuestionId: p.currentQuestionId,
+      answerRevealed: normalizeAnswerRevealed(p.answerRevealed),
+    }
   }
   return mockInterviewLocalStore.getProgress(mockInterviewId)
 }

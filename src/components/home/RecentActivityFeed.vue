@@ -11,7 +11,7 @@
     </div>
 
     <div v-loading="loading" class="activity-content">
-      <el-empty v-if="!loading && activities.length === 0" description="还没有星轨记录"
+      <el-empty v-if="!loading && activities.length === 0" :description="props.emptyText"
       >
         <StarLaunchButton type="primary" @click="goUpload"
           ><el-icon class="btn-ico"><Upload /></el-icon>上传第一份简历</StarLaunchButton>
@@ -51,10 +51,13 @@ import { formatDateTime } from '@/utils/format'
 import OrbitalCard from '@/components/OrbitalCard.vue'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
 
-defineProps<{
+const props = withDefaults(defineProps<{
   loading: boolean
   activities: ActivityItem[]
-}>()
+  emptyText?: string
+}>(), {
+  emptyText: '还没有星轨记录',
+})
 
 const emit = defineEmits<{
   continue: [item: ActivityItem]

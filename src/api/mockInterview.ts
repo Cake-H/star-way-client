@@ -8,10 +8,8 @@ import { http, unwrapData } from './request'
 import type { ApiEnvelope } from './types'
 import type {
   MockInterviewCreateRequest,
-  MockInterviewCreateResultVO,
   MockInterviewListItemVO,
   MockInterviewUpdateProgressRequest,
-  MockInterviewUpdateStatusRequest,
   MockInterviewVO,
 } from './mockInterviewTypes'
 
@@ -23,7 +21,7 @@ export async function listMockInterviews() {
   return unwrapData(res) ?? []
 }
 
-/** 模拟面试详情；questions 应按 sortOrder 升序返回 */
+/** 模拟面试详情；mockInterviewQuestions 应按 sortOrder 升序返回 */
 export async function getMockInterviewDetail(mockInterviewId: number) {
   const res = await http.get<ApiEnvelope<MockInterviewVO>>(`${MOCK_INTERVIEW_BASE}/${mockInterviewId}`)
   const data = unwrapData(res)
@@ -31,9 +29,9 @@ export async function getMockInterviewDetail(mockInterviewId: number) {
   return data
 }
 
-/** 根据简历生成模拟面试题 */
+/** 根据简历生成模拟面试题；后端直接返回新建模拟面试 ID */
 export async function createMockInterview(body: MockInterviewCreateRequest) {
-  const res = await http.post<ApiEnvelope<MockInterviewCreateResultVO>>(MOCK_INTERVIEW_BASE, body, {
+  const res = await http.post<ApiEnvelope<number>>(MOCK_INTERVIEW_BASE, body, {
     timeout: 120_000,
   })
   const data = unwrapData(res)
@@ -43,15 +41,16 @@ export async function createMockInterview(body: MockInterviewCreateRequest) {
 
 /** 删除模拟面试 */
 export async function deleteMockInterview(mockInterviewId: number) {
-  await http.delete<ApiEnvelope<string>>(`${MOCK_INTERVIEW_BASE}/${mockInterviewId}`)
+  await http.delete<ApiEnvelope<unknown>>(`${MOCK_INTERVIEW_BASE}/${mockInterviewId}`)
 }
 
-/** 更新模拟面试状态 */
-export async function updateMockInterviewStatus(
-  mockInterviewId: number,
-  body: MockInterviewUpdateStatusRequest,
-) {
-  await http.put<ApiEnvelope<string>>(`${MOCK_INTERVIEW_BASE}/${mockInterviewId}/status`, body)
+/** 更新模拟面试状态；后端使用 query 参数 */
+export async function updateMockInterviewStatus(mockInterviewId: number, status: string) {
+  await http.put<ApiEnvelope<unknown>>(
+    `${MOCK_INTERVIEW_BASE}/${mockInterviewId}/status`,
+    null,
+    { params: { status } },
+  )
 }
 
 /** 保存练习进度 */
@@ -59,5 +58,5 @@ export async function updateMockInterviewProgress(
   mockInterviewId: number,
   body: MockInterviewUpdateProgressRequest,
 ) {
-  await http.put<ApiEnvelope<string>>(`${MOCK_INTERVIEW_BASE}/${mockInterviewId}/progress`, body)
+  await http.put<ApiEnvelope<unknown>>(`${MOCK_INTERVIEW_BASE}/${mockInterviewId}/progress`, body)
 }

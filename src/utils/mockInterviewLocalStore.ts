@@ -45,7 +45,7 @@ function writeStore(store: LocalStore) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
 }
 
-function generateMockQuestions(mockInterviewId: number, startId: number): MockInterviewQuestionVO[] {
+function generateMockQuestions(sessionId: number, startId: number): MockInterviewQuestionVO[] {
   const questions: { question: string; referenceAnswer: string; answerEvaluation: string }[] = [
     {
       question: '请用 1-2 分钟简单介绍一下自己，重点说明与目标岗位最匹配的经历。',
@@ -80,8 +80,8 @@ function generateMockQuestions(mockInterviewId: number, startId: number): MockIn
   ]
 
   return questions.map((q, i) => ({
-    mockInterviewQuestionId: startId + i,
-    mockInterviewId,
+    id: startId + i,
+    sessionId,
     sortOrder: i + 1,
     question: q.question,
     referenceAnswer: q.referenceAnswer,
@@ -113,7 +113,7 @@ export const mockInterviewLocalStore = {
     if (!it) return undefined
     return {
       ...it,
-      questions: [...it.questions].sort((a, b) => a.sortOrder - b.sortOrder),
+      mockInterviewQuestions: [...it.mockInterviewQuestions].sort((a, b) => a.sortOrder - b.sortOrder),
     }
   },
 
@@ -131,8 +131,8 @@ export const mockInterviewLocalStore = {
       questionCount: questions.length,
       status: 'GENERATED',
       updatedAt: nowIso(),
-      practiceProgress: null,
-      questions,
+      mockInterviewProgress: null,
+      mockInterviewQuestions: questions,
     }
 
     store.interviews.push(interview)
@@ -159,13 +159,13 @@ export const mockInterviewLocalStore = {
     const store = readStore()
     const it = store.interviews.find((x) => x.mockInterviewId === mockInterviewId)
     if (!it) return
-    it.practiceProgress = { ...progress }
+    it.mockInterviewProgress = { ...progress }
     it.updatedAt = nowIso()
     writeStore(store)
   },
 
   getProgress(mockInterviewId: number): MockInterviewPracticeProgress | null {
     const it = this.getInterview(mockInterviewId)
-    return it?.practiceProgress ?? null
+    return it?.mockInterviewProgress ?? null
   },
 }

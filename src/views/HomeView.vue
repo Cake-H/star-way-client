@@ -1,7 +1,13 @@
 <template>
   <div ref="homeRoot" class="home">
     <section class="home-hero">
-      <HomeStarfield class="hero-particles" :parallax-x="starPx" :parallax-y="starPy" />
+      <HeroCanvas
+      class="hero-particles"
+      :visual-el="visualRef"
+      :parallax-x="starPx"
+      :parallax-y="starPy"
+      :reduced-motion="prefersReducedMotion === 'reduce'"
+    />
 
       <div class="hero-grid">
         <div class="hero-copy constellation-reveal">
@@ -19,7 +25,7 @@
               @click="goCta"
             >
               <el-icon class="cta-ico"><component :is="primaryCta.icon" /></el-icon>
-              {{ primaryCta.label }}
+              {{ isGuest ? '登录，开启星途' : primaryCta.label }}
             </StarLaunchButton>
 
             <el-button
@@ -34,18 +40,9 @@
           </div>
         </div>
 
-        <div class="hero-visual" :style="visualStyle" aria-hidden="true">
-          <div class="orbit-ring orbit-ring--outer" />
-          <div class="orbit-ring orbit-ring--mid" />
-          <div class="orbit-ring orbit-ring--inner" />
-          <div class="orbit-pulse" />
+        <div ref="visualRef" class="hero-visual" :style="visualStyle" aria-hidden="true">
           <div class="logo-wrapper">
             <StarLogo size="lg" :glow="true" class="hero-logo" />
-          </div>
-          <div class="orbit-dots">
-            <div v-for="n in 6" :key="n" class="dot-arm" :class="`dot-arm-${n}`">
-              <span class="dot" :class="dotColorClass(n)" />
-            </div>
           </div>
         </div>
       </div>
@@ -55,7 +52,12 @@
 
     <PlanetaryFeatureGrid @open-plugin-guide="pluginGuideVisible = true" />
 
-    <RecentActivityFeed :loading="loading" :activities="activities" @continue="goItem" />
+    <RecentActivityFeed
+      :loading="loading"
+      :activities="activities"
+      :empty-text="isGuest ? '登录后查看你的星轨记录' : '还没有星轨记录'"
+      @continue="goItem"
+    />
 
     <PluginGuideDialog v-model="pluginGuideVisible" :resume-count="counts.resumes" />
   </div>
@@ -69,19 +71,22 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { usePreferredReducedMotion } from '@vueuse/core'
 import StarLogo from '@/components/StarLogo.vue'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
-import HomeStarfield from '@/components/home/HomeStarfield.vue'
+import HeroCanvas from '@/components/home/HeroCanvas.vue'
 import StarJourneyTimeline from '@/components/home/StarJourneyTimeline.vue'
 import PlanetaryFeatureGrid from '@/components/home/PlanetaryFeatureGrid.vue'
 import RecentActivityFeed from '@/components/home/RecentActivityFeed.vue'
 import PluginGuideDialog from '@/components/home/PluginGuideDialog.vue'
 import { useHomeJourney, type ActivityItem } from '@/composables/useHomeJourney'
 import { useStarParallax } from '@/composables/useStarParallax'
+import { useLoginPrompt } from '@/composables/useLoginPrompt'
 
 const router = useRouter()
 const prefersReducedMotion = usePreferredReducedMotion()
-const { loading, stage, counts, activities, primaryCta } = useHomeJourney()
+const { loading, stage, counts, activities, primaryCta, isGuest } = useHomeJourney()
 const { px, py } = useStarParallax(16)
+const { promptLogin } = useLoginPrompt()
 const pluginGuideVisible = ref(false)
+const visualRef = ref<HTMLDivElement>()
 
 const starPx = computed(() => px.value * 0.5)
 const starPy = computed(() => py.value * 0.5)
@@ -129,10 +134,18 @@ onUnmounted(() => {
 })
 
 function go(routeName: string) {
+  if (isGuest.value) {
+    promptLogin('/resume')
+    return
+  }
   router.push({ name: routeName })
 }
 
 function goCta() {
+  if (isGuest.value) {
+    promptLogin('/')
+    return
+  }
   router.push({
     name: primaryCta.value.routeName,
     params: primaryCta.value.routeParams,
@@ -144,11 +157,6 @@ function goItem(item: ActivityItem) {
     name: item.routeName,
     params: item.routeParams,
   })
-}
-
-function dotColorClass(index: number) {
-  const classes = ['dot-indigo', 'dot-cyan', 'dot-rose', 'dot-amber', 'dot-silver', 'dot-indigo']
-  return classes[index - 1] || 'dot-indigo'
 }
 </script>
 
@@ -278,42 +286,6 @@ function dotColorClass(index: number) {
   will-change: transform;
 }
 
-.orbit-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px dashed rgba(255, 255, 255, 0.35);
-}
-
-.orbit-ring--outer {
-  width: 280px;
-  height: 280px;
-  animation: spin 28s linear infinite;
-}
-
-.orbit-ring--mid {
-  width: 220px;
-  height: 220px;
-  border-style: solid;
-  border-color: rgba(255, 255, 255, 0.22);
-  animation: spin-reverse 20s linear infinite;
-}
-
-.orbit-ring--inner {
-  width: 160px;
-  height: 160px;
-  border-color: rgba(255, 255, 255, 0.16);
-  animation: spin 14s linear infinite;
-}
-
-.orbit-pulse {
-  position: absolute;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.32), transparent 70%);
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
 .logo-wrapper {
   position: relative;
   z-index: 2;
@@ -322,89 +294,6 @@ function dotColorClass(index: number) {
 
 .hero-logo {
   animation: logo-float 6s ease-in-out infinite;
-}
-
-.orbit-dots {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.dot-arm {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 2px;
-  height: var(--orbit-radius);
-  margin-left: -1px;
-  transform-origin: top center;
-  transform: rotate(var(--start-angle));
-  animation: orbit-rotate var(--duration) linear infinite;
-  animation-delay: var(--delay);
-}
-
-.dot {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.7);
-}
-
-.dot-indigo {
-  background: #c7d2fe;
-  box-shadow: 0 0 16px 3px rgba(129, 140, 248, 0.7);
-}
-
-.dot-cyan {
-  background: #a5f3fc;
-  box-shadow: 0 0 16px 3px rgba(34, 211, 238, 0.7);
-}
-
-.dot-rose {
-  background: #fda4af;
-  box-shadow: 0 0 16px 3px rgba(251, 113, 133, 0.7);
-}
-
-.dot-amber {
-  background: #fde68a;
-  box-shadow: 0 0 16px 3px rgba(251, 191, 36, 0.7);
-}
-
-.dot-silver {
-  background: #e2e8f0;
-  box-shadow: 0 0 16px 3px rgba(148, 163, 184, 0.7);
-}
-
-.dot-arm-1 { --orbit-radius: 140px; --duration: 16s; --delay: 0s; --start-angle: 0deg; }
-.dot-arm-2 { --orbit-radius: 140px; --duration: 22s; --delay: -8s; --start-angle: 120deg; }
-.dot-arm-3 { --orbit-radius: 110px; --duration: 14s; --delay: -3s; --start-angle: 60deg; }
-.dot-arm-4 { --orbit-radius: 110px; --duration: 18s; --delay: -10s; --start-angle: 180deg; }
-.dot-arm-5 { --orbit-radius: 80px; --duration: 12s; --delay: -6s; --start-angle: 240deg; }
-.dot-arm-6 { --orbit-radius: 80px; --duration: 15s; --delay: -12s; --start-angle: 300deg; }
-
-@keyframes orbit-rotate {
-  from { transform: rotate(var(--start-angle)); }
-  to { transform: rotate(calc(var(--start-angle) + 360deg)); }
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes spin-reverse {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { transform: scale(1); opacity: 0.7; }
-  50% { transform: scale(1.15); opacity: 0.35; }
 }
 
 @keyframes logo-float {
@@ -446,49 +335,14 @@ function dotColorClass(index: number) {
     min-height: 200px;
   }
 
-  .orbit-ring--outer {
-    width: 200px;
-    height: 200px;
-  }
-
-  .orbit-ring--mid {
-    width: 155px;
-    height: 155px;
-  }
-
-  .orbit-ring--inner {
-    width: 110px;
-    height: 110px;
-  }
-
-  .orbit-pulse {
-    width: 110px;
-    height: 110px;
-  }
-
   .logo-wrapper {
     transform: scale(1.25);
-  }
-
-  .dot-arm-1 { --orbit-radius: 100px; }
-  .dot-arm-2 { --orbit-radius: 100px; }
-  .dot-arm-3 { --orbit-radius: 77px; }
-  .dot-arm-4 { --orbit-radius: 77px; }
-  .dot-arm-5 { --orbit-radius: 55px; }
-  .dot-arm-6 { --orbit-radius: 55px; }
-
-  .dot {
-    width: 9px;
-    height: 9px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .orbit-ring,
-  .orbit-ring-secondary,
   .constellation-reveal > *,
-  .hero-logo,
-  .dot-arm {
+  .hero-logo {
     animation: none;
   }
 
@@ -497,8 +351,7 @@ function dotColorClass(index: number) {
     transform: none;
   }
 
-  .hero-logo,
-  .dot-arm {
+  .hero-logo {
     transform: none;
   }
 }

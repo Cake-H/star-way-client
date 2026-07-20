@@ -32,10 +32,10 @@ http.interceptors.request.use((config) => {
   return config
 })
 
-/** 与后端 ResponseDTO 一致：优先 code === 0，其次 ok / success */
+/** 与后端 ResponseDTO 一致：优先 code === 0 / 200，其次 ok / success */
 function isBizSuccess(body: ApiEnvelope): boolean {
   const c = body.code
-  if (c !== undefined) return c === 0
+  if (c !== undefined) return c === 0 || c === 200
   if (typeof body.ok === 'boolean') return body.ok
   if (typeof body.success === 'boolean') return body.success
   return true
@@ -45,10 +45,12 @@ function pickMessage(body: ApiEnvelope, fallback: string): string {
   return body.message || body.msg || fallback
 }
 
-function handleUnauthorized() {
+function handleUnauthorized(hadToken: boolean) {
   clearSession()
   import('@/router').then(({ router }) => {
     if (router.currentRoute.value.name === 'login') return
+    // 游客在公开页面收到 401：原地不动，不强制跳转
+    if (!hadToken && router.currentRoute.value.meta.public) return
     const redirect = router.currentRoute.value.fullPath
     router.replace({ name: 'login', query: { redirect } })
   })
@@ -72,8 +74,11 @@ http.interceptors.response.use(
   },
   (err: AxiosError<ApiEnvelope | { message?: string }>) => {
     if (err.response?.status === 401) {
-      ElMessage.error('登录已失效，请重新登录')
-      handleUnauthorized()
+      const hadToken = !!getToken()
+      if (hadToken) {
+        ElMessage.error('登录已失效，请重新登录')
+      }
+      handleUnauthorized(hadToken)
       return Promise.reject(err)
     }
     const data = err.response?.data

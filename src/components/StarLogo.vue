@@ -10,48 +10,45 @@
     aria-hidden="true"
   >
     <defs>
-      <linearGradient id="xt-star-grad" x1="8" y1="4" x2="40" y2="44" gradientUnits="userSpaceOnUse">
-        <stop stop-color="#818CF8" />
-        <stop offset="0.5" stop-color="#6366F1" />
-        <stop offset="1" stop-color="#4338CA" />
+      <linearGradient id="star-grad" x1="12" y1="4" x2="36" y2="44" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#F0F4FF" />
+        <stop offset="0.35" stop-color="#A5B4FC" />
+        <stop offset="0.7" stop-color="#6366F1" />
+        <stop offset="1" stop-color="#312E81" />
       </linearGradient>
-      <linearGradient id="xt-trail-grad" x1="0" y1="0" x2="1" y2="0">
-        <stop stop-color="rgba(251,191,36,0)" />
-        <stop offset="0.4" stop-color="rgba(251,191,36,0.85)" />
-        <stop offset="1" stop-color="rgba(255,255,255,0.95)" />
+      <linearGradient id="arc-grad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="rgba(165,180,252,0.6)" />
+        <stop offset="0.55" stop-color="rgba(99,102,241,0.2)" />
+        <stop offset="1" stop-color="rgba(99,102,241,0)" />
       </linearGradient>
     </defs>
-    <!-- 流星尾迹 -->
+
+    <!-- 单道轨道弧线 -->
     <path
-      class="meteor-trail"
-      d="M6 14 C14 16, 22 18, 34 22"
-      stroke="url(#xt-trail-grad)"
+      d="M7 30 Q16 42, 34 38"
+      stroke="url(#arc-grad)"
+      stroke-width="1.4"
+      stroke-linecap="round"
+      fill="none"
+    />
+
+    <!-- 主星：修长四芒，底部延伸为流星尾 -->
+    <path
+      d="M24 5 C25.5 15, 33 22.5, 41 24 C33 25.5, 26 31, 24 43 C22 31, 15 25.5, 7 24 C15 22.5, 22.5 15, 24 5 Z"
+      fill="url(#star-grad)"
+      stroke="rgba(255,255,255,0.45)"
+      stroke-width="0.7"
+      stroke-linejoin="round"
+    />
+
+    <!-- 细腻高光 -->
+    <path
+      d="M20 14 Q22 12, 24 12"
+      stroke="rgba(255,255,255,0.6)"
       stroke-width="1.5"
       stroke-linecap="round"
       fill="none"
-      opacity="0.75"
     />
-    <!-- 星座连线 -->
-    <path
-      d="M12 32 L20 24 L28 28 L36 18"
-      stroke="rgba(129,140,248,0.45)"
-      stroke-width="1"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      fill="none"
-    />
-    <!-- 小星点 -->
-    <circle cx="12" cy="32" r="1.5" fill="#A5B4FC" />
-    <circle cx="20" cy="24" r="1.2" fill="#C7D2FE" />
-    <circle cx="28" cy="28" r="1.4" fill="#A5B4FC" />
-    <!-- 主星 -->
-    <path
-      d="M24 6 L26.8 16.2 L37 16.2 L28.6 22.4 L31.4 32.6 L24 26.4 L16.6 32.6 L19.4 22.4 L11 16.2 L21.2 16.2 Z"
-      fill="url(#xt-star-grad)"
-      stroke="rgba(255,255,255,0.35)"
-      stroke-width="0.6"
-    />
-    <circle cx="36" cy="18" r="2" fill="#FBBF24" opacity="0.9" />
   </svg>
 </template>
 
@@ -76,27 +73,12 @@ const dim = computed(() => ({ sm: 32, md: 40, lg: 48 }[props.size]))
 }
 
 .star-logo.with-glow {
-  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.45));
-}
-
-.meteor-trail {
-  animation: trail-pulse 4s ease-in-out infinite;
-}
-
-@keyframes trail-pulse {
-  0%,
-  100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 0.85;
-  }
+  filter: drop-shadow(0 0 14px rgba(99, 102, 241, 0.55));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .meteor-trail {
-    animation: none;
-    opacity: 0.6;
+  .star-logo {
+    filter: none;
   }
 }
 </style>

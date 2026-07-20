@@ -20,7 +20,7 @@
           <p class="interview-sub">{{ interview.questionCount }} 题 · 第 {{ currentIndex + 1 }} 题</p>
         </div>
         <OrbitProgress
-          :steps="interview.questions.length"
+          :steps="interview.mockInterviewQuestions.length"
           :active="currentIndex"
           size="md"
           :labels="progressLabels"
@@ -42,7 +42,7 @@
           <el-button :disabled="currentIndex <= 0" size="large" @click="prev"
             ><el-icon><ArrowLeft /></el-icon>上一题
           </el-button>
-          <el-button :disabled="currentIndex >= interview.questions.length - 1" size="large" @click="next"
+          <el-button :disabled="currentIndex >= interview.mockInterviewQuestions.length - 1" size="large" @click="next"
             >下一题<el-icon><ArrowRight /></el-icon>
           </el-button>
         </el-button-group>
@@ -89,10 +89,10 @@ const answerRevealed = ref(false)
 const finishing = ref(false)
 
 const mockInterviewId = computed(() => Number(route.params.mockInterviewId))
-const currentQuestion = computed(() => interview.value?.questions[currentIndex.value])
-const isLast = computed(() => currentIndex.value >= (interview.value?.questions.length ?? 1) - 1)
+const currentQuestion = computed(() => interview.value?.mockInterviewQuestions[currentIndex.value])
+const isLast = computed(() => currentIndex.value >= (interview.value?.mockInterviewQuestions.length ?? 1) - 1)
 const progressLabels = computed(() =>
-  interview.value ? interview.value.questions.map((_, i) => `${i + 1}`) : [],
+  interview.value ? interview.value.mockInterviewQuestions.map((_, i) => `${i + 1}`) : [],
 )
 
 let hasUnsavedProgress = false
@@ -107,9 +107,9 @@ async function load() {
 
     const saved = await loadPracticeProgress(id)
     if (saved) {
-      const idx = detail.questions.findIndex((q) => q.mockInterviewQuestionId === saved.currentQuestionId)
+      const idx = detail.mockInterviewQuestions.findIndex((q) => q.id === saved.currentQuestionId)
       currentIndex.value = idx >= 0 ? idx : 0
-      answerRevealed.value = saved.answerRevealed
+      answerRevealed.value = Boolean(saved.answerRevealed)
     } else {
       currentIndex.value = 0
       answerRevealed.value = false
@@ -131,7 +131,7 @@ onMounted(load)
 async function persistProgress() {
   if (!interview.value || !currentQuestion.value) return
   const progress: MockInterviewPracticeProgress = {
-    currentQuestionId: currentQuestion.value.mockInterviewQuestionId,
+    currentQuestionId: currentQuestion.value.id,
     answerRevealed: answerRevealed.value,
   }
   await savePracticeProgress(interview.value.mockInterviewId, progress)
@@ -150,7 +150,7 @@ function prev() {
 }
 
 function next() {
-  if (!interview.value || currentIndex.value >= interview.value.questions.length - 1) return
+  if (!interview.value || currentIndex.value >= interview.value.mockInterviewQuestions.length - 1) return
   currentIndex.value++
   answerRevealed.value = false
   persistProgress()

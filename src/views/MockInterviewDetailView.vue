@@ -32,8 +32,8 @@
 
       <div class="questions-list">
         <MockInterviewQuestionCard
-          v-for="(q, i) in interview.questions"
-          :key="q.mockInterviewQuestionId"
+          v-for="(q, i) in interview.mockInterviewQuestions"
+          :key="q.id"
           :question="q"
           :index="i + 1"
           :practice-mode="false"

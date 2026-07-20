@@ -1,6 +1,6 @@
-/** 与 Spring ResponseDTO 对齐（ida-app-server） */
+/** 与 Spring ResponseDTO 对齐（ida-app-server）；code 为 0 或 200 均表示成功 */
 export interface ApiEnvelope<T = unknown> {
-  /** 0 表示成功 */
+  /** 0 或 200 表示成功 */
   code?: number
   ok?: boolean
   success?: boolean

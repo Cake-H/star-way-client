@@ -50,11 +50,17 @@
           <router-link class="nav-link" to="/mock-interview" :class="{ active: isMockInterviewSection }">模拟面试</router-link>
         </nav>
       </div>
-      <el-button class="logout-btn" type="primary" plain @click="onLogout">退出登录</el-button>
+      <el-button v-if="isLoggedIn" class="logout-btn" type="primary" plain @click="onLogout">退出登录</el-button>
+      <el-button v-else class="logout-btn" type="primary" plain @click="goLogin">登录/注册</el-button>
     </header>
     <main class="content xt-main-content" :class="{ 'content--wide': isHome }">
       <router-view />
     </main>
+
+    <LoginRequiredDialog
+      v-model="loginPromptVisible"
+      :redirect="loginPromptRedirect"
+    />
   </div>
 </template>
 
@@ -65,15 +71,20 @@ import { ElMessage } from 'element-plus'
 import { Share } from '@element-plus/icons-vue'
 import StarLogo from '@/components/StarLogo.vue'
 import StarryBackground from '@/components/StarryBackground.vue'
+import LoginRequiredDialog from '@/components/LoginRequiredDialog.vue'
 import { usePWA } from '@/composables/usePWA'
 import { usePWAInstall } from '@/composables/usePWAInstall'
+import { useLoginPrompt } from '@/composables/useLoginPrompt'
 import { logout as logoutApi } from '@/api/auth'
-import { clearSession } from '@/auth/session'
+import { authToken, clearSession } from '@/auth/session'
 
 const router = useRouter()
 const route = useRoute()
 const { needRefresh, acceptUpdate, dismissUpdate } = usePWA()
 const { isInstallable, isIOS, install: installPWA, dismiss: dismissInstall } = usePWAInstall()
+const { loginPromptVisible, loginPromptRedirect } = useLoginPrompt()
+
+const isLoggedIn = computed(() => !!authToken.value)
 
 const isStandalone = computed(() => {
   if (typeof window === 'undefined') return false
@@ -104,6 +115,10 @@ async function onLogout() {
       ElMessage.success('已退出登录')
     }
   }
+}
+
+function goLogin() {
+  router.push({ name: 'login', query: { redirect: route.fullPath } })
 }
 </script>
 

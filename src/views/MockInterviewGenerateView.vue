@@ -1,5 +1,5 @@
 <template>
-  <div class="mock-interview-generate-page">
+  <div v-if="!generating" class="mock-interview-generate-page">
     <el-page-header class="page-head" title=" " @back="goBack">
       <template #content>
         <span class="page-title">新建模拟面试</span>
@@ -56,6 +56,13 @@
       </StarLaunchButton>
     </div>
   </div>
+
+  <StarWaitingModule
+    v-else
+    title="AI 正在根据简历生成针对性面试题..."
+    :completed="generationCompleted"
+    @done="onGenerationDone"
+  />
 </template>
 
 <script setup lang="ts">
@@ -66,12 +73,15 @@ import { ElMessage } from 'element-plus'
 import { listResumesForGeneration, createMockInterview } from '@/services/mockInterviewService'
 import OrbitalCard from '@/components/OrbitalCard.vue'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
+import StarWaitingModule from '@/components/StarWaitingModule.vue'
 
 const router = useRouter()
 const resumes = ref<{ resumeId: number; title: string }[]>([])
 const loadingResumes = ref(true)
 const selectedResumeId = ref<number | null>(null)
 const generating = ref(false)
+const generationCompleted = ref(false)
+const generatedId = ref<number | null>(null)
 
 onMounted(async () => {
   try {
@@ -98,14 +108,21 @@ function goBlank() {
 async function onGenerate() {
   if (selectedResumeId.value == null) return
   generating.value = true
+  generationCompleted.value = false
+  generatedId.value = null
   try {
-    const id = await createMockInterview(selectedResumeId.value)
-    ElMessage.success('已生成模拟面试题，进入练习模式')
-    router.push({ name: 'mock-interview-practice', params: { mockInterviewId: String(id) } })
+    generatedId.value = await createMockInterview(selectedResumeId.value)
+    generationCompleted.value = true
   } catch (e: unknown) {
     generating.value = false
     if (e instanceof Error) ElMessage.error(e.message)
   }
+}
+
+function onGenerationDone() {
+  if (generatedId.value == null) return
+  ElMessage.success('已生成模拟面试题，进入练习模式')
+  router.push({ name: 'mock-interview-practice', params: { mockInterviewId: String(generatedId.value) } })
 }
 </script>
 

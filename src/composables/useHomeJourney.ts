@@ -4,7 +4,7 @@
  * 并行加载简历、面试复盘、模拟面试三类数据，
  * 计算旅程阶段，并合并出「最近星轨」活动流与动态主 CTA。
  */
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import type { Component } from 'vue'
 import {
   ChatLineSquare,
@@ -18,6 +18,7 @@ import {
 import { listMyResumes } from '@/api/resume'
 import { listInterviewSessions } from '@/services/interviewService'
 import { listMockInterviews } from '@/services/mockInterviewService'
+import { authToken } from '@/auth/session'
 import type { MockInterviewStatus } from '@/api/mockInterviewTypes'
 
 export type ActivityType = 'resume' | 'interview' | 'mock'
@@ -46,7 +47,13 @@ export function useHomeJourney() {
   const interviews = ref<Awaited<ReturnType<typeof listInterviewSessions>>>([])
   const mocks = ref<Awaited<ReturnType<typeof listMockInterviews>>>([])
 
+  const isGuest = computed(() => !authToken.value)
+
   async function load() {
+    if (isGuest.value) {
+      loading.value = false
+      return
+    }
     loading.value = true
     try {
       const [r, i, m] = await Promise.all([
@@ -63,6 +70,10 @@ export function useHomeJourney() {
   }
 
   onMounted(load)
+
+  watch(authToken, (token) => {
+    if (token) load()
+  })
 
   const stage = computed(() => {
     if (interviews.value.length) return 4
@@ -170,6 +181,7 @@ export function useHomeJourney() {
     activities,
     latestActivity,
     primaryCta,
+    isGuest,
     reload: load,
   }
 }
