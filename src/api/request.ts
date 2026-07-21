@@ -8,6 +8,9 @@ function getToken(): string | null {
   return localStorage.getItem(AUTH_TOKEN_KEY)
 }
 
+/** AI 额度不足错误码，由全局统一处理 */
+export const QUOTA_INSUFFICIENT_CODE = 30200
+
 export const http = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30_000,
@@ -65,6 +68,13 @@ http.interceptors.response.use(
     if (typeof body === 'object' && ('code' in body || 'ok' in body || 'success' in body)) {
       if (!isBizSuccess(body)) {
         const msg = pickMessage(body, '请求失败')
+        // AI 额度不足：全局统一弹充值引导，不再各页面单独处理
+        if (body.code === QUOTA_INSUFFICIENT_CODE) {
+          import('@/composables/useQuotaPrompt').then(({ useQuotaPrompt }) => {
+            useQuotaPrompt().promptQuota()
+          })
+          return Promise.reject(new Error(msg))
+        }
         ElMessage.error(msg)
         return Promise.reject(new Error(msg))
       }

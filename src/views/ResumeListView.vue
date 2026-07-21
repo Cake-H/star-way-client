@@ -164,6 +164,7 @@ async function onDelete(row: ResumeListItemVO) {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  overflow-x: clip;
 }
 
 .list-eyebrow {

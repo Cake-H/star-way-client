@@ -14,95 +14,79 @@
       </p>
     </div>
 
-    <div class="orbit-stepper">
-      <OrbitProgress :steps="3" :active="step" size="md" :labels="['上传', '解析', '保存']" />
-    </div>
-
     <el-steps :active="step" align-center finish-status="success" class="steps">
       <el-step title="上传简历" description="仅支持 .pdf / .docx" />
       <el-step title="智能解析" description="上传文件并由 AI 抽取简历信息" />
       <el-step title="核对并保存" description="核对草稿后可保存，支持后续更新" />
     </el-steps>
 
-    <el-card class="card upload-card" shadow="never">
-      <template #header>
-        <div class="card-head">
-          <span>上传简历原件</span>
-          <el-tag v-if="lastFileName" type="success" effect="plain">{{ lastFileName }}</el-tag>
-        </div>
-      </template>
+    <!-- 解析中：隐藏上传卡片，直接展示星空等待模块 -->
+    <div v-if="parsing" class="waiting-wrap">
+      <StarWaitingModule
+        title="AI 正在解析简历并生成结构化草稿"
+        :completed="parseCompleted"
+        :estimated-seconds="60"
+        @done="onWaitingDone"
+      />
+    </div>
 
-      <div class="upload-body">
-        <transition name="parse-fade">
-          <div v-if="parsing" class="parse-overlay" role="status" aria-live="polite">
-            <div class="parse-overlay-card">
-              <div class="parse-spin" aria-hidden="true"></div>
-              <p class="parse-title">正在智能解析中，请稍候</p>
-              <p class="parse-desc">
-                文件已提交，正在上传至云端并由大模型抽取结构化信息。此过程通常需要数十秒至数分钟，取决于文件大小与服务负载，
-                <strong>属于正常等待</strong>，并非页面卡死。请勿关闭或刷新本页。
-              </p>
-              <el-progress
-                class="parse-progress"
-                :percentage="parseProgress"
-                :stroke-width="12"
-                striped
-                striped-flow
-                :duration="2.5"
-              />
-              <p class="parse-foot">
-                进度为预估进度，仅作参考；若超过十分钟仍无结果，请检查网络后重试。
-              </p>
-            </div>
+    <template v-else>
+      <el-card class="card upload-card" shadow="never">
+        <template #header>
+          <div class="card-head">
+            <span>上传简历原件</span>
+            <el-tag v-if="lastFileName" type="success" effect="plain">{{ lastFileName }}</el-tag>
           </div>
-        </transition>
+        </template>
 
-        <el-upload
-          class="uploader"
-          drag
-          :show-file-list="false"
-          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          :before-upload="beforeUpload"
-          :http-request="onCustomUpload"
-          :disabled="parsing"
-        >
-          <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
-          <div class="el-upload__text">将文件拖到此处，或 <em>点击选择</em></div>
-          <template #tip>
-            <div class="el-upload__tip">
-              仅支持 <b>.pdf</b> 与 <b>.docx</b>，大小不超过 <b>{{ maxMb }}MB</b>。解析耗时取决于文件大小与模型负载，请耐心等待。
-            </div>
-          </template>
-        </el-upload>
+        <div class="upload-body">
+          <el-upload
+            class="uploader"
+            drag
+            :show-file-list="false"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            :before-upload="beforeUpload"
+            :http-request="onCustomUpload"
+            :disabled="parsing"
+          >
+            <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+            <div class="el-upload__text">将文件拖到此处，或 <em>点击选择</em></div>
+            <template #tip>
+              <div class="el-upload__tip">
+                仅支持 <b>.pdf</b> 与 <b>.docx</b>，大小不超过 <b>{{ maxMb }}MB</b>。解析耗时取决于文件大小与模型负载，请耐心等待。
+              </div>
+            </template>
+          </el-upload>
 
-        <div v-if="parseResult" class="parse-meta">
-          <el-alert
-            title="解析完成"
-            type="success"
-            show-icon
-            :closable="false"
-            description="已生成结构化草稿，请核对下方内容并保存。"
-          />
-
-          <div v-if="parseResult.parseNotes?.length" class="notes">
-            <div class="notes-title">解析提示（非错误）</div>
+          <div v-if="parseResult" class="parse-meta">
             <el-alert
-              v-for="(n, i) in parseResult.parseNotes"
-              :key="i"
-              :title="n"
-              type="warning"
+              title="解析完成"
+              type="success"
               show-icon
               :closable="false"
-              class="note-line"
+              description="已生成结构化草稿，请核对下方内容并保存。"
             />
+
+            <div v-if="parseResult.parseNotes?.length" class="notes">
+              <div class="notes-title">解析提示（非错误）</div>
+              <el-alert
+                v-for="(n, i) in parseResult.parseNotes"
+                :key="i"
+                :title="n"
+                type="warning"
+                show-icon
+                :closable="false"
+                class="note-line"
+              />
+            </div>
+          </div>
+
+          <div v-if="parseResult" class="actions">
+            <el-button @click="resetAll">重新上传</el-button>
           </div>
         </div>
-
-        <div v-if="parseResult" class="actions">
-          <el-button @click="resetAll">重新上传</el-button>
-        </div>
-      </div>
-    </el-card>
+      </el-card>
+    </template>
 
     <template v-if="parseResult">
       <ResumeSaveToolbar
@@ -133,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { UploadFilled } from '@element-plus/icons-vue'
 import type { UploadRequestOptions } from 'element-plus'
@@ -144,16 +128,15 @@ import { getResumeSaveValidationErrors } from '@/utils/resumeValidation'
 import ResumeDraftForm from '@/components/resume/ResumeDraftForm.vue'
 import ResumePageLayout from '@/components/resume/ResumePageLayout.vue'
 import ResumeSaveToolbar from '@/components/resume/ResumeSaveToolbar.vue'
-import OrbitProgress from '@/components/OrbitProgress.vue'
 import MeteorLine from '@/components/MeteorLine.vue'
+import StarWaitingModule from '@/components/StarWaitingModule.vue'
 import { ElMessage } from 'element-plus'
 
 const maxMb = 20
 const maxBytes = maxMb * 1024 * 1024
 
 const parsing = ref(false)
-const parseProgress = ref(0)
-let parseProgressTimer: ReturnType<typeof setInterval> | null = null
+const parseCompleted = ref(false)
 
 const router = useRouter()
 
@@ -225,7 +208,7 @@ async function onSaveDraft() {
 function triggerMeteor() {
   if (meteorTimer) clearTimeout(meteorTimer)
   meteorActive.value = false
-  void nextTick(() => {
+  void Promise.resolve().then(() => {
     meteorActive.value = true
     meteorTimer = setTimeout(() => {
       meteorActive.value = false
@@ -233,36 +216,11 @@ function triggerMeteor() {
   })
 }
 
-function clearParseProgressTimer() {
-  if (parseProgressTimer) {
-    clearInterval(parseProgressTimer)
-    parseProgressTimer = null
-  }
+function onWaitingDone() {
+  // 等待模块动画结束后，把结果切回展示
+  parsing.value = false
+  parseCompleted.value = false
 }
-
-function startParseProgress() {
-  clearParseProgressTimer()
-  parseProgress.value = 6
-  parseProgressTimer = setInterval(() => {
-    if (parseProgress.value >= 88) return
-    const next = parseProgress.value + (Math.random() * 4 + 0.8)
-    parseProgress.value = Math.min(88, Math.round(next * 10) / 10)
-  }, 380)
-}
-
-function completeParseProgress() {
-  clearParseProgressTimer()
-  parseProgress.value = 100
-}
-
-function resetParseProgress() {
-  clearParseProgressTimer()
-  parseProgress.value = 0
-}
-
-onBeforeUnmount(() => {
-  clearParseProgressTimer()
-})
 
 const step = computed(() => {
   if (parsing.value) return 1
@@ -296,34 +254,25 @@ async function onCustomUpload(opt: UploadRequestOptions) {
   lastFileName.value = file.name
   savedResumeId.value = null
   parsing.value = true
-  startParseProgress()
+  parseCompleted.value = false
   try {
     const res = await uploadAndParseResumeData(file)
     parseResult.value = res
     applyDraftFromResult(res)
     suggestListTitle()
-    completeParseProgress()
-    await new Promise((r) => setTimeout(r, 420))
     if (!res.draft) {
       ElMessage.warning('未返回草稿结构，可手动填写下方表单')
     } else {
       ElMessage.success('解析完成，请核对下方草稿')
     }
   } catch (e: unknown) {
-    resetParseProgress()
     parseResult.value = null
+    parsing.value = false
     if (e instanceof Error && e.message === '解析结果为空') {
       ElMessage.warning(e.message)
     }
   } finally {
-    parsing.value = false
-    if (parseProgress.value === 100) {
-      setTimeout(() => {
-        parseProgress.value = 0
-      }, 400)
-    } else {
-      resetParseProgress()
-    }
+    parseCompleted.value = true
   }
 }
 
@@ -374,12 +323,6 @@ function resetAll() {
   /* 样式由 xt-main-content 全局提供 */
 }
 
-.orbit-stepper {
-  display: flex;
-  justify-content: center;
-  padding: 8px 0 4px;
-}
-
 .save-meteor {
   margin-top: 8px;
 }
@@ -399,84 +342,9 @@ function resetAll() {
   position: relative;
 }
 
-.parse-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 16px;
-  min-height: 240px;
-  background: rgba(255, 255, 255, 0.93);
-  backdrop-filter: blur(6px);
-  border-radius: 8px;
-}
-
-.parse-overlay-card {
-  width: 100%;
-  max-width: 520px;
-  text-align: center;
-}
-
-.parse-spin {
-  width: 44px;
-  height: 44px;
-  margin: 0 auto 14px;
-  border-radius: 50%;
-  border: 2.5px solid rgba(99, 102, 241, 0.15);
-  border-top-color: var(--xt-primary);
-  animation: parse-spin-rotate 0.9s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .parse-spin {
-    animation: none;
-    border-color: var(--xt-primary);
-    opacity: 0.6;
-  }
-}
-
-@keyframes parse-spin-rotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.parse-title {
-  margin: 0 0 10px;
-  font-size: 17px;
-  font-weight: 600;
-  color: #111827;
-}
-
-.parse-desc {
-  margin: 0 0 18px;
-  font-size: 13px;
-  line-height: 1.65;
-  color: #4b5563;
-  text-align: left;
-}
-
-.parse-progress {
-  margin-bottom: 12px;
-}
-
-.parse-foot {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #6b7280;
-}
-
-.parse-fade-enter-active,
-.parse-fade-leave-active {
-  transition: opacity 0.28s ease;
-}
-
-.parse-fade-enter-from,
-.parse-fade-leave-to {
-  opacity: 0;
+.waiting-wrap {
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .uploader {

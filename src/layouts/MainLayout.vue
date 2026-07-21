@@ -46,12 +46,18 @@
         <nav class="nav" aria-label="主导航">
           <router-link class="nav-link" to="/" :class="{ active: isHome }">首页</router-link>
           <router-link class="nav-link" to="/resume" :class="{ active: isResumeSection }">我的简历</router-link>
-          <router-link class="nav-link" to="/interview" :class="{ active: isInterviewSection }">面试复盘</router-link>
           <router-link class="nav-link" to="/mock-interview" :class="{ active: isMockInterviewSection }">模拟面试</router-link>
+          <router-link class="nav-link" to="/interview" :class="{ active: isInterviewSection }">面试复盘</router-link>
         </nav>
       </div>
-      <el-button v-if="isLoggedIn" class="logout-btn" type="primary" plain @click="onLogout">退出登录</el-button>
-      <el-button v-else class="logout-btn" type="primary" plain @click="goLogin">登录/注册</el-button>
+      <div class="right-actions">
+        <el-button v-if="isLoggedIn" class="quota-btn" type="info" plain @click="goQuota">
+          <el-icon class="quota-ico"><Wallet /></el-icon>
+          额度
+        </el-button>
+        <el-button v-if="isLoggedIn" class="logout-btn" type="primary" plain @click="onLogout">退出登录</el-button>
+        <el-button v-else class="logout-btn" type="primary" plain @click="goLogin">登录/注册</el-button>
+      </div>
     </header>
     <main class="content xt-main-content" :class="{ 'content--wide': isHome }">
       <router-view />
@@ -61,6 +67,7 @@
       v-model="loginPromptVisible"
       :redirect="loginPromptRedirect"
     />
+    <QuotaInsufficientDialog v-model="quotaPromptVisible" />
   </div>
 </template>
 
@@ -68,13 +75,15 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Share } from '@element-plus/icons-vue'
+import { Share, Wallet } from '@element-plus/icons-vue'
 import StarLogo from '@/components/StarLogo.vue'
 import StarryBackground from '@/components/StarryBackground.vue'
 import LoginRequiredDialog from '@/components/LoginRequiredDialog.vue'
+import QuotaInsufficientDialog from '@/components/QuotaInsufficientDialog.vue'
 import { usePWA } from '@/composables/usePWA'
 import { usePWAInstall } from '@/composables/usePWAInstall'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'
+import { useQuotaPrompt } from '@/composables/useQuotaPrompt'
 import { logout as logoutApi } from '@/api/auth'
 import { authToken, clearSession } from '@/auth/session'
 
@@ -83,6 +92,7 @@ const route = useRoute()
 const { needRefresh, acceptUpdate, dismissUpdate } = usePWA()
 const { isInstallable, isIOS, install: installPWA, dismiss: dismissInstall } = usePWAInstall()
 const { loginPromptVisible, loginPromptRedirect } = useLoginPrompt()
+const { quotaPromptVisible } = useQuotaPrompt()
 
 const isLoggedIn = computed(() => !!authToken.value)
 
@@ -119,6 +129,10 @@ async function onLogout() {
 
 function goLogin() {
   router.push({ name: 'login', query: { redirect: route.fullPath } })
+}
+
+function goQuota() {
+  router.push({ name: 'quota-center' })
 }
 </script>
 
@@ -217,6 +231,31 @@ function goLogin() {
   background: rgba(99, 102, 241, 0.35);
   color: #fff;
   font-weight: 600;
+}
+
+.right-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.quota-btn {
+  border-color: rgba(34, 211, 238, 0.45) !important;
+  color: #a5f3fc !important;
+  background: rgba(34, 211, 238, 0.08) !important;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.quota-btn:hover {
+  background: rgba(34, 211, 238, 0.18) !important;
+  border-color: rgba(34, 211, 238, 0.6) !important;
+  color: #fff !important;
+}
+
+.quota-ico {
+  margin-right: 4px;
 }
 
 .logout-btn {

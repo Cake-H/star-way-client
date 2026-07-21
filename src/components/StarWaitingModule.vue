@@ -45,7 +45,11 @@
       <div class="hud-top">
         <div class="mission-title">
           <span class="mission-label">MISSION</span>
-          <h2 class="mission-name">{{ title }}</h2>
+          <h2 class="mission-name">
+            {{ title }}<span class="loading-dots" aria-hidden="true">
+              <span class="dot dot-1">.</span><span class="dot dot-2">.</span><span class="dot dot-3">.</span>
+            </span>
+          </h2>
         </div>
         <div v-if="mode === 'playing'" class="score-board" :class="{ bump: scoreBump }">
           <span class="score-label">面试成功值</span>
@@ -1232,6 +1236,29 @@ onBeforeUnmount(() => {
   color: #e8f4ff;
   letter-spacing: 0.04em;
   text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+
+.loading-dots {
+  display: inline-flex;
+  align-items: baseline;
+  margin-left: 2px;
+}
+
+.loading-dots .dot {
+  display: inline-block;
+  animation: dot-bounce 1.2s ease-in-out infinite;
+  font-weight: 700;
+  color: #00f0ff;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+}
+
+.loading-dots .dot-1 { animation-delay: 0s; }
+.loading-dots .dot-2 { animation-delay: 0.15s; }
+.loading-dots .dot-3 { animation-delay: 0.3s; }
+
+@keyframes dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.55; }
+  30% { transform: translateY(-6px); opacity: 1; }
 }
 
 .score-board {

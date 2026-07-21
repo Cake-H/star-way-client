@@ -105,6 +105,13 @@ export const router = createRouter({
           component: () => import('@/views/MockInterviewDetailView.vue'),
           meta: { requiresAuth: true },
         },
+        // --- 额度中心 ---
+        {
+          path: 'quota',
+          name: 'quota-center',
+          component: () => import('@/views/QuotaCenterView.vue'),
+          meta: { requiresAuth: true },
+        },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
