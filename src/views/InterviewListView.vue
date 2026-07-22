@@ -70,7 +70,7 @@ import StarLaunchButton from '@/components/StarLaunchButton.vue'
 const router = useRouter()
 const loading = ref(true)
 const items = ref<InterviewSessionListItemVO[]>([])
-const deletingId = ref<number | null>(null)
+const deletingId = ref<string | null>(null)
 
 async function load() {
   loading.value = true
@@ -87,7 +87,7 @@ function goNew() {
   router.push({ name: 'interview-new' })
 }
 
-function goSession(id: number) {
+function goSession(id: string) {
   router.push({ name: 'interview-session', params: { sessionId: String(id) } })
 }
 

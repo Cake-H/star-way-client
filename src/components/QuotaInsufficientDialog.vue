@@ -83,7 +83,7 @@ function onTomorrow() {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1px dashed rgba(99, 102, 241, 0.35);
+  border: 1px dashed rgba(59,130,246, 0.35);
   animation: spin 14s linear infinite;
 }
 
@@ -95,7 +95,7 @@ function onTomorrow() {
   place-items: center;
   background: linear-gradient(135deg, var(--xt-primary) 0%, var(--xt-primary-dark) 100%);
   color: #fff;
-  box-shadow: 0 0 24px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 0 24px rgba(59,130,246, 0.35);
 }
 
 .dialog-lead {

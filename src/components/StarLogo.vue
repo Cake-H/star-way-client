@@ -11,15 +11,15 @@
   >
     <defs>
       <linearGradient id="star-grad" x1="12" y1="4" x2="36" y2="44" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#F0F4FF" />
-        <stop offset="0.35" stop-color="#A5B4FC" />
-        <stop offset="0.7" stop-color="#6366F1" />
-        <stop offset="1" stop-color="#312E81" />
+        <stop offset="0" stop-color="#F0F6FF" />
+        <stop offset="0.35" stop-color="#93C5FD" />
+        <stop offset="0.7" stop-color="#3B82F6" />
+        <stop offset="1" stop-color="#1E3A8A" />
       </linearGradient>
       <linearGradient id="arc-grad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="rgba(165,180,252,0.6)" />
-        <stop offset="0.55" stop-color="rgba(99,102,241,0.2)" />
-        <stop offset="1" stop-color="rgba(99,102,241,0)" />
+        <stop offset="0" stop-color="rgba(147,197,253,0.6)" />
+        <stop offset="0.55" stop-color="rgba(59,130,246,0.2)" />
+        <stop offset="1" stop-color="rgba(59,130,246,0)" />
       </linearGradient>
     </defs>
 
@@ -73,7 +73,7 @@ const dim = computed(() => ({ sm: 32, md: 40, lg: 48 }[props.size]))
 }
 
 .star-logo.with-glow {
-  filter: drop-shadow(0 0 14px rgba(99, 102, 241, 0.55));
+  filter: drop-shadow(0 0 14px rgba(59,130,246, 0.55));
 }
 
 @media (prefers-reduced-motion: reduce) {

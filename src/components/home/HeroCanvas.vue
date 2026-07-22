@@ -114,12 +114,12 @@ const orbitRings = computed<OrbitRing[]>(() => {
 const planets = computed<Planet[]>(() => {
   const s = scaleFactor.value
   const palette = [
-    { color: '#c7d2fe', glow: 'rgba(129,140,248,0.55)' },
+    { color: '#bfdbfe', glow: 'rgba(96,165,250,0.55)' },
     { color: '#a5f3fc', glow: 'rgba(34,211,238,0.55)' },
     { color: '#fda4af', glow: 'rgba(251,113,133,0.55)' },
     { color: '#fde68a', glow: 'rgba(251,191,36,0.55)' },
     { color: '#e2e8f0', glow: 'rgba(148,163,184,0.55)' },
-    { color: '#c7d2fe', glow: 'rgba(129,140,248,0.55)' },
+    { color: '#bfdbfe', glow: 'rgba(96,165,250,0.55)' },
   ]
   return [
     { angle: 0, speed: 0.10, radius: 150 * s, tiltX: 0.45, rotationZ: -0.12, size: 7 * s, ...palette[0], ringIndex: 0 },
@@ -212,8 +212,8 @@ function drawBackground() {
     canvasWidth * 0.7, canvasHeight * 0.4, 0,
     canvasWidth * 0.7, canvasHeight * 0.4, canvasWidth * 0.9,
   )
-  gradient.addColorStop(0, '#241e6b')
-  gradient.addColorStop(0.45, '#0f0a2a')
+  gradient.addColorStop(0, '#1e3a8a')
+  gradient.addColorStop(0.45, '#081226')
   gradient.addColorStop(1, '#050814')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, canvasWidth, canvasHeight)
@@ -224,9 +224,9 @@ function drawBackground() {
     canvasWidth * 0.72, canvasHeight * 0.42, 0,
     canvasWidth * 0.72, canvasHeight * 0.42, canvasWidth * 0.55,
   )
-  nebula1.addColorStop(0, 'rgba(99,102,241,0.22)')
-  nebula1.addColorStop(0.5, 'rgba(99,102,241,0.06)')
-  nebula1.addColorStop(1, 'rgba(99,102,241,0)')
+  nebula1.addColorStop(0, 'rgba(59,130,246,0.22)')
+  nebula1.addColorStop(0.5, 'rgba(59,130,246,0.06)')
+  nebula1.addColorStop(1, 'rgba(59,130,246,0)')
   ctx.fillStyle = nebula1
   ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
@@ -313,9 +313,9 @@ function drawCentralGlow(cx: number, cy: number) {
   if (!ctx) return
   const pulse = props.reducedMotion ? 1 : 1 + Math.sin(elapsed * 1.5) * 0.08
   const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 160 * scaleFactor.value * pulse)
-  glow.addColorStop(0, 'rgba(99,102,241,0.35)')
-  glow.addColorStop(0.4, 'rgba(99,102,241,0.12)')
-  glow.addColorStop(1, 'rgba(99,102,241,0)')
+  glow.addColorStop(0, 'rgba(59,130,246,0.35)')
+  glow.addColorStop(0.4, 'rgba(59,130,246,0.12)')
+  glow.addColorStop(1, 'rgba(59,130,246,0)')
   ctx.fillStyle = glow
   ctx.beginPath()
   ctx.arc(cx, cy, 160 * scaleFactor.value * pulse, 0, Math.PI * 2)

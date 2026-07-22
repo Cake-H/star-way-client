@@ -74,7 +74,7 @@ const detail = ref<ResumeDetailVO | null>(null)
 const draft = reactive<ResumeParseDraftDto>(emptyDraft())
 const pluginGuideVisible = ref(false)
 
-const resumeId = () => Number(route.params.resumeId)
+const resumeId = () => String(route.params.resumeId)
 
 watch(
   () => detail.value?.draft,

@@ -155,7 +155,7 @@ export interface ResumePublicationDraftLine {
 
 /** POST /resume/save-draft */
 export interface ResumeSaveDraftRequest {
-  resumeId?: number | null
+  resumeId?: string | null
   title?: string
   isDefault?: number | null
   draft: ResumeParseDraftDto
@@ -165,12 +165,12 @@ export interface ResumeSaveDraftRequest {
 }
 
 export interface ResumeSaveDraftResultVO {
-  resumeId: number
+  resumeId: string
 }
 
 /** GET /resume/list */
 export interface ResumeListItemVO {
-  resumeId: number
+  resumeId: string
   title: string
   isDefault: number
   fullName: string | null
@@ -179,7 +179,7 @@ export interface ResumeListItemVO {
 
 /** GET /resume/{resumeId} */
 export interface ResumeDetailVO {
-  resumeId: number
+  resumeId: string
   title: string
   isDefault: number
   schemaVersion: number

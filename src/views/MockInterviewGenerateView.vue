@@ -76,12 +76,12 @@ import StarLaunchButton from '@/components/StarLaunchButton.vue'
 import StarWaitingModule from '@/components/StarWaitingModule.vue'
 
 const router = useRouter()
-const resumes = ref<{ resumeId: number; title: string }[]>([])
+const resumes = ref<{ resumeId: string; title: string }[]>([])
 const loadingResumes = ref(true)
-const selectedResumeId = ref<number | null>(null)
+const selectedResumeId = ref<string | null>(null)
 const generating = ref(false)
 const generationCompleted = ref(false)
-const generatedId = ref<number | null>(null)
+const generatedId = ref<string | null>(null)
 
 onMounted(async () => {
   try {

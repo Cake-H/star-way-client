@@ -11,15 +11,15 @@ export type MockInterviewStatus = 'GENERATED' | 'PRACTICING' | 'COMPLETED'
 /** 练习进度（由前端保存，后端预留字段） */
 export interface MockInterviewPracticeProgress {
   /** 当前正在练习的题目 ID */
-  currentQuestionId: number
+  currentQuestionId: string
   /** 当前题目答案是否已展开；后端接收 0/1，也兼容 boolean */
   answerRevealed: boolean | number
 }
 
 /** 模拟面试题 VO */
 export interface MockInterviewQuestionVO {
-  id: number
-  sessionId: number
+  id: string
+  sessionId: string
   sortOrder: number
   question: string
   answerEvaluation: string | null
@@ -31,8 +31,8 @@ export interface MockInterviewQuestionVO {
 
 /** 模拟面试列表项 VO */
 export interface MockInterviewListItemVO {
-  mockInterviewId: number
-  resumeId: number
+  mockInterviewId: string
+  resumeId: string
   title: string
   questionCount: number
   status: MockInterviewStatus
@@ -47,13 +47,13 @@ export interface MockInterviewVO extends MockInterviewListItemVO {
 
 /** 创建模拟面试请求 */
 export interface MockInterviewCreateRequest {
-  resumeId: number
+  resumeId: string
   title?: string
 }
 
 /** 更新练习进度请求 */
 export interface MockInterviewUpdateProgressRequest {
-  currentQuestionId: number
+  currentQuestionId: string
   /** 后端接收 0/1，也兼容 true/false */
   answerRevealed: boolean | number
 }

@@ -15,7 +15,7 @@ import type {
   InterviewVoiceSummarizeResultVO,
 } from '@/api/interviewTypes'
 
-const STORAGE_KEY = 'xingtu_interview_sessions_v1'
+const STORAGE_KEY = 'xingtu_interview_sessions_v2'
 
 /** 内存结构：自增 id + 场次数组（含嵌套 questions） */
 interface LocalStore {
@@ -109,13 +109,13 @@ export const interviewLocalStore = {
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
   },
 
-  getSession(sessionId: number): InterviewSessionDetailVO | null {
+  getSession(sessionId: string): InterviewSessionDetailVO | null {
     return loadStore().sessions.find((s) => s.sessionId === sessionId) ?? null
   },
 
-  createSession(body: InterviewSessionCreateRequest): number {
+  createSession(body: InterviewSessionCreateRequest): string {
     const store = loadStore()
-    const id = store.nextSessionId++
+    const id = String(store.nextSessionId++)
     const ts = nowIso()
     store.sessions.push({
       sessionId: id,
@@ -132,7 +132,7 @@ export const interviewLocalStore = {
     return id
   },
 
-  updateSession(sessionId: number, body: InterviewSessionUpdateRequest) {
+  updateSession(sessionId: string, body: InterviewSessionUpdateRequest) {
     const store = loadStore()
     const s = store.sessions.find((x) => x.sessionId === sessionId)
     if (!s) throw new Error('面试复盘不存在')
@@ -145,17 +145,17 @@ export const interviewLocalStore = {
     saveStore(store)
   },
 
-  deleteSession(sessionId: number) {
+  deleteSession(sessionId: string) {
     const store = loadStore()
     store.sessions = store.sessions.filter((s) => s.sessionId !== sessionId)
     saveStore(store)
   },
 
-  createQuestion(sessionId: number, body: InterviewQuestionCreateRequest): number {
+  createQuestion(sessionId: string, body: InterviewQuestionCreateRequest): string {
     const store = loadStore()
     const s = store.sessions.find((x) => x.sessionId === sessionId)
     if (!s) throw new Error('面试复盘不存在')
-    const id = store.nextQuestionId++
+    const id = String(store.nextQuestionId++)
     const ts = nowIso()
     const q: InterviewQuestionVO = {
       questionId: id,
@@ -176,7 +176,7 @@ export const interviewLocalStore = {
     return id
   },
 
-  updateQuestion(sessionId: number, questionId: number, body: InterviewQuestionUpdateRequest) {
+  updateQuestion(sessionId: string, questionId: string, body: InterviewQuestionUpdateRequest) {
     const store = loadStore()
     const s = store.sessions.find((x) => x.sessionId === sessionId)
     if (!s) throw new Error('面试复盘不存在')
@@ -193,7 +193,7 @@ export const interviewLocalStore = {
     saveStore(store)
   },
 
-  deleteQuestion(sessionId: number, questionId: number) {
+  deleteQuestion(sessionId: string, questionId: string) {
     const store = loadStore()
     const s = store.sessions.find((x) => x.sessionId === sessionId)
     if (!s) throw new Error('面试复盘不存在')
@@ -202,7 +202,7 @@ export const interviewLocalStore = {
     saveStore(store)
   },
 
-  getQuestion(sessionId: number, questionId: number): InterviewQuestionVO | null {
+  getQuestion(sessionId: string, questionId: string): InterviewQuestionVO | null {
     const s = this.getSession(sessionId)
     return s?.questions.find((q) => q.questionId === questionId) ?? null
   },

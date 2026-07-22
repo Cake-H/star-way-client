@@ -30,7 +30,7 @@ export async function listInterviewSessions() {
 }
 
 /** 场次详情；questions 应按 sortOrder 升序返回 */
-export async function getInterviewSessionDetail(sessionId: number) {
+export async function getInterviewSessionDetail(sessionId: string) {
   const res = await http.get<ApiEnvelope<InterviewSessionDetailVO>>(`${INTERVIEW_BASE}/sessions/${sessionId}`)
   const data = unwrapData(res)
   if (!data) throw new Error('面试复盘详情为空')
@@ -44,15 +44,15 @@ export async function createInterviewSession(body: InterviewSessionCreateRequest
   return data
 }
 
-export async function updateInterviewSession(sessionId: number, body: InterviewSessionUpdateRequest) {
+export async function updateInterviewSession(sessionId: string, body: InterviewSessionUpdateRequest) {
   await http.put<ApiEnvelope<string>>(`${INTERVIEW_BASE}/sessions/${sessionId}`, body)
 }
 
-export async function deleteInterviewSession(sessionId: number) {
+export async function deleteInterviewSession(sessionId: string) {
   await http.delete<ApiEnvelope<string>>(`${INTERVIEW_BASE}/sessions/${sessionId}`)
 }
 
-export async function createInterviewQuestion(sessionId: number, body: InterviewQuestionCreateRequest) {
+export async function createInterviewQuestion(sessionId: string, body: InterviewQuestionCreateRequest) {
   const res = await http.post<ApiEnvelope<InterviewQuestionCreateResultVO>>(
     `${INTERVIEW_BASE}/sessions/${sessionId}/questions`,
     body,
@@ -63,8 +63,8 @@ export async function createInterviewQuestion(sessionId: number, body: Interview
 }
 
 export async function updateInterviewQuestion(
-  sessionId: number,
-  questionId: number,
+  sessionId: string,
+  questionId: string,
   body: InterviewQuestionUpdateRequest,
 ) {
   await http.put<ApiEnvelope<string>>(
@@ -73,7 +73,7 @@ export async function updateInterviewQuestion(
   )
 }
 
-export async function deleteInterviewQuestion(sessionId: number, questionId: number) {
+export async function deleteInterviewQuestion(sessionId: string, questionId: string) {
   await http.delete<ApiEnvelope<string>>(
     `${INTERVIEW_BASE}/sessions/${sessionId}/questions/${questionId}`,
   )
@@ -86,7 +86,7 @@ export async function deleteInterviewQuestion(sessionId: number, questionId: num
  * 用户核对后需再调 createInterviewQuestion 保存。
  */
 export async function summarizeInterviewVoice(
-  sessionId: number,
+  sessionId: string,
   payload: InterviewVoiceSummarizeRequest & { audioFile?: File },
 ) {
   if (payload.audioFile) {

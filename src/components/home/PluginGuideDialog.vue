@@ -265,7 +265,7 @@ function goCreateResume() {
 }
 
 .store-link:hover {
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(59,130,246, 0.08);
   border-color: var(--xt-primary-light);
   color: var(--xt-primary-dark);
 }
@@ -275,7 +275,7 @@ function goCreateResume() {
   gap: 10px;
   padding: 12px 14px;
   border-radius: var(--xt-radius-sm);
-  background: rgba(99, 102, 241, 0.06);
+  background: rgba(59,130,246, 0.06);
   color: var(--xt-text-secondary);
   font-size: 13px;
   line-height: 1.55;

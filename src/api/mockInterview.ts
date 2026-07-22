@@ -22,7 +22,7 @@ export async function listMockInterviews() {
 }
 
 /** 模拟面试详情；mockInterviewQuestions 应按 sortOrder 升序返回 */
-export async function getMockInterviewDetail(mockInterviewId: number) {
+export async function getMockInterviewDetail(mockInterviewId: string) {
   const res = await http.get<ApiEnvelope<MockInterviewVO>>(`${MOCK_INTERVIEW_BASE}/${mockInterviewId}`)
   const data = unwrapData(res)
   if (!data) throw new Error('模拟面试详情为空')
@@ -31,7 +31,7 @@ export async function getMockInterviewDetail(mockInterviewId: number) {
 
 /** 根据简历生成模拟面试题；后端直接返回新建模拟面试 ID */
 export async function createMockInterview(body: MockInterviewCreateRequest) {
-  const res = await http.post<ApiEnvelope<number>>(MOCK_INTERVIEW_BASE, body, {
+  const res = await http.post<ApiEnvelope<string>>(MOCK_INTERVIEW_BASE, body, {
     timeout: 120_000,
   })
   const data = unwrapData(res)
@@ -40,12 +40,12 @@ export async function createMockInterview(body: MockInterviewCreateRequest) {
 }
 
 /** 删除模拟面试 */
-export async function deleteMockInterview(mockInterviewId: number) {
+export async function deleteMockInterview(mockInterviewId: string) {
   await http.delete<ApiEnvelope<unknown>>(`${MOCK_INTERVIEW_BASE}/${mockInterviewId}`)
 }
 
 /** 更新模拟面试状态；后端使用 query 参数 */
-export async function updateMockInterviewStatus(mockInterviewId: number, status: string) {
+export async function updateMockInterviewStatus(mockInterviewId: string, status: string) {
   await http.put<ApiEnvelope<unknown>>(
     `${MOCK_INTERVIEW_BASE}/${mockInterviewId}/status`,
     null,
@@ -55,7 +55,7 @@ export async function updateMockInterviewStatus(mockInterviewId: number, status:
 
 /** 保存练习进度 */
 export async function updateMockInterviewProgress(
-  mockInterviewId: number,
+  mockInterviewId: string,
   body: MockInterviewUpdateProgressRequest,
 ) {
   await http.put<ApiEnvelope<unknown>>(`${MOCK_INTERVIEW_BASE}/${mockInterviewId}/progress`, body)

@@ -130,9 +130,9 @@ import {
 } from '@/utils/interviewVoiceResult'
 
 const props = defineProps<{
-  sessionId: number | null
+  sessionId: string | null
   /** 无 sessionId 时创建场次（需先 POST /sessions） */
-  beforeSummarize?: () => Promise<number>
+  beforeSummarize?: () => Promise<string>
 }>()
 
 const emit = defineEmits<{
@@ -274,7 +274,7 @@ function buildRawRecordBlob(): Blob | null {
   return new Blob(audioChunks, { type })
 }
 
-async function resolveSessionId(): Promise<number> {
+async function resolveSessionId(): Promise<string> {
   if (props.sessionId != null) return props.sessionId
   if (props.beforeSummarize) return props.beforeSummarize()
   throw new Error('复盘场次未就绪，请稍后重试')
@@ -469,7 +469,7 @@ onBeforeUnmount(() => {
   width: 132px;
   height: 132px;
   border-radius: 50%;
-  border: 2px solid rgba(99, 102, 241, 0.28);
+  border: 2px solid rgba(59,130,246, 0.28);
   pointer-events: none;
   transition: transform 0.09s ease-out, opacity 0.1s ease;
 }
@@ -495,7 +495,7 @@ onBeforeUnmount(() => {
   margin-top: -78px;
   transform-origin: 50% 100%;
   border-radius: 3px;
-  background: linear-gradient(to top, rgba(248, 113, 113, 0.95), rgba(129, 140, 248, 0.75));
+  background: linear-gradient(to top, rgba(248, 113, 113, 0.95), rgba(96,165,250, 0.75));
   box-shadow: 0 0 8px rgba(248, 113, 113, 0.45);
   transition: transform 0.06s ease-out;
 }
@@ -525,7 +525,7 @@ onBeforeUnmount(() => {
   gap: 6px;
   color: #fff;
   background: linear-gradient(145deg, var(--xt-primary-light) 0%, var(--xt-primary-dark) 100%);
-  box-shadow: 0 12px 32px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 12px 32px rgba(29,78,216, 0.35);
   transition: transform 0.15s ease, box-shadow 0.1s ease;
 }
 
@@ -555,7 +555,7 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  border: 2px solid rgba(99, 102, 241, 0.25);
+  border: 2px solid rgba(59,130,246, 0.25);
   pointer-events: none;
 }
 

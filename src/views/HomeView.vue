@@ -48,9 +48,9 @@
       </div>
     </section>
 
-    <StarJourneyTimeline :stage="stage" :counts="counts" @open-plugin-guide="pluginGuideVisible = true" />
+    <StarJourneyTimeline :stage="stage" :counts="counts" />
 
-    <PlanetaryFeatureGrid @open-plugin-guide="pluginGuideVisible = true" />
+    <PlanetaryFeatureGrid />
 
     <RecentActivityFeed
       :loading="loading"
@@ -58,8 +58,6 @@
       :empty-text="isGuest ? '登录后查看你的星轨记录' : '还没有星轨记录'"
       @continue="goItem"
     />
-
-    <PluginGuideDialog v-model="pluginGuideVisible" :resume-count="counts.resumes" />
   </div>
 </template>
 
@@ -75,7 +73,6 @@ import HeroCanvas from '@/components/home/HeroCanvas.vue'
 import StarJourneyTimeline from '@/components/home/StarJourneyTimeline.vue'
 import PlanetaryFeatureGrid from '@/components/home/PlanetaryFeatureGrid.vue'
 import RecentActivityFeed from '@/components/home/RecentActivityFeed.vue'
-import PluginGuideDialog from '@/components/home/PluginGuideDialog.vue'
 import { useHomeJourney, type ActivityItem } from '@/composables/useHomeJourney'
 import { useStarParallax } from '@/composables/useStarParallax'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'
@@ -85,7 +82,6 @@ const prefersReducedMotion = usePreferredReducedMotion()
 const { loading, stage, counts, activities, primaryCta, isGuest } = useHomeJourney()
 const { px, py } = useStarParallax(16)
 const { promptLogin } = useLoginPrompt()
-const pluginGuideVisible = ref(false)
 const visualRef = ref<HTMLDivElement>()
 
 const starPx = computed(() => px.value * 0.5)
@@ -177,10 +173,10 @@ function goItem(item: ActivityItem) {
   border-radius: var(--xt-radius-lg);
   background: radial-gradient(
       ellipse 80% 70% at 70% 50%,
-      rgba(99, 102, 241, 0.35) 0%,
+      rgba(59,130,246, 0.35) 0%,
       transparent 60%
     ),
-    linear-gradient(160deg, #0f0a2a 0%, #241e6b 50%, #0f0a2a 100%);
+    linear-gradient(160deg, #081226 0%, #1e3a8a 50%, #081226 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: var(--xt-shadow-md);
   overflow: hidden;
@@ -224,7 +220,7 @@ function goItem(item: ActivityItem) {
 .hero-desc {
   margin: 0;
   max-width: 560px;
-  color: rgba(245, 243, 255, 0.86);
+  color: rgba(239,246,255, 0.86);
   font-size: 17px;
   line-height: 1.7;
 }
@@ -245,8 +241,8 @@ function goItem(item: ActivityItem) {
 }
 
 .hero-primary-cta:hover {
-  background: #eef2ff !important;
-  color: #4338ca !important;
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
 }
 
 .hero-quick-btn {

@@ -157,11 +157,11 @@ function goUpload() {
 }
 
 .type-resume .row-icon {
-  background: linear-gradient(135deg, #818cf8, #6366f1);
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
 }
 
 .type-interview .row-icon {
-  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
 }
 
 .type-mock .row-icon {

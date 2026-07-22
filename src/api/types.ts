@@ -11,7 +11,7 @@ export interface ApiEnvelope<T = unknown> {
 
 export interface SmsLoginResultVO {
   token: string
-  userId: number
+  userId: string
   newUser: boolean
   expiresInSeconds: number
 }

@@ -191,7 +191,7 @@ const router = useRouter()
 const voiceRef = ref<InstanceType<typeof InterviewVoiceCapture> | null>(null)
 const saving = ref(false)
 const savingAll = ref(false)
-const activeSessionId = ref<number | null>(null)
+const activeSessionId = ref<string | null>(null)
 const savedCount = ref(0)
 const sessionBootstrapping = ref(false)
 const editExpanded = ref(false)
@@ -229,7 +229,7 @@ watch(
 onMounted(async () => {
   const sid = route.query.sessionId
   if (sid) {
-    activeSessionId.value = Number(sid)
+    activeSessionId.value = String(sid)
     return
   }
   sessionBootstrapping.value = true
@@ -249,7 +249,7 @@ function defaultSessionTitle() {
 }
 
 /** voice / 保存均需要 sessionId；新建页进入时即创建场次 */
-async function ensureSessionForVoice(): Promise<number> {
+async function ensureSessionForVoice(): Promise<string> {
   if (activeSessionId.value != null) return activeSessionId.value
   const title = meta.title.trim() || defaultSessionTitle()
   const id = await createInterviewSession({
@@ -306,11 +306,11 @@ function goSession() {
   router.push({ name: 'interview-session', params: { sessionId: String(activeSessionId.value) } })
 }
 
-async function persistSessionMeta(sessionId: number) {
+async function persistSessionMeta(sessionId: string) {
   await syncInterviewSessionMeta(sessionId, meta)
 }
 
-async function onSaveQuestion(opts?: { stayOnPage?: boolean }): Promise<number | null> {
+async function onSaveQuestion(opts?: { stayOnPage?: boolean }): Promise<string | null> {
   if (!questionForm.value.question?.trim()) {
     ElMessage.warning('请先口述总结或手动填写面试问题')
     return null

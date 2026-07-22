@@ -60,7 +60,7 @@ const loading = ref(true)
 const error = ref('')
 const deleting = ref(false)
 
-const mockInterviewId = Number(route.params.mockInterviewId)
+const mockInterviewId = String(route.params.mockInterviewId)
 
 async function load() {
   loading.value = true

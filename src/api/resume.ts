@@ -52,14 +52,14 @@ export async function listMyResumes() {
   return unwrapData(res) ?? []
 }
 
-export async function getResumeDetail(resumeId: number) {
+export async function getResumeDetail(resumeId: string) {
   const res = await http.get<ApiEnvelope<ResumeDetailVO>>(`${RESUME_BASE}/${resumeId}`)
   const data = unwrapData(res)
   if (!data) throw new Error('简历详情为空')
   return data
 }
 
-export async function updateResume(resumeId: number, body: ResumeUpdateRequest) {
+export async function updateResume(resumeId: string, body: ResumeUpdateRequest) {
   const payload: ResumeUpdateRequest = {
     ...body,
     draft: normalizeDraftForPersistence(body.draft),
@@ -71,6 +71,6 @@ export async function updateResume(resumeId: number, body: ResumeUpdateRequest) 
 }
 
 /** 软删除：列表与详情不再返回该 id；若删默认简历，后端会将另一份未删简历设为默认（存在时） */
-export async function deleteResume(resumeId: number) {
+export async function deleteResume(resumeId: string) {
   await http.delete<ApiEnvelope<string>>(`${RESUME_BASE}/${resumeId}`)
 }

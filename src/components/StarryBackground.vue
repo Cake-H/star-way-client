@@ -63,14 +63,14 @@ onMounted(() => {
 }
 
 .starry-root.dark {
-  background: radial-gradient(ellipse 120% 80% at 50% 0%, #1b2a6a 0%, #0b1028 45%, #050814 100%);
+  background: radial-gradient(ellipse 120% 80% at 50% 0%, #1e3a8a 0%, #0b1028 45%, #050814 100%);
 }
 
 .starry-root.subtle {
   background:
-    radial-gradient(ellipse 100% 60% at 50% -10%, rgba(99, 102, 241, 0.12), transparent 55%),
+    radial-gradient(ellipse 100% 60% at 50% -10%, rgba(59,130,246, 0.12), transparent 55%),
     radial-gradient(ellipse 80% 50% at 100% 0%, rgba(56, 189, 248, 0.08), transparent 50%),
-    linear-gradient(180deg, #eef2ff 0%, #f5f3ff 38%, #f8fafc 100%);
+    linear-gradient(180deg, #eff6ff 0%, #f0f6ff 38%, #f8fafc 100%);
 }
 
 .aurora {
@@ -91,7 +91,7 @@ onMounted(() => {
 .subtle .aurora {
   height: 40%;
   opacity: 0.55;
-  background: radial-gradient(ellipse at 40% 0%, rgba(129, 140, 248, 0.18), transparent 65%);
+  background: radial-gradient(ellipse at 40% 0%, rgba(96,165,250, 0.18), transparent 65%);
 }
 
 .glow {
@@ -107,7 +107,7 @@ onMounted(() => {
 
 .subtle .glow {
   height: 30%;
-  background: radial-gradient(ellipse at 50% 100%, rgba(99, 102, 241, 0.06), transparent 70%);
+  background: radial-gradient(ellipse at 50% 100%, rgba(59,130,246, 0.06), transparent 70%);
 }
 
 .star {
@@ -119,8 +119,8 @@ onMounted(() => {
 }
 
 .subtle .star {
-  background: #6366f1;
-  box-shadow: 0 0 4px rgba(99, 102, 241, 0.35);
+  background: #3b82f6;
+  box-shadow: 0 0 4px rgba(59,130,246, 0.35);
 }
 
 .star-static {

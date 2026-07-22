@@ -9,7 +9,7 @@ export interface QuotaBalanceVO {
 }
 
 export interface QuotaTransactionVO {
-  id: number
+  id: string
   type: string
   points: number
   balanceAfter: number

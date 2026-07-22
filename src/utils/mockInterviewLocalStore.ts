@@ -12,7 +12,7 @@ import type {
   MockInterviewVO,
 } from '@/api/mockInterviewTypes'
 
-const STORAGE_KEY = 'xingtu_mock_interviews_v1'
+const STORAGE_KEY = 'xingtu_mock_interviews_v2'
 
 interface LocalStore {
   nextInterviewId: number
@@ -45,7 +45,7 @@ function writeStore(store: LocalStore) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
 }
 
-function generateMockQuestions(sessionId: number, startId: number): MockInterviewQuestionVO[] {
+function generateMockQuestions(sessionId: string, startId: number): MockInterviewQuestionVO[] {
   const questions: { question: string; referenceAnswer: string; answerEvaluation: string }[] = [
     {
       question: '请用 1-2 分钟简单介绍一下自己，重点说明与目标岗位最匹配的经历。',
@@ -80,7 +80,7 @@ function generateMockQuestions(sessionId: number, startId: number): MockIntervie
   ]
 
   return questions.map((q, i) => ({
-    id: startId + i,
+    id: String(startId + i),
     sessionId,
     sortOrder: i + 1,
     question: q.question,
@@ -107,7 +107,7 @@ export const mockInterviewLocalStore = {
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
   },
 
-  getInterview(mockInterviewId: number): MockInterviewVO | undefined {
+  getInterview(mockInterviewId: string): MockInterviewVO | undefined {
     const store = readStore()
     const it = store.interviews.find((x) => x.mockInterviewId === mockInterviewId)
     if (!it) return undefined
@@ -117,9 +117,9 @@ export const mockInterviewLocalStore = {
     }
   },
 
-  createInterview(resumeId: number, title?: string): number {
+  createInterview(resumeId: string, title?: string): string {
     const store = readStore()
-    const id = store.nextInterviewId++
+    const id = String(store.nextInterviewId++)
     const startQuestionId = store.nextQuestionId
     const questions = generateMockQuestions(id, startQuestionId)
     store.nextQuestionId += questions.length
@@ -140,13 +140,13 @@ export const mockInterviewLocalStore = {
     return id
   },
 
-  deleteInterview(mockInterviewId: number) {
+  deleteInterview(mockInterviewId: string) {
     const store = readStore()
     store.interviews = store.interviews.filter((x) => x.mockInterviewId !== mockInterviewId)
     writeStore(store)
   },
 
-  updateStatus(mockInterviewId: number, status: MockInterviewStatus) {
+  updateStatus(mockInterviewId: string, status: MockInterviewStatus) {
     const store = readStore()
     const it = store.interviews.find((x) => x.mockInterviewId === mockInterviewId)
     if (!it) return
@@ -155,7 +155,7 @@ export const mockInterviewLocalStore = {
     writeStore(store)
   },
 
-  saveProgress(mockInterviewId: number, progress: MockInterviewPracticeProgress) {
+  saveProgress(mockInterviewId: string, progress: MockInterviewPracticeProgress) {
     const store = readStore()
     const it = store.interviews.find((x) => x.mockInterviewId === mockInterviewId)
     if (!it) return
@@ -164,7 +164,7 @@ export const mockInterviewLocalStore = {
     writeStore(store)
   },
 
-  getProgress(mockInterviewId: number): MockInterviewPracticeProgress | null {
+  getProgress(mockInterviewId: string): MockInterviewPracticeProgress | null {
     const it = this.getInterview(mockInterviewId)
     return it?.mockInterviewProgress ?? null
   },

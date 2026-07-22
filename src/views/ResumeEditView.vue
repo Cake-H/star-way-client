@@ -63,7 +63,7 @@ const resumeTitle = ref('')
 const isDefault = ref(0)
 const draft = reactive<ResumeParseDraftDto>(emptyDraft())
 
-const resumeId = () => Number(route.params.resumeId)
+const resumeId = () => String(route.params.resumeId)
 
 function goBack() {
   router.push({ name: 'resume-list' })

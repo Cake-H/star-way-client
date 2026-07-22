@@ -1,50 +1,50 @@
 /**
  * 星途 · 全局设计系统
- * 深空蓝紫 + 流星点缀，表单区保持高对比可读性
+ * 深空星蓝 + 流星点缀，表单区保持高对比可读性
  */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* 品牌色：潮流电光靛紫 + 赛博青 + 活力珊瑚粉 */
-  --xt-primary: #6366f1;
-  --xt-primary-dark: #4f46e5;
-  --xt-primary-light: #818cf8;
+  /* 品牌色：星空蓝 + 赛博青 + 活力珊瑚粉 */
+  --xt-primary: #3b82f6;
+  --xt-primary-dark: #1d4ed8;
+  --xt-primary-light: #60a5fa;
   --xt-secondary: #22d3ee;
   --xt-accent: #fb7185;
   --xt-accent-soft: rgba(251, 113, 133, 0.16);
 
-  /* 深空：冷调紫蓝，避免沉闷的海军蓝 */
+  /* 深空：宇宙蓝，贴合星空背景 */
   --xt-space-deep: #050814;
-  --xt-space-mid: #0b0a1f;
-  --xt-space-glow: #312e81;
+  --xt-space-mid: #081226;
+  --xt-space-glow: #1e3a8a;
 
   /* 内容区（高可读性浅色） */
   --xt-surface: rgba(255, 255, 255, 0.94);
   --xt-surface-solid: #ffffff;
   --xt-surface-muted: rgba(248, 250, 252, 0.88);
-  --xt-border: rgba(99, 102, 241, 0.14);
-  --xt-border-strong: rgba(99, 102, 241, 0.28);
+  --xt-border: rgba(59,130,246, 0.14);
+  --xt-border-strong: rgba(59,130,246, 0.28);
 
   /* 文字 */
   --xt-text: #0f172a;
   --xt-text-secondary: #475569;
   --xt-text-muted: #64748b;
-  --xt-text-on-dark: #f5f3ff;
-  --xt-text-on-dark-muted: rgba(245, 243, 255, 0.72);
+  --xt-text-on-dark: #f0f6ff;
+  --xt-text-on-dark-muted: rgba(239,246,255, 0.72);
 
   /* 圆角与阴影 */
   --xt-radius-sm: 10px;
   --xt-radius-md: 14px;
   --xt-radius-lg: 20px;
   --xt-shadow-sm: 0 4px 20px rgba(15, 23, 42, 0.06);
-  --xt-shadow-md: 0 12px 40px rgba(79, 70, 229, 0.12);
-  --xt-shadow-glow: 0 0 40px rgba(99, 102, 241, 0.18);
+  --xt-shadow-md: 0 12px 40px rgba(29,78,216, 0.12);
+  --xt-shadow-glow: 0 0 40px rgba(59,130,246, 0.18);
 
   /* 星轨与发射 */
-  --xt-orbit-ring: rgba(99, 102, 241, 0.12);
-  --xt-orbit-ring-strong: rgba(99, 102, 241, 0.32);
-  --xt-orbit-dot: #a5b4fc;
-  --xt-orbit-path: rgba(129, 140, 248, 0.22);
+  --xt-orbit-ring: rgba(59,130,246, 0.12);
+  --xt-orbit-ring-strong: rgba(59,130,246, 0.32);
+  --xt-orbit-dot: #93c5fd;
+  --xt-orbit-path: rgba(96,165,250, 0.22);
   --xt-launch-glow: rgba(251, 113, 133, 0.22);
   --xt-launch-trail: rgba(251, 113, 133, 0.45);
 
@@ -53,10 +53,10 @@
 
   /* Element Plus 主题对齐 */
   --el-color-primary: var(--xt-primary);
-  --el-color-primary-light-3: #a5b4fc;
-  --el-color-primary-light-5: #c7d2fe;
-  --el-color-primary-light-7: #e0e7ff;
-  --el-color-primary-light-8: #eef2ff;
+  --el-color-primary-light-3: #93c5fd;
+  --el-color-primary-light-5: #bfdbfe;
+  --el-color-primary-light-7: #dbeafe;
+  --el-color-primary-light-8: #eff6ff;
   --el-color-primary-light-9: #f5f7ff;
   --el-color-primary-dark-2: var(--xt-primary-dark);
   --el-border-radius-base: 10px;
@@ -153,10 +153,10 @@ body {
   color: var(--xt-text-on-dark);
   background: linear-gradient(
     125deg,
-    #4f46e5 0%,
-    #312e81 38%,
-    #1e1b4b 72%,
-    #0f0a1f 100%
+    #1d4ed8 0%,
+    #1e3a8a 38%,
+    #172554 72%,
+    #030b1e 100%
   );
   box-shadow: var(--xt-shadow-md), var(--xt-shadow-glow);
   border: 1px solid rgba(255, 255, 255, 0.1);

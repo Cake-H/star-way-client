@@ -172,8 +172,8 @@ const revealed = reactive({
   otherNotes: false,
 })
 
-const sessionId = () => Number(route.params.sessionId)
-const questionId = () => Number(route.params.questionId)
+const sessionId = () => String(route.params.sessionId)
+const questionId = () => String(route.params.questionId)
 
 watch(practiceMode, (v) => {
   if (v) resetRevealed()

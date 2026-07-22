@@ -107,7 +107,7 @@ const deleting = ref(false)
 const practiceMode = ref(false)
 const session = ref<InterviewSessionDetailVO | null>(null)
 
-const sessionId = () => Number(route.params.sessionId)
+const sessionId = () => String(route.params.sessionId)
 
 async function load() {
   loading.value = true
@@ -130,7 +130,7 @@ function goAddQuestion() {
   router.push({ name: 'interview-new', query: { sessionId: String(sessionId()) } })
 }
 
-function goQuestion(questionId: number) {
+function goQuestion(questionId: string) {
   router.push({
     name: 'interview-question',
     params: { sessionId: String(sessionId()), questionId: String(questionId) },

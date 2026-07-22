@@ -187,7 +187,7 @@ async function onLogin() {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 0.12em;
-  background: linear-gradient(135deg, #f8faff 0%, #c7d2fe 100%);
+  background: linear-gradient(135deg, #f8faff 0%, #bfdbfe 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

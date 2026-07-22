@@ -40,7 +40,7 @@ const options = computed<ISourceOptions>(() => ({
       value: isMobile.value ? 35 : 70,
       density: { enable: true, width: 1920, height: 1080 },
     },
-    color: { value: ['#ffffff', '#c7d2fe', '#a5b4fc'] },
+    color: { value: ['#ffffff', '#bfdbfe', '#93c5fd'] },
     shape: { type: 'circle' },
     opacity: {
       value: { min: 0.08, max: 0.5 },

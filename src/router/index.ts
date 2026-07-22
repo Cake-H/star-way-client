@@ -112,6 +112,13 @@ export const router = createRouter({
           component: () => import('@/views/QuotaCenterView.vue'),
           meta: { requiresAuth: true },
         },
+        // --- 网申站点 ---
+        {
+          path: 'apply-sites',
+          name: 'apply-site-list',
+          component: () => import('@/views/ApplySiteListView.vue'),
+          meta: { requiresAuth: true },
+        },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },

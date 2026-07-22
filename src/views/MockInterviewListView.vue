@@ -65,7 +65,7 @@ import StarLaunchButton from '@/components/StarLaunchButton.vue'
 const router = useRouter()
 const loading = ref(true)
 const items = ref<MockInterviewListItemVO[]>([])
-const deletingId = ref<number | null>(null)
+const deletingId = ref<string | null>(null)
 
 async function load() {
   loading.value = true
@@ -82,11 +82,11 @@ function goNew() {
   router.push({ name: 'mock-interview-new' })
 }
 
-function goDetail(id: number) {
+function goDetail(id: string) {
   router.push({ name: 'mock-interview-detail', params: { mockInterviewId: String(id) } })
 }
 
-function goPractice(id: number) {
+function goPractice(id: string) {
   router.push({ name: 'mock-interview-practice', params: { mockInterviewId: String(id) } })
 }
 

@@ -228,7 +228,7 @@ function goQuota() {
 }
 
 .nav-link.active {
-  background: rgba(99, 102, 241, 0.35);
+  background: rgba(59,130,246, 0.35);
   color: #fff;
   font-weight: 600;
 }
@@ -259,16 +259,16 @@ function goQuota() {
 }
 
 .logout-btn {
-  border-color: rgba(129, 140, 248, 0.55) !important;
-  color: #c7d2fe !important;
-  background: rgba(99, 102, 241, 0.12) !important;
+  border-color: rgba(96,165,250, 0.55) !important;
+  color: #bfdbfe !important;
+  background: rgba(59,130,246, 0.12) !important;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .logout-btn:hover {
-  background: rgba(99, 102, 241, 0.28) !important;
-  border-color: rgba(165, 180, 252, 0.7) !important;
+  background: rgba(59,130,246, 0.28) !important;
+  border-color: rgba(147,197,253, 0.7) !important;
   color: #fff !important;
 }
 

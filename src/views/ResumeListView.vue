@@ -98,7 +98,7 @@ import PluginGuideDialog from '@/components/home/PluginGuideDialog.vue'
 const router = useRouter()
 const loading = ref(true)
 const items = ref<ResumeListItemVO[]>([])
-const deletingId = ref<number | null>(null)
+const deletingId = ref<string | null>(null)
 const pluginGuideVisible = ref(false)
 
 async function load() {
@@ -120,11 +120,11 @@ function goBlank() {
   router.push({ name: 'resume-new' })
 }
 
-function goDetail(id: number) {
+function goDetail(id: string) {
   router.push({ name: 'resume-detail', params: { resumeId: String(id) } })
 }
 
-function goEdit(id: number) {
+function goEdit(id: string) {
   router.push({ name: 'resume-edit', params: { resumeId: String(id) } })
 }
 
@@ -211,8 +211,8 @@ async function onDelete(row: ResumeListItemVO) {
 
 .plugin-banner {
   cursor: pointer;
-  background: linear-gradient(100deg, rgba(99, 102, 241, 0.06) 0%, rgba(52, 211, 153, 0.06) 100%);
-  border: 1px solid rgba(99, 102, 241, 0.18);
+  background: linear-gradient(100deg, rgba(59,130,246, 0.06) 0%, rgba(52, 211, 153, 0.06) 100%);
+  border: 1px solid rgba(59,130,246, 0.18);
 }
 
 .plugin-banner :deep(.el-card__body) {

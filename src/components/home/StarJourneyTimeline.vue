@@ -126,10 +126,6 @@ const props = defineProps<{
   counts: { resumes: number; mocks: number; interviews: number }
 }>()
 
-const emit = defineEmits<{
-  (e: 'open-plugin-guide'): void
-}>()
-
 const router = useRouter()
 const steps = journeySteps
 const totalWidth = 800
@@ -148,10 +144,6 @@ function nodeClass(index: number) {
 }
 
 function goStep(step: (typeof steps)[number]) {
-  if (step.routeName === 'plugin-guide') {
-    emit('open-plugin-guide')
-    return
-  }
   router.push({ name: step.routeName })
 }
 

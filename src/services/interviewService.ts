@@ -24,14 +24,14 @@ export async function listInterviewSessions(): Promise<InterviewSessionListItemV
   return interviewLocalStore.listSessions()
 }
 
-export async function getInterviewSessionDetail(sessionId: number): Promise<InterviewSessionDetailVO> {
+export async function getInterviewSessionDetail(sessionId: string): Promise<InterviewSessionDetailVO> {
   if (useApi) return interviewApi.getInterviewSessionDetail(sessionId)
   const s = interviewLocalStore.getSession(sessionId)
   if (!s) throw new Error('面试复盘不存在')
   return { ...s, questions: [...s.questions].sort((a, b) => a.sortOrder - b.sortOrder) }
 }
 
-export async function createInterviewSession(body: InterviewSessionCreateRequest): Promise<number> {
+export async function createInterviewSession(body: InterviewSessionCreateRequest): Promise<string> {
   if (useApi) {
     const r = await interviewApi.createInterviewSession(body)
     return r.sessionId
@@ -39,27 +39,27 @@ export async function createInterviewSession(body: InterviewSessionCreateRequest
   return interviewLocalStore.createSession(body)
 }
 
-export async function updateInterviewSession(sessionId: number, body: InterviewSessionUpdateRequest) {
+export async function updateInterviewSession(sessionId: string, body: InterviewSessionUpdateRequest) {
   if (useApi) return interviewApi.updateInterviewSession(sessionId, body)
   interviewLocalStore.updateSession(sessionId, body)
 }
 
 /** 用户确认 AI 场次草稿或编辑 meta 后，同步 PUT（仅提交非空字段） */
-export async function syncInterviewSessionMeta(sessionId: number, meta: SessionMetaForm) {
+export async function syncInterviewSessionMeta(sessionId: string, meta: SessionMetaForm) {
   const partial = buildSessionMetaPutBody(meta)
   if (Object.keys(partial).length === 0) return
   await updateInterviewSession(sessionId, partial as InterviewSessionUpdateRequest)
 }
 
-export async function deleteInterviewSession(sessionId: number) {
+export async function deleteInterviewSession(sessionId: string) {
   if (useApi) return interviewApi.deleteInterviewSession(sessionId)
   interviewLocalStore.deleteSession(sessionId)
 }
 
 export async function createInterviewQuestion(
-  sessionId: number,
+  sessionId: string,
   body: InterviewQuestionCreateRequest,
-): Promise<number> {
+): Promise<string> {
   if (useApi) {
     const r = await interviewApi.createInterviewQuestion(sessionId, body)
     return r.questionId
@@ -68,21 +68,21 @@ export async function createInterviewQuestion(
 }
 
 export async function updateInterviewQuestion(
-  sessionId: number,
-  questionId: number,
+  sessionId: string,
+  questionId: string,
   body: InterviewQuestionUpdateRequest,
 ) {
   if (useApi) return interviewApi.updateInterviewQuestion(sessionId, questionId, body)
   interviewLocalStore.updateQuestion(sessionId, questionId, body)
 }
 
-export async function deleteInterviewQuestion(sessionId: number, questionId: number) {
+export async function deleteInterviewQuestion(sessionId: string, questionId: string) {
   if (useApi) return interviewApi.deleteInterviewQuestion(sessionId, questionId)
   interviewLocalStore.deleteQuestion(sessionId, questionId)
 }
 
 export async function summarizeInterviewVoice(
-  sessionId: number,
+  sessionId: string,
   opts: { rawTranscript?: string; audioFile?: File },
 ): Promise<InterviewVoiceSummarizeResultVO> {
   if (useApi) return interviewApi.summarizeInterviewVoice(sessionId, opts)

@@ -25,7 +25,7 @@ export type ActivityType = 'resume' | 'interview' | 'mock'
 
 export interface ActivityItem {
   type: ActivityType
-  id: number
+  id: string
   title: string
   subtitle: string
   timestamp: string
@@ -233,7 +233,7 @@ export const featureItems = [
     title: '简历一键填入',
     desc: '安装浏览器插件，在网申页一键同步并填入星途简历。',
     icon: ChromeFilled,
-    routeName: 'plugin-guide',
+    routeName: 'apply-site-list',
     planetClass: 'planet-emerald',
   },
 ]
@@ -241,7 +241,7 @@ export const featureItems = [
 export const journeySteps = [
   { label: '智能解析', desc: '上传简历，AI 自动解析为结构化草稿', routeName: 'resume-upload', icon: Upload },
   { label: '简历管理', desc: '查看、编辑、管理你的所有简历', routeName: 'resume-list', icon: FolderOpened },
-  { label: '一键网申', desc: '安装插件，在招聘页一键填入简历', routeName: 'plugin-guide', icon: ChromeFilled },
+  { label: '一键网申', desc: '安装插件，在招聘页一键填入简历', routeName: 'apply-site-list', icon: ChromeFilled },
   { label: '模拟面试', desc: '基于简历生成面试题并练习', routeName: 'mock-interview-list', icon: MagicStick },
   { label: '面试复盘', desc: '记录真实面试，沉淀经验', routeName: 'interview-list', icon: Microphone },
 ]

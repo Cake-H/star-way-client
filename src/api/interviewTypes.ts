@@ -7,8 +7,8 @@
 
 /** 单条面试问题（GET 详情、问题 CRUD 响应） */
 export interface InterviewQuestionVO {
-  questionId: number
-  sessionId: number
+  questionId: string
+  sessionId: string
   sortOrder: number
   question: string
   myAnswer: string | null
@@ -21,7 +21,7 @@ export interface InterviewQuestionVO {
 
 /** GET /interview/sessions 列表项 */
 export interface InterviewSessionListItemVO {
-  sessionId: number
+  sessionId: string
   title: string
   companyName: string | null
   positionName: string | null
@@ -109,10 +109,10 @@ export interface InterviewVoiceSummarizeResultVO {
 }
 
 export interface InterviewSessionCreateResultVO {
-  sessionId: number
+  sessionId: string
 }
 
 export interface InterviewQuestionCreateResultVO {
-  questionId: number
+  questionId: string
 }
 

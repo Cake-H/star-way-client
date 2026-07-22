@@ -88,7 +88,7 @@ const currentIndex = ref(0)
 const answerRevealed = ref(false)
 const finishing = ref(false)
 
-const mockInterviewId = computed(() => Number(route.params.mockInterviewId))
+const mockInterviewId = computed(() => String(route.params.mockInterviewId))
 const currentQuestion = computed(() => interview.value?.mockInterviewQuestions[currentIndex.value])
 const isLast = computed(() => currentIndex.value >= (interview.value?.mockInterviewQuestions.length ?? 1) - 1)
 const progressLabels = computed(() =>

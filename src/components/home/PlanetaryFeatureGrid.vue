@@ -46,18 +46,10 @@ import { useRouter } from 'vue-router'
 import { featureItems } from '@/composables/useHomeJourney'
 import OrbitalCard from '@/components/OrbitalCard.vue'
 
-const emit = defineEmits<{
-  (e: 'open-plugin-guide'): void
-}>()
-
 const router = useRouter()
 const items = featureItems
 
 function go(routeName: string) {
-  if (routeName === 'plugin-guide') {
-    emit('open-plugin-guide')
-    return
-  }
   router.push({ name: routeName })
 }
 </script>
@@ -214,15 +206,15 @@ function go(routeName: string) {
   color: var(--xt-text-secondary);
 }
 
-/* 星球配色：潮流靛紫 / 赛博青 / 珊瑚粉 / 亮金 / 高级灰 */
+/* 星球配色：星空蓝 / 赛博青 / 珊瑚粉 / 亮金 / 高级灰 */
 .planet-indigo .planet {
-  background: radial-gradient(circle at 30% 30%, #818cf8, #4f46e5 45%, #312e81);
+  background: radial-gradient(circle at 30% 30%, #60a5fa, #1d4ed8 45%, #1e3a8a);
 }
 .planet-indigo .planet-glow {
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.45), transparent 70%);
+  background: radial-gradient(circle, rgba(59,130,246, 0.45), transparent 70%);
 }
 .planet-indigo .planet-ring {
-  border-color: rgba(129, 140, 248, 0.55);
+  border-color: rgba(96,165,250, 0.55);
 }
 
 .planet-violet .planet {

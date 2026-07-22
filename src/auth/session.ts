@@ -27,13 +27,13 @@ export function clearSession() {
 }
 
 export function getProfile():
-  | { userId: number; newUser: boolean; expiresInSeconds: number }
+  | { userId: string; newUser: boolean; expiresInSeconds: number }
   | null {
   const raw = localStorage.getItem(PROFILE_KEY)
   if (!raw) return null
   try {
     return JSON.parse(raw) as {
-      userId: number
+      userId: string
       newUser: boolean
       expiresInSeconds: number
     }

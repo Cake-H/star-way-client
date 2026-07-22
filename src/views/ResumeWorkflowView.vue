@@ -20,17 +20,26 @@
       <el-step title="核对并保存" description="核对草稿后可保存，支持后续更新" />
     </el-steps>
 
-    <!-- 解析中：隐藏上传卡片，直接展示星空等待模块 -->
-    <div v-if="parsing" class="waiting-wrap">
+    <!-- 解析中：隐藏上传卡片，等待模块以弹窗形式展示 -->
+    <el-dialog
+      v-model="parsing"
+      width="min(720px, 86vw)"
+      align-center
+      destroy-on-close
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+      class="waiting-dialog"
+    >
       <StarWaitingModule
         title="AI 正在解析简历并生成结构化草稿"
         :completed="parseCompleted"
         :estimated-seconds="60"
         @done="onWaitingDone"
       />
-    </div>
+    </el-dialog>
 
-    <template v-else>
+    <template v-if="!parsing">
       <el-card class="card upload-card" shadow="never">
         <template #header>
           <div class="card-head">
@@ -117,7 +126,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { UploadFilled } from '@element-plus/icons-vue'
 import type { UploadRequestOptions } from 'element-plus'
@@ -144,7 +153,7 @@ const parseResult = ref<ResumeParseResultVO | null>(null)
 const lastFileName = ref('')
 const draft = reactive<ResumeParseDraftDto>(emptyDraft())
 
-const savedResumeId = ref<number | null>(null)
+const savedResumeId = ref<string | null>(null)
 const resumeListTitle = ref('')
 const resumeIsDefault = ref(0)
 const savingDraft = ref(false)
@@ -342,9 +351,21 @@ function resetAll() {
   position: relative;
 }
 
-.waiting-wrap {
-  border-radius: 12px;
-  overflow: hidden;
+/* 注意：.el-dialog 自身的样式（圆角/阴影/padding）统一在文件底部非 scoped 块中用 !important 覆盖，
+   写在这里会被底部带 !important 的规则覆盖，请勿在此重复定义 */
+
+.waiting-dialog :deep(.el-dialog__body) {
+  padding: 0;
+}
+
+.waiting-dialog :deep(.el-dialog__header) {
+  display: none;
+  padding: 0;
+}
+
+.waiting-dialog :deep(.star-waiting-module) {
+  min-height: 360px;
+  border-radius: var(--xt-radius-lg);
 }
 
 .uploader {
@@ -417,5 +438,31 @@ function resetAll() {
   font-size: 13px;
   color: #64748b;
   line-height: 1.55;
+}
+</style>
+
+<style>
+/* Element Plus dialog 默认白底，需全局覆盖 */
+.waiting-dialog.el-dialog,
+.waiting-dialog .el-dialog__body {
+  background: transparent !important;
+  border: none !important;
+}
+.waiting-dialog.el-dialog {
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5) !important;
+  border-radius: var(--xt-radius-lg) !important;
+  padding: 0 !important;
+  overflow: hidden;
+  border: none;
+  --el-dialog-padding-primary: 0;
+}
+.waiting-dialog .el-dialog__header {
+  display: none !important;
+}
+.waiting-dialog .el-overlay-dialog {
+  background: transparent !important;
+}
+.el-overlay:has(.waiting-dialog) {
+  background-color: rgba(5, 8, 20, 0.35) !important;
 }
 </style>
