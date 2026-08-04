@@ -5,50 +5,52 @@
         <h2 class="section-title">最近星轨</h2>
         <p class="section-subtitle">从上次离开的地方继续</p>
       </div>
-      <el-button v-if="activities.length" type="primary" link @click="emit('continue', activities[0])"
-        >刷新
-      </el-button>
     </div>
 
     <div v-loading="loading" class="activity-content">
-      <el-empty v-if="!loading && activities.length === 0" :description="props.emptyText"
-      >
-        <StarLaunchButton type="primary" @click="goUpload"
-          ><el-icon class="btn-ico"><Upload /></el-icon>上传第一份简历</StarLaunchButton>
-      </el-empty>
+      <div v-if="!loading && activities.length === 0" class="activity-empty">
+        <div class="empty-icon" aria-hidden="true">
+          <el-icon :size="30"><Promotion /></el-icon>
+        </div>
+        <p class="empty-text">{{ props.emptyText }}</p>
+        <StarLaunchButton type="primary" @click="goUpload">
+          <el-icon class="btn-ico"><Upload /></el-icon>上传第一份星舰档案
+        </StarLaunchButton>
+      </div>
 
-      <OrbitalCard v-else shadow="hover" class="activity-card">
+      <div v-else class="activity-card">
         <div
           v-for="(item, i) in activities"
           :key="`${item.type}-${item.id}`"
           class="activity-row"
           :class="`type-${item.type}`"
           :style="{ animationDelay: `${i * 0.06}s` }"
+          role="link"
+          tabindex="0"
           @click="go(item)"
+          @keydown.enter="go(item)"
         >
-          <div class="row-icon">
+          <div class="row-icon" aria-hidden="true">
             <el-icon :size="18"><component :is="iconFor(item.type)" /></el-icon>
           </div>
           <div class="row-info">
             <span class="row-title">{{ item.title }}</span>
             <span class="row-subtitle">{{ item.subtitle }} · {{ formatDateTime(item.timestamp) }}</span>
           </div>
-          <div class="row-action" @click.stop="go(item)"
-            >
-            <el-button type="primary" link>继续</el-button>
+          <div class="row-action" @click.stop="go(item)">
+            <button type="button" class="row-ghost-btn">继续</button>
           </div>
         </div>
-      </OrbitalCard>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { ChatLineSquare, FolderOpened, MagicStick, Upload } from '@element-plus/icons-vue'
+import { ChatLineSquare, FolderOpened, MagicStick, Promotion, Upload } from '@element-plus/icons-vue'
 import type { ActivityItem, ActivityType } from '@/composables/useHomeJourney'
 import { formatDateTime } from '@/utils/format'
-import OrbitalCard from '@/components/OrbitalCard.vue'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
 
 const props = withDefaults(defineProps<{
@@ -58,10 +60,6 @@ const props = withDefaults(defineProps<{
 }>(), {
   emptyText: '还没有星轨记录',
 })
-
-const emit = defineEmits<{
-  continue: [item: ActivityItem]
-}>()
 
 const router = useRouter()
 
@@ -106,27 +104,64 @@ function goUpload() {
 
 .section-title {
   margin: 0 0 6px;
+  font-family: var(--xt-font-title);
   font-size: 32px;
-  font-weight: 700;
-  color: var(--xt-text);
-  letter-spacing: -0.02em;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--xt-text-on-dark);
 }
 
 .section-subtitle {
   margin: 0;
   font-size: 15px;
-  color: var(--xt-text-secondary);
+  color: var(--xt-text-on-dark-muted);
 }
 
 .activity-content {
   min-height: 160px;
 }
 
+.activity-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 40px 24px;
+  border-radius: var(--xt-radius-lg);
+  border: 1px dashed var(--xt-card-border-hover);
+  background: var(--xt-card-bg);
+  box-shadow: inset 0 1px 0 var(--xt-card-highlight);
+}
+
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #e8a33d;
+  background: #0d0d12;
+  border: 1px solid var(--xt-card-border-hover);
+}
+
+.empty-text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--xt-text-on-dark-muted);
+}
+
 .activity-card {
-  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  border-radius: var(--xt-radius-lg);
+  background: var(--xt-card-bg);
+  border: 1px solid var(--xt-card-border);
+  box-shadow: inset 0 1px 0 var(--xt-card-highlight);
 }
 
 .activity-row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -137,13 +172,21 @@ function goUpload() {
   animation: row-enter 0.5s ease both;
 }
 
-.activity-row:hover {
-  background: var(--el-color-primary-light-9);
-  transform: translateX(4px);
+/* 条目间渐隐光线分隔（中间亮两端透明） */
+.activity-row + .activity-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 18px;
+  right: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(232, 230, 224, 0.14), transparent);
 }
 
-.activity-row + .activity-row {
-  margin-top: 6px;
+.activity-row:hover,
+.activity-row:focus-visible {
+  background: rgba(232, 230, 224, 0.04);
+  transform: translateX(4px);
 }
 
 .row-icon {
@@ -156,16 +199,16 @@ function goUpload() {
   color: #fff;
 }
 
-.type-resume .row-icon {
-  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+/* 行图标：哑光圆底 + 暖白图标，hover 琥珀 */
+.activity-row .row-icon {
+  background: #0d0d12;
+  border: 1px solid var(--xt-card-border);
+  color: var(--xt-text-on-dark);
 }
 
-.type-interview .row-icon {
-  background: linear-gradient(135deg, #60a5fa, #2563eb);
-}
-
-.type-mock .row-icon {
-  background: linear-gradient(135deg, #fb7185, #e11d48);
+.activity-row:hover .row-icon {
+  color: #e8a33d;
+  border-color: rgba(232, 163, 61, 0.35);
 }
 
 .row-info {
@@ -179,7 +222,7 @@ function goUpload() {
 .row-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--xt-text);
+  color: var(--xt-text-on-dark);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -187,11 +230,31 @@ function goUpload() {
 
 .row-subtitle {
   font-size: 12px;
-  color: var(--xt-text-secondary);
+  color: var(--xt-text-on-dark-muted);
 }
 
 .row-action {
   flex-shrink: 0;
+}
+
+/* 幽灵按钮 */
+.row-ghost-btn {
+  min-height: 34px;
+  padding: 4px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 230, 224, 0.2);
+  background: transparent;
+  color: var(--xt-text-on-dark);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.row-ghost-btn:hover {
+  border-color: rgba(232, 163, 61, 0.55);
+  color: #e8a33d;
 }
 
 .btn-ico {
@@ -210,9 +273,8 @@ function goUpload() {
 }
 
 @media (max-width: 640px) {
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .section-title {
+    font-size: 26px;
   }
 
   .activity-row {

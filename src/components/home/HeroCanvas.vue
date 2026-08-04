@@ -55,81 +55,22 @@ interface ShootingStar {
   maxLife: number
 }
 
-interface Planet {
-  angle: number
-  speed: number
-  radius: number
-  tiltX: number
-  rotationZ: number
-  size: number
-  color: string
-  glow: string
-  ringIndex: number
-}
-
-interface OrbitRing {
-  radius: number
-  tiltX: number
-  rotationZ: number
-  color: string
-  dash: number[]
-  lineWidth: number
-}
-
 const stars = ref<Star[]>([])
 const shootingStars = ref<ShootingStar[]>([])
 let shootingStarTimer = 0
+let nextMeteorIn = meteorInterval()
 
-// 轨道系统配置
-const orbitRings = computed<OrbitRing[]>(() => {
-  const s = scaleFactor.value
-  return [
-    {
-      radius: 150 * s,
-      tiltX: 0.45,
-      rotationZ: -0.12,
-      color: 'rgba(255,255,255,0.18)',
-      dash: [3, 6],
-      lineWidth: 1,
-    },
-    {
-      radius: 110 * s,
-      tiltX: 0.55,
-      rotationZ: 0.08,
-      color: 'rgba(255,255,255,0.14)',
-      dash: [1, 0],
-      lineWidth: 1.2,
-    },
-    {
-      radius: 75 * s,
-      tiltX: 0.65,
-      rotationZ: -0.05,
-      color: 'rgba(255,255,255,0.10)',
-      dash: [2, 4],
-      lineWidth: 0.8,
-    },
-  ]
-})
+// 掉帧自动降级：0 正常 → 1 粒子减半 → 2 静态星空
+let degradeLevel = 0
+let starCountScale = 1
+let frameCostEma = 16
+let slowFrames = 0
 
-const planets = computed<Planet[]>(() => {
-  const s = scaleFactor.value
-  const palette = [
-    { color: '#bfdbfe', glow: 'rgba(96,165,250,0.55)' },
-    { color: '#a5f3fc', glow: 'rgba(34,211,238,0.55)' },
-    { color: '#fda4af', glow: 'rgba(251,113,133,0.55)' },
-    { color: '#fde68a', glow: 'rgba(251,191,36,0.55)' },
-    { color: '#e2e8f0', glow: 'rgba(148,163,184,0.55)' },
-    { color: '#bfdbfe', glow: 'rgba(96,165,250,0.55)' },
-  ]
-  return [
-    { angle: 0, speed: 0.10, radius: 150 * s, tiltX: 0.45, rotationZ: -0.12, size: 7 * s, ...palette[0], ringIndex: 0 },
-    { angle: 2.1, speed: 0.08, radius: 150 * s, tiltX: 0.45, rotationZ: -0.12, size: 5.5 * s, ...palette[1], ringIndex: 0 },
-    { angle: 0.8, speed: 0.13, radius: 110 * s, tiltX: 0.55, rotationZ: 0.08, size: 6.5 * s, ...palette[2], ringIndex: 1 },
-    { angle: 3.6, speed: 0.11, radius: 110 * s, tiltX: 0.55, rotationZ: 0.08, size: 5 * s, ...palette[3], ringIndex: 1 },
-    { angle: 1.9, speed: 0.17, radius: 75 * s, tiltX: 0.65, rotationZ: -0.05, size: 5.5 * s, ...palette[4], ringIndex: 2 },
-    { angle: 4.7, speed: 0.14, radius: 75 * s, tiltX: 0.65, rotationZ: -0.05, size: 4.5 * s, ...palette[5], ringIndex: 2 },
-  ]
-})
+/** 流星间隔：PC 8–15s，移动端再降频约一倍 */
+function meteorInterval() {
+  const mobileFactor = canvasWidth < 768 ? 1.8 : 1
+  return (480 + Math.random() * 420) * mobileFactor
+}
 
 const scaleFactor = computed(() => Math.min(1, canvasWidth / 768))
 
@@ -156,7 +97,9 @@ function resizeCanvas() {
 }
 
 function initStarfield() {
-  const count = canvasWidth < 768 ? 50 : 120
+  // 移动端粒子数减半；掉帧降级时进一步减半
+  const base = canvasWidth < 768 ? 100 : 240
+  const count = Math.floor(base * starCountScale)
   const newStars: Star[] = []
   const layers = [
     { count: Math.floor(count * 0.5), speedMin: 0.10, speedMax: 0.25, sizeMin: 0.8, sizeMax: 1.6, opacityMin: 0.15, opacityMax: 0.4 },
@@ -168,7 +111,7 @@ function initStarfield() {
     for (let i = 0; i < layer.count; i++) {
       const colorRoll = Math.random()
       const color =
-        colorRoll > 0.88 ? '#00f0ff' : colorRoll > 0.76 ? '#ffb627' : '#ffffff'
+        colorRoll > 0.94 ? '#f0bc66' : colorRoll > 0.86 ? '#fff8ec' : '#e8e6e0'
       newStars.push({
         x: Math.random() * canvasWidth,
         y: Math.random() * canvasHeight,
@@ -207,26 +150,25 @@ function spawnShootingStar() {
 function drawBackground() {
   if (!ctx) return
 
-  // 深空基色
+  // 中性深空基色（不带蓝色倾向）
   const gradient = ctx.createRadialGradient(
     canvasWidth * 0.7, canvasHeight * 0.4, 0,
     canvasWidth * 0.7, canvasHeight * 0.4, canvasWidth * 0.9,
   )
-  gradient.addColorStop(0, '#1e3a8a')
-  gradient.addColorStop(0.45, '#081226')
-  gradient.addColorStop(1, '#050814')
+  gradient.addColorStop(0, '#14141a')
+  gradient.addColorStop(0.45, '#0d0d12')
+  gradient.addColorStop(1, '#060608')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
-  // 星云叠加
+  // 微弱暖调纵深（克制，不大面积铺色）
   ctx.globalCompositeOperation = 'screen'
   const nebula1 = ctx.createRadialGradient(
     canvasWidth * 0.72, canvasHeight * 0.42, 0,
-    canvasWidth * 0.72, canvasHeight * 0.42, canvasWidth * 0.55,
+    canvasWidth * 0.72, canvasHeight * 0.42, canvasWidth * 0.5,
   )
-  nebula1.addColorStop(0, 'rgba(59,130,246,0.22)')
-  nebula1.addColorStop(0.5, 'rgba(59,130,246,0.06)')
-  nebula1.addColorStop(1, 'rgba(59,130,246,0)')
+  nebula1.addColorStop(0, 'rgba(232,163,61,0.05)')
+  nebula1.addColorStop(1, 'rgba(232,163,61,0)')
   ctx.fillStyle = nebula1
   ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
@@ -234,8 +176,8 @@ function drawBackground() {
     canvasWidth * 0.2, canvasHeight * 0.75, 0,
     canvasWidth * 0.2, canvasHeight * 0.75, canvasWidth * 0.35,
   )
-  nebula2.addColorStop(0, 'rgba(34,211,238,0.08)')
-  nebula2.addColorStop(1, 'rgba(34,211,238,0)')
+  nebula2.addColorStop(0, 'rgba(232,230,224,0.03)')
+  nebula2.addColorStop(1, 'rgba(232,230,224,0)')
   ctx.fillStyle = nebula2
   ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
@@ -295,11 +237,11 @@ function drawShootingStars() {
     const tailX = ss.x - ss.vx * (ss.length / 14)
     const tailY = ss.y - ss.vy * (ss.length / 14)
     const grad = ctx!.createLinearGradient(ss.x, ss.y, tailX, tailY)
-    grad.addColorStop(0, 'rgba(255,255,255,0.9)')
-    grad.addColorStop(0.25, 'rgba(165,243,252,0.55)')
-    grad.addColorStop(1, 'rgba(165,243,252,0)')
+    grad.addColorStop(0, 'rgba(255,248,236,0.9)')
+    grad.addColorStop(0.25, 'rgba(240,188,102,0.5)')
+    grad.addColorStop(1, 'rgba(240,188,102,0)')
     ctx!.strokeStyle = grad
-    ctx!.lineWidth = 1.8
+    ctx!.lineWidth = 2
     ctx!.lineCap = 'round'
     ctx!.beginPath()
     ctx!.moveTo(ss.x, ss.y)
@@ -313,120 +255,13 @@ function drawCentralGlow(cx: number, cy: number) {
   if (!ctx) return
   const pulse = props.reducedMotion ? 1 : 1 + Math.sin(elapsed * 1.5) * 0.08
   const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 160 * scaleFactor.value * pulse)
-  glow.addColorStop(0, 'rgba(59,130,246,0.35)')
-  glow.addColorStop(0.4, 'rgba(59,130,246,0.12)')
-  glow.addColorStop(1, 'rgba(59,130,246,0)')
+  glow.addColorStop(0, 'rgba(232,163,61,0.16)')
+  glow.addColorStop(0.4, 'rgba(232,163,61,0.06)')
+  glow.addColorStop(1, 'rgba(232,163,61,0)')
   ctx.fillStyle = glow
   ctx.beginPath()
   ctx.arc(cx, cy, 160 * scaleFactor.value * pulse, 0, Math.PI * 2)
   ctx.fill()
-}
-
-function drawOrbitRingHalf(
-  ring: OrbitRing,
-  cx: number,
-  cy: number,
-  startAngle: number,
-  endAngle: number,
-) {
-  if (!ctx) return
-  const rx = ring.radius
-  // 倾斜圆环的屏幕投影：y 向压缩为 r*cos(tilt)
-  const ry = ring.radius * Math.cos(ring.tiltX)
-
-  ctx.save()
-  ctx.translate(cx, cy)
-  ctx.rotate(ring.rotationZ)
-
-  ctx.shadowColor = ring.color
-  ctx.shadowBlur = 6
-  ctx.strokeStyle = ring.color
-  ctx.lineWidth = ring.lineWidth
-  ctx.setLineDash(ring.dash)
-  ctx.beginPath()
-  ctx.ellipse(0, 0, rx, ry, 0, startAngle, endAngle)
-  ctx.stroke()
-
-  ctx.restore()
-}
-
-function projectPlanet(p: Planet, time: number, cx: number, cy: number) {
-  const angle = p.angle + (props.reducedMotion ? 0 : p.speed * time)
-
-  // 轨道平面绕 x 轴倾斜：仍是圆形投影，y 向压缩、z 产生深度
-  const x3 = Math.cos(angle) * p.radius
-  const y3 = Math.sin(angle) * p.radius * Math.cos(p.tiltX)
-  const z3 = Math.sin(angle) * p.radius * Math.sin(p.tiltX)
-
-  // 再绕 z 轴旋转，与轨道环的 rotationZ 一致
-  const cosR = Math.cos(p.rotationZ)
-  const sinR = Math.sin(p.rotationZ)
-  const xProj = x3 * cosR - y3 * sinR
-  const yProj = x3 * sinR + y3 * cosR
-
-  const focal = 900
-  const scale = focal / (focal + z3)
-
-  return {
-    x: cx + xProj * scale + props.parallaxX * 0.08,
-    y: cy + yProj * scale + props.parallaxY * 0.08,
-    r: Math.max(1.5, p.size * scale),
-    z: z3,
-    color: p.color,
-    glow: p.glow,
-  }
-}
-
-function drawPlanet(x: number, y: number, r: number, color: string, glow: string) {
-  if (!ctx) return
-
-  // 外层发光
-  const outer = ctx.createRadialGradient(x, y, 0, x, y, r * 3.5)
-  outer.addColorStop(0, glow)
-  outer.addColorStop(1, glow.replace(/[\d.]+\)$/, '0)'))
-  ctx.fillStyle = outer
-  ctx.beginPath()
-  ctx.arc(x, y, r * 3.5, 0, Math.PI * 2)
-  ctx.fill()
-
-  // 球体底色
-  const body = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, 0, x, y, r)
-  body.addColorStop(0, lighten(color, 30))
-  body.addColorStop(0.5, color)
-  body.addColorStop(1, darken(color, 40))
-  ctx.fillStyle = body
-  ctx.beginPath()
-  ctx.arc(x, y, r, 0, Math.PI * 2)
-  ctx.fill()
-
-  // 高光
-  ctx.fillStyle = 'rgba(255,255,255,0.55)'
-  ctx.beginPath()
-  ctx.ellipse(x - r * 0.3, y - r * 0.3, r * 0.25, r * 0.18, -0.5, 0, Math.PI * 2)
-  ctx.fill()
-
-  // 暗部轮廓
-  ctx.strokeStyle = 'rgba(0,0,0,0.25)'
-  ctx.lineWidth = 0.5
-  ctx.beginPath()
-  ctx.arc(x, y, r, 0, Math.PI * 2)
-  ctx.stroke()
-}
-
-function lighten(hex: string, amount: number) {
-  const num = parseInt(hex.slice(1), 16)
-  const r = Math.min(255, ((num >> 16) & 0xff) + amount)
-  const g = Math.min(255, ((num >> 8) & 0xff) + amount)
-  const b = Math.min(255, (num & 0xff) + amount)
-  return `rgb(${r},${g},${b})`
-}
-
-function darken(hex: string, amount: number) {
-  const num = parseInt(hex.slice(1), 16)
-  const r = Math.max(0, ((num >> 16) & 0xff) - amount)
-  const g = Math.max(0, ((num >> 8) & 0xff) - amount)
-  const b = Math.max(0, (num & 0xff) - amount)
-  return `rgb(${r},${g},${b})`
 }
 
 function updatePhysics(dt: number) {
@@ -444,18 +279,20 @@ function updatePhysics(dt: number) {
     }
   })
 
-  // 流星
+  // 流星：每 8–15 秒随机一颗（移动端降频）
   if (!props.reducedMotion) {
     shootingStarTimer += dt * 60
-    if (shootingStarTimer > 220 + Math.random() * 160) {
+    if (shootingStarTimer > nextMeteorIn) {
       spawnShootingStar()
       shootingStarTimer = 0
+      nextMeteorIn = meteorInterval()
     }
   }
   shootingStars.value.forEach((ss) => {
     ss.x += ss.vx * dt * 60
     ss.y += ss.vy * dt * 60
-    ss.life -= dt / 1.1
+    // 500ms 划过并渐隐
+    ss.life -= dt / 0.55
   })
   shootingStars.value = shootingStars.value.filter((ss) => ss.life > 0 && ss.x > -150)
 }
@@ -463,6 +300,35 @@ function updatePhysics(dt: number) {
 function drawFrame(time: number) {
   if (!ctx || !canvasRef.value) return
   const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.05) : 0.016
+
+  // —— 掉帧自动降级：持续高帧耗时 → 粒子减半 → 静态星空 ——
+  if (!props.reducedMotion && lastTime) {
+    const frameCost = (time - lastTime) || 16
+    frameCostEma = frameCostEma * 0.95 + Math.min(frameCost, 100) * 0.05
+    if (frameCostEma > 34) {
+      slowFrames++
+      if (slowFrames > 90) {
+        slowFrames = 0
+        frameCostEma = 16
+        degradeLevel++
+        if (degradeLevel === 1) {
+          starCountScale = 0.5
+          initStarfield()
+        } else if (degradeLevel >= 2) {
+          // 最终降级：绘制一帧静态星空后停止动画循环
+          updatePhysics(0)
+          ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+          drawBackground()
+          drawStarfield()
+          rafId = null
+          return
+        }
+      }
+    } else {
+      slowFrames = Math.max(0, slowFrames - 2)
+    }
+  }
+
   lastTime = time
 
   ctx.clearRect(0, 0, canvasWidth, canvasHeight)
@@ -487,21 +353,11 @@ function drawFrame(time: number) {
 
   drawCentralGlow(cx, cy)
 
-  // 绘制轨道环后半部分（被行星遮挡的部分）
-  orbitRings.value.forEach((ring) => drawOrbitRingHalf(ring, cx, cy, Math.PI, Math.PI * 2))
-
-  // 计算行星位置并按深度排序
-  const projected = planets.value.map((p) => projectPlanet(p, elapsed, cx, cy))
-  projected.sort((a, b) => a.z - b.z)
-  projected.forEach((p) => drawPlanet(p.x, p.y, p.r, p.color, p.glow))
-
-  // 绘制轨道环前半部分（遮挡行星的部分）
-  orbitRings.value.forEach((ring) => drawOrbitRingHalf(ring, cx, cy, 0, Math.PI))
-
   rafId = requestAnimationFrame(drawFrame)
 }
 
 function startLoop() {
+  if (degradeLevel >= 2) return
   if (rafId) cancelAnimationFrame(rafId)
   lastTime = 0
   rafId = requestAnimationFrame(drawFrame)
@@ -514,6 +370,15 @@ function stopLoop() {
   }
 }
 
+/** 页面不可见时暂停动画循环 */
+function onVisibilityChange() {
+  if (document.hidden) {
+    stopLoop()
+  } else {
+    startLoop()
+  }
+}
+
 onMounted(() => {
   nextTick(() => {
     resizeCanvas()
@@ -521,6 +386,7 @@ onMounted(() => {
   })
 
   window.addEventListener('resize', resizeCanvas)
+  document.addEventListener('visibilitychange', onVisibilityChange)
 
   if (canvasRef.value?.parentElement) {
     resizeObserver = new ResizeObserver(() => resizeCanvas())
@@ -531,6 +397,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   stopLoop()
   window.removeEventListener('resize', resizeCanvas)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
   resizeObserver?.disconnect()
 })
 

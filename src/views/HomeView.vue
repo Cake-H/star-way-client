@@ -1,20 +1,20 @@
 <template>
-  <div ref="homeRoot" class="home">
+  <div class="home">
     <section class="home-hero">
       <HeroCanvas
-      class="hero-particles"
-      :visual-el="visualRef"
-      :parallax-x="starPx"
-      :parallax-y="starPy"
-      :reduced-motion="prefersReducedMotion === 'reduce'"
-    />
+        class="hero-particles"
+        :visual-el="visualRef"
+        :parallax-x="starPx"
+        :parallax-y="starPy"
+        :reduced-motion="prefersReducedMotion === 'reduce'"
+      />
 
       <div class="hero-grid">
         <div class="hero-copy constellation-reveal">
-          <p class="xt-eyebrow hero-eyebrow">星途 · AI 驱动的简历与面试闭环</p>
-          <h1 class="xt-hero-title hero-title">让每一次投递，都成为职业星途上的光点</h1>
-          <p class="xt-hero-desc hero-desc">
-            从 AI 解析简历、结构化管理，到浏览器插件一键填入网申、模拟面试与复盘沉淀，星途把「写简历」和「准备面试」串成一条可进化的星轨。
+          <p class="hero-eyebrow">星途 · 从简历到 Offer，每一步都有帮手</p>
+          <h1 class="hero-title">穿越星海，抵达你的新星</h1>
+          <p class="hero-desc">
+            从简历解析、网申投递，到模拟面试与面试复盘，星途把求职的每一步连成一条可进化的星轨。
           </p>
 
           <div class="hero-actions">
@@ -29,35 +29,46 @@
             </StarLaunchButton>
 
             <el-button
-              type="info"
-              link
               size="large"
-              class="hero-link"
-              @click="go('resume-list')"
+              class="hero-secondary-cta"
+              @click="go('apply-site-list')"
             >
-              查看简历
+              探索星港
             </el-button>
           </div>
+
+          <HeroStats class="hero-stats-block" />
         </div>
 
         <div ref="visualRef" class="hero-visual" :style="visualStyle" aria-hidden="true">
-          <div class="logo-wrapper">
-            <StarLogo size="lg" :glow="true" class="hero-logo" />
-          </div>
+          <HeroPlanet />
         </div>
       </div>
     </section>
 
-    <StarJourneyTimeline :stage="stage" :counts="counts" />
+    <FeatureBentoGrid />
 
-    <PlanetaryFeatureGrid />
+    <StarJourneyTimeline :stage="journeyStage" :counts="counts" />
+
+    <StarMapDashboard
+      :is-guest="isGuest"
+      :loading="loading"
+      :quota="quota"
+      :transactions="transactions"
+      :mock-stats="mockStats"
+      :counts="counts"
+      :daily-grant-claimed="dailyGrantClaimed"
+    />
 
     <RecentActivityFeed
       :loading="loading"
       :activities="activities"
       :empty-text="isGuest ? '登录后查看你的星轨记录' : '还没有星轨记录'"
-      @continue="goItem"
     />
+
+    <HomeFooter />
+
+    <ShipNavFab />
   </div>
 </template>
 
@@ -66,20 +77,36 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { CustomEase } from 'gsap/CustomEase'
 import { usePreferredReducedMotion } from '@vueuse/core'
-import StarLogo from '@/components/StarLogo.vue'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
 import HeroCanvas from '@/components/home/HeroCanvas.vue'
+import HeroPlanet from '@/components/home/HeroPlanet.vue'
+import HeroStats from '@/components/home/HeroStats.vue'
+import FeatureBentoGrid from '@/components/home/FeatureBentoGrid.vue'
 import StarJourneyTimeline from '@/components/home/StarJourneyTimeline.vue'
-import PlanetaryFeatureGrid from '@/components/home/PlanetaryFeatureGrid.vue'
+import StarMapDashboard from '@/components/home/StarMapDashboard.vue'
 import RecentActivityFeed from '@/components/home/RecentActivityFeed.vue'
-import { useHomeJourney, type ActivityItem } from '@/composables/useHomeJourney'
+import HomeFooter from '@/components/home/HomeFooter.vue'
+import ShipNavFab from '@/components/home/ShipNavFab.vue'
+import { useHomeJourney } from '@/composables/useHomeJourney'
 import { useStarParallax } from '@/composables/useStarParallax'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'
 
 const router = useRouter()
 const prefersReducedMotion = usePreferredReducedMotion()
-const { loading, stage, counts, activities, primaryCta, isGuest } = useHomeJourney()
+const {
+  loading,
+  journeyStage,
+  counts,
+  mockStats,
+  quota,
+  transactions,
+  dailyGrantClaimed,
+  activities,
+  primaryCta,
+  isGuest,
+} = useHomeJourney()
 const { px, py } = useStarParallax(16)
 const { promptLogin } = useLoginPrompt()
 const visualRef = ref<HTMLDivElement>()
@@ -92,37 +119,43 @@ const visualStyle = computed(() => ({
 
 onMounted(() => {
   if (prefersReducedMotion.value) return
-  gsap.registerPlugin(ScrollTrigger)
+  gsap.registerPlugin(ScrollTrigger, CustomEase)
+  // 规范缓动：cubic-bezier(0.16, 1, 0.3, 1)
+  CustomEase.create('xtOut', '0.16, 1, 0.3, 1')
 
-  const tl = gsap.timeline({ defaults: { ease: 'power2.out' } })
-  tl.from('.hero-eyebrow', { y: 16, opacity: 0, duration: 0.5 })
-    .from('.hero-title', { y: 24, opacity: 0, duration: 0.6 }, '-=0.3')
-    .from('.hero-desc', { y: 16, opacity: 0, duration: 0.5 }, '-=0.35')
-    .from('.hero-actions', { y: 16, opacity: 0, duration: 0.5 }, '-=0.3')
-    .from('.hero-visual', { scale: 0.85, opacity: 0, duration: 0.8, ease: 'back.out(1.4)' }, '-=0.6')
-
-  gsap.from('.journey-section', {
-    scrollTrigger: { trigger: '.journey-section', start: 'top 85%' },
-    y: 30,
-    opacity: 0,
-    duration: 0.7,
-  })
-
-  gsap.from('.feature-tile', {
-    scrollTrigger: { trigger: '.features-section', start: 'top 85%' },
+  // 入场动画：眉题 → H1 → 副标题 → CTA → 统计，translateY(24px) + opacity，stagger 0.08s
+  gsap.from('.hero-copy > *', {
     y: 24,
     opacity: 0,
     duration: 0.5,
     stagger: 0.08,
+    ease: 'xtOut',
+  })
+  gsap.from('.hero-visual', {
+    scale: 0.9,
+    opacity: 0,
+    duration: 0.5,
+    ease: 'xtOut',
+    delay: 0.3,
   })
 
-  gsap.from('.activity-row', {
-    scrollTrigger: { trigger: '.activity-section', start: 'top 85%' },
-    x: -16,
-    opacity: 0,
-    duration: 0.4,
-    stagger: 0.06,
-  })
+  // 滚动区块：进入视口触发（相当于 whileInView）
+  const scrollIn = (target: string, stagger = 0) => {
+    gsap.from(target, {
+      scrollTrigger: { trigger: target, start: 'top 85%' },
+      y: 24,
+      opacity: 0,
+      duration: 0.5,
+      stagger,
+      ease: 'xtOut',
+    })
+  }
+  scrollIn('.features-section .section-header')
+  scrollIn('.bento-card', 0.08)
+  scrollIn('.journey-section')
+  scrollIn('.dashboard-section')
+  scrollIn('.activity-row', 0.08)
+  scrollIn('.home-footer')
 })
 
 onUnmounted(() => {
@@ -131,7 +164,7 @@ onUnmounted(() => {
 
 function go(routeName: string) {
   if (isGuest.value) {
-    promptLogin('/resume')
+    promptLogin('/')
     return
   }
   router.push({ name: routeName })
@@ -147,13 +180,6 @@ function goCta() {
     params: primaryCta.value.routeParams,
   })
 }
-
-function goItem(item: ActivityItem) {
-  router.push({
-    name: item.routeName,
-    params: item.routeParams,
-  })
-}
 </script>
 
 <style scoped>
@@ -161,22 +187,17 @@ function goItem(item: ActivityItem) {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 56px;
 }
 
+/* —— Hero：首屏全屏感 —— */
 .home-hero {
   position: relative;
-  min-height: 520px;
+  min-height: min(78vh, 720px);
   display: flex;
   align-items: center;
-  padding: 56px 50px;
+  padding: 64px 56px;
   border-radius: var(--xt-radius-lg);
-  background: radial-gradient(
-      ellipse 80% 70% at 70% 50%,
-      rgba(59,130,246, 0.35) 0%,
-      transparent 60%
-    ),
-    linear-gradient(160deg, #081226 0%, #1e3a8a 50%, #081226 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: var(--xt-shadow-md);
   overflow: hidden;
@@ -192,8 +213,8 @@ function goItem(item: ActivityItem) {
   z-index: 1;
   width: 100%;
   display: grid;
-  grid-template-columns: 1.6fr 0.8fr;
-  gap: 48px;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
   align-items: center;
 }
 
@@ -204,24 +225,27 @@ function goItem(item: ActivityItem) {
 }
 
 .hero-eyebrow {
-  color: var(--xt-primary-light);
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
+  color: var(--xt-text-on-dark-muted);
 }
 
 .hero-title {
   margin: 0;
   max-width: 840px;
+  font-family: var(--xt-font-title);
+  font-size: clamp(34px, 5.2vw, 56px);
+  font-weight: 900;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
   color: var(--xt-text-on-dark);
-  font-size: clamp(30px, 5vw, 42px);
-  white-space: nowrap;
 }
 
 .hero-desc {
   margin: 0;
   max-width: 560px;
-  color: rgba(239,246,255, 0.86);
-  font-size: 17px;
+  color: var(--xt-text-on-dark-muted);
+  font-size: 16px;
   line-height: 1.7;
 }
 
@@ -232,41 +256,37 @@ function goItem(item: ActivityItem) {
   margin-top: 8px;
 }
 
+/* 主 CTA：琥珀实底 + 深色文字，无外发光 */
 .hero-primary-cta {
-  background: #fff !important;
-  color: var(--xt-primary-dark) !important;
-  border-color: #fff !important;
+  background: #e8a33d !important;
+  color: #0d0d12 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: none;
+}
+
+.hero-primary-cta:hover {
+  background: #f0bc66 !important;
+}
+
+.hero-secondary-cta {
+  background: transparent !important;
+  border: 1px solid rgba(232, 230, 224, 0.2) !important;
+  border-radius: 8px !important;
+  color: var(--xt-text-on-dark) !important;
   font-weight: 600;
   font-size: 16px;
 }
 
-.hero-primary-cta:hover {
-  background: #eff6ff !important;
-  color: #1d4ed8 !important;
+.hero-secondary-cta:hover {
+  border-color: rgba(232, 230, 224, 0.4) !important;
+  background: rgba(232, 230, 224, 0.05) !important;
 }
 
-.hero-quick-btn {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: rgba(255, 255, 255, 0.22) !important;
-  color: rgba(255, 255, 255, 0.92) !important;
-}
-
-.hero-quick-btn:hover {
-  background: rgba(255, 255, 255, 0.18) !important;
-  border-color: rgba(255, 255, 255, 0.32) !important;
-  color: #fff !important;
-}
-
-.hero-link {
-  color: rgba(255, 255, 255, 0.8) !important;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  font-weight: 500;
-  font-size: 16px;
-}
-
-.hero-link:hover {
-  color: #fff !important;
+.hero-stats-block {
+  margin-top: 18px;
 }
 
 .cta-ico {
@@ -278,44 +298,16 @@ function goItem(item: ActivityItem) {
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 280px;
+  min-height: 340px;
   will-change: transform;
 }
 
-.logo-wrapper {
-  position: relative;
-  z-index: 2;
-  transform: scale(1.6);
-}
-
-.hero-logo {
-  animation: logo-float 6s ease-in-out infinite;
-}
-
-@keyframes logo-float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(3deg); }
-}
-
-.constellation-reveal > * {
-  opacity: 0;
-  transform: translateY(8px);
-  animation: fade-in-up 0.6s ease forwards;
-}
-
-.constellation-reveal > *:nth-child(1) { animation-delay: 0ms; }
-.constellation-reveal > *:nth-child(2) { animation-delay: 100ms; }
-.constellation-reveal > *:nth-child(3) { animation-delay: 200ms; }
-.constellation-reveal > *:nth-child(4) { animation-delay: 300ms; }
-
-@keyframes fade-in-up {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* —— 移动端：上下堆叠，CTA 全宽，星球退为背景 —— */
 @media (max-width: 768px) {
+  .home {
+    gap: 40px;
+  }
+
   .home-hero {
     padding: 40px 24px;
     min-height: auto;
@@ -323,32 +315,32 @@ function goItem(item: ActivityItem) {
 
   .hero-grid {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 24px;
+  }
+
+  .hero-title {
+    font-size: clamp(28px, 8vw, 32px);
   }
 
   .hero-visual {
     order: -1;
     min-height: 200px;
+    opacity: 0.8;
   }
 
-  .logo-wrapper {
-    transform: scale(1.25);
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .hero-primary-cta,
+  .hero-secondary-cta {
+    width: 100%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .constellation-reveal > *,
-  .hero-logo {
+  .hero-primary-cta {
     animation: none;
-  }
-
-  .constellation-reveal > * {
-    opacity: 1;
-    transform: none;
-  }
-
-  .hero-logo {
-    transform: none;
   }
 }
 </style>

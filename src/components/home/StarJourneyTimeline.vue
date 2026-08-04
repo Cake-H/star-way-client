@@ -1,168 +1,95 @@
 <template>
-  <section class="journey-section">
+  <section class="journey-section" aria-label="你的星途">
     <div class="section-header">
-      <h2 class="section-title">星途旅程</h2>
-      <p class="section-subtitle">四步开启职业星图</p>
+      <h2 class="section-title">你的星途</h2>
+      <p class="section-subtitle">五段航程，按你的真实数据依序点亮</p>
     </div>
 
-    <div class="journey-svg-wrap">
-      <svg
-        class="journey-svg"
-        viewBox="0 0 800 120"
-        preserveAspectRatio="xMidYMid meet"
-        aria-labelledby="journeyTitle journeyDesc"
-      >
-        <title id="journeyTitle">星途旅程进度</title>
-        <desc id="journeyDesc">从智能解析到面试复盘的四个阶段进度</desc>
-
-        <defs>
-          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="var(--xt-primary)" />
-            <stop offset="100%" stop-color="var(--xt-primary-light)" />
-          </linearGradient>
-          <radialGradient id="currentGradient" cx="30%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="#fb7185" />
-            <stop offset="100%" stop-color="#e11d48" />
-          </radialGradient>
-        </defs>
-
-        <path
-          class="track-bg"
-          d="M60,60 H740"
-          fill="none"
-          stroke="var(--xt-border)"
-          stroke-width="3"
-          stroke-linecap="round"
-          stroke-dasharray="6 6"
-        />
-
-        <path
-          class="track-progress"
-          d="M60,60 H740"
-          fill="none"
-          stroke="url(#progressGradient)"
-          stroke-width="3"
-          stroke-linecap="round"
-          :stroke-dasharray="progressDasharray"
-          :stroke-dashoffset="progressDashoffset"
-        />
-
-        <g
-          v-for="(step, i) in steps"
-          :key="step.routeName"
-          class="journey-node"
-          :class="nodeClass(i)"
-          @click="goStep(step)"
-        >
-          <circle
-            class="node-bg"
-            :cx="nodeX(i)"
-            cy="60"
-            r="28"
-            fill="transparent"
-          />
-
-          <circle
-            class="node-planet"
-            :cx="nodeX(i)"
-            cy="60"
-            r="22"
-          />
-
-          <circle
-            v-if="i === stage"
-            class="node-pulse"
-            :cx="nodeX(i)"
-            cy="60"
-            r="28"
-            fill="none"
-          />
-
-          <foreignObject
-            :x="nodeX(i) - 12"
-            y="48"
-            width="24"
-            height="24"
+    <ol class="journey-track">
+      <template v-for="(step, i) in steps" :key="step.key">
+        <li class="jnode-wrap">
+          <button
+            type="button"
+            class="jnode"
+            :class="nodeClass(i)"
+            :aria-label="`${step.label}：${step.desc}`"
+            @click="goStep(step)"
           >
-            <el-icon :size="20" class="node-icon"><component :is="step.icon" /></el-icon>
-          </foreignObject>
-
-          <text
-            class="node-title"
-            :x="nodeX(i)"
-            y="110"
-            text-anchor="middle"
-          >
-            {{ step.label }}
-          </text>
-        </g>
-      </svg>
-    </div>
+            <span class="jnode-dot">
+              <el-icon :size="18"><component :is="step.icon" /></el-icon>
+            </span>
+            <span class="jnode-label">{{ step.label }}</span>
+            <span class="jnode-desc">{{ step.desc }}</span>
+          </button>
+        </li>
+        <li
+          v-if="i < steps.length - 1"
+          class="jlink"
+          :class="{ lit: i < stage }"
+          aria-hidden="true"
+        />
+      </template>
+    </ol>
 
     <div class="journey-counts">
       <div class="count-item">
         <span class="count-value">{{ counts.resumes }}</span>
-        <span class="count-label">份简历</span>
+        <span class="count-label">份星舰档案</span>
       </div>
       <div class="count-item">
         <span class="count-value">{{ counts.mocks }}</span>
-        <span class="count-label">场模拟面试</span>
+        <span class="count-label">场跃迁试炼</span>
       </div>
       <div class="count-item">
         <span class="count-value">{{ counts.interviews }}</span>
-        <span class="count-label">场面试复盘</span>
+        <span class="count-label">篇航行日志</span>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { journeySteps } from '@/composables/useHomeJourney'
+import { journeySteps, type JourneyStep } from '@/composables/useHomeJourney'
+import { useLoginPrompt } from '@/composables/useLoginPrompt'
+import { authToken } from '@/auth/session'
 
 const props = defineProps<{
+  /** 当前航程阶段：-1 未启航，0-4 已点亮的最高阶段；下一阶段为脉冲的当前节点 */
   stage: number
   counts: { resumes: number; mocks: number; interviews: number }
 }>()
 
 const router = useRouter()
+const { promptLogin } = useLoginPrompt()
 const steps = journeySteps
-const totalWidth = 800
-const padding = 60
-const usableWidth = totalWidth - padding * 2
-const nodeCount = steps.length
-
-function nodeX(index: number) {
-  return padding + (usableWidth / (nodeCount - 1)) * index
-}
 
 function nodeClass(index: number) {
-  if (index < props.stage) return 'completed'
-  if (index === props.stage) return 'current'
+  if (index <= props.stage) return 'completed'
+  if (index === props.stage + 1) return 'current'
   return 'future'
 }
 
-function goStep(step: (typeof steps)[number]) {
+function goStep(step: JourneyStep) {
+  if (!authToken.value) {
+    promptLogin('/')
+    return
+  }
   router.push({ name: step.routeName })
 }
-
-const trackLength = computed(() => usableWidth)
-const progressRatio = computed(() => props.stage / (nodeCount - 1))
-const progressDasharray = computed(() => `${trackLength.value * progressRatio.value} ${trackLength.value}`)
-const progressDashoffset = computed(() => 0)
 </script>
 
 <style scoped>
 .journey-section {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  padding: 28px;
+  gap: 32px;
+  padding: 36px 32px 28px;
   border-radius: var(--xt-radius-lg);
-  background: var(--xt-surface);
-  border: 1px solid var(--xt-border);
-  box-shadow: var(--xt-shadow-sm);
+  background: var(--xt-card-bg);
+  border: 1px solid var(--xt-card-border);
+  box-shadow: inset 0 1px 0 var(--xt-card-highlight);
 }
 
 .section-header {
@@ -171,105 +98,134 @@ const progressDashoffset = computed(() => 0)
 
 .section-title {
   margin: 0 0 6px;
+  font-family: var(--xt-font-title);
   font-size: 32px;
-  font-weight: 700;
-  color: var(--xt-text);
-  letter-spacing: -0.02em;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--xt-text-on-dark);
 }
 
 .section-subtitle {
   margin: 0;
   font-size: 15px;
-  color: var(--xt-text-secondary);
+  color: var(--xt-text-on-dark-muted);
 }
 
-.journey-svg-wrap {
-  width: 100%;
-  overflow-x: auto;
-  padding: 8px 0;
+/* —— 星座连线（PC 横向） —— */
+.journey-track {
+  display: flex;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.journey-svg {
-  width: 100%;
-  min-width: 560px;
-  height: auto;
-  display: block;
+.jnode-wrap {
+  flex-shrink: 0;
+  width: 132px;
+  display: flex;
+  justify-content: center;
 }
 
-.track-progress {
-  transition: stroke-dasharray 0.8s ease;
-}
-
-.journey-node {
+.jnode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  background: none;
+  border: none;
   cursor: pointer;
+  font-family: inherit;
 }
 
-.journey-node:hover .node-planet {
-  filter: brightness(1.1);
+.jnode-dot {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--xt-text-on-dark-disabled);
+  background: #0d0d12;
+  border: 1px solid rgba(232, 230, 224, 0.14);
+  transition: box-shadow 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-.node-planet {
-  transition: all 0.25s ease;
-  stroke: transparent;
-  stroke-width: 3;
+/* 已完成节点：琥珀点亮 */
+.completed .jnode-dot {
+  color: #0d0d12;
+  border-color: #e8a33d;
+  background: #e8a33d;
 }
 
-.completed .node-planet {
-  fill: url(#progressGradient);
-}
-
-.current .node-planet {
-  fill: url(#currentGradient);
-}
-
-.current .node-pulse {
-  stroke: var(--xt-accent);
-  stroke-width: 2;
-  opacity: 0.6;
+/* 当前节点：琥珀脉冲呼吸 */
+.current .jnode-dot {
+  color: #e8a33d;
+  border-color: rgba(232, 163, 61, 0.8);
   animation: node-pulse 2s ease-in-out infinite;
 }
 
-.future .node-planet {
-  fill: #e2e8f0;
-}
-
-.node-icon {
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-}
-
-.future .node-icon {
-  color: var(--xt-text-muted);
-}
-
-.node-title {
-  font-size: 13px;
-  font-weight: 600;
-  fill: var(--xt-text);
+.current .jnode-label {
+  color: #e8a33d;
 }
 
 @keyframes node-pulse {
-  0%,
-  100% {
-    r: 22;
-    opacity: 0.6;
-  }
-  50% {
-    r: 32;
-    opacity: 0.2;
-  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 163, 61, 0.35); }
+  50% { box-shadow: 0 0 0 10px rgba(232, 163, 61, 0); }
 }
 
+/* 未到达节点：暗淡 */
+.future .jnode-dot {
+  opacity: 0.65;
+}
+
+.future .jnode-label,
+.future .jnode-desc {
+  opacity: 0.6;
+}
+
+.jnode:hover .jnode-dot,
+.jnode:focus-visible .jnode-dot {
+  border-color: rgba(232, 163, 61, 0.7);
+  color: #e8a33d;
+  opacity: 1;
+}
+
+.jnode-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--xt-text-on-dark);
+}
+
+.jnode-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--xt-text-on-dark-muted);
+  text-align: center;
+  max-width: 150px;
+}
+
+/* 节点间连线：点亮段为琥珀光线 */
+.jlink {
+  flex: 1;
+  height: 2px;
+  margin-top: 27px;
+  background: rgba(232, 230, 224, 0.1);
+  border-radius: 2px;
+}
+
+.jlink.lit {
+  background: #e8a33d;
+}
+
+/* —— 统计行 —— */
 .journey-counts {
   display: flex;
   justify-content: center;
-  gap: 32px;
-  padding-top: 12px;
-  border-top: 1px solid var(--xt-border);
+  gap: 48px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(232, 230, 224, 0.1);
 }
 
 .count-item {
@@ -280,40 +236,94 @@ const progressDashoffset = computed(() => 0)
 }
 
 .count-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--xt-primary);
+  font-family: var(--xt-font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: #e8a33d;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .count-label {
   font-size: 13px;
-  color: var(--xt-text-secondary);
+  color: var(--xt-text-on-dark-muted);
 }
 
-@media (max-width: 640px) {
-  .journey-svg-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+/* —— 移动端：纵向时间线 —— */
+@media (max-width: 768px) {
+  .journey-section {
+    padding: 26px 20px 22px;
+    gap: 24px;
+  }
+
+  .section-title {
+    font-size: 26px;
+  }
+
+  .journey-track {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .jnode-wrap {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .jnode {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 6px 0;
+    text-align: left;
+  }
+
+  .jnode-dot {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+
+  .jnode-label {
+    font-size: 15px;
+    min-width: 76px;
+  }
+
+  .jnode-desc {
+    text-align: left;
+    max-width: none;
+    flex: 1;
+  }
+
+  .jlink {
+    flex: none;
+    width: 2px;
+    height: 26px;
+    margin-top: 0;
+    margin-left: 27px;
+    background: rgba(232, 230, 224, 0.1);
+  }
+
+  .jlink.lit {
+    background: #e8a33d;
   }
 
   .journey-counts {
-    gap: 16px;
+    gap: 20px;
+    justify-content: space-between;
   }
 
   .count-value {
-    font-size: 20px;
+    font-size: 22px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .current .node-pulse {
+  .current .jnode-dot {
     animation: none;
-    opacity: 0.4;
-  }
-
-  .track-progress {
-    transition: none;
+    box-shadow: 0 0 0 3px rgba(232, 163, 61, 0.25);
   }
 }
 </style>

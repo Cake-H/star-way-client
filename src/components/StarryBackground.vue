@@ -1,12 +1,12 @@
 <template>
   <div class="starry-root" :class="variant" aria-hidden="true">
-    <div class="aurora" />
-    <div class="glow" />
+    <div v-if="variant !== 'dark'" class="aurora" />
+    <div v-if="variant !== 'dark'" class="glow" />
     <div
       v-for="(s, i) in stars"
       :key="i"
       class="star"
-      :class="{ 'star-static': reducedMotion }"
+      :class="{ 'star-static': reducedMotion, 'star-bright': s.bright }"
       :style="{
         top: s.top,
         left: s.left,
@@ -22,13 +22,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
-type Star = { top: string; left: string; size: number; delay: number; opacity: number }
+type Star = { top: string; left: string; size: number; delay: number; opacity: number; bright: boolean }
 
 const props = withDefaults(
   defineProps<{
-    /** dark：登录全屏深空；subtle：主应用浅色星空 */
+    /** dark：深空黑（首页/登录）；subtle：内页浅色星空 */
     variant?: 'dark' | 'subtle'
   }>(),
   { variant: 'dark' },
@@ -39,18 +39,28 @@ const reducedMotion = ref(false)
 
 const showMeteors = computed(() => props.variant === 'dark' && !reducedMotion.value)
 
-onMounted(() => {
-  reducedMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const count = props.variant === 'dark' ? 160 : 72
-  const opacityBase = props.variant === 'dark' ? 0.25 : 0.35
+function generateStars() {
+  // 移动端粒子数减半
+  const mobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const count = props.variant === 'dark' ? (mobile ? 110 : 220) : 72
+  const opacityBase = props.variant === 'dark' ? 0.3 : 0.35
   stars.value = Array.from({ length: count }, () => ({
     top: `${Math.random() * 100}%`,
     left: `${Math.random() * 100}%`,
-    size: props.variant === 'dark' ? Math.random() * 2.2 + 0.6 : Math.random() * 1.8 + 0.4,
+    size: props.variant === 'dark' ? Math.random() * 2 + 1 : Math.random() * 1.8 + 0.4,
     delay: Math.random() * 5,
-    opacity: opacityBase + Math.random() * (props.variant === 'dark' ? 0.75 : 0.45),
+    opacity: opacityBase + Math.random() * (1 - opacityBase),
+    // 仅 2–3% 亮星带微弱十字光
+    bright: Math.random() < 0.025,
   }))
+}
+
+onMounted(() => {
+  reducedMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  generateStars()
 })
+
+watch(() => props.variant, generateStars)
 </script>
 
 <style scoped>
@@ -63,7 +73,7 @@ onMounted(() => {
 }
 
 .starry-root.dark {
-  background: radial-gradient(ellipse 120% 80% at 50% 0%, #1e3a8a 0%, #0b1028 45%, #050814 100%);
+  background: linear-gradient(180deg, #060608 0%, #0d0d12 60%, #060608 100%);
 }
 
 .starry-root.subtle {
@@ -113,9 +123,29 @@ onMounted(() => {
 .star {
   position: absolute;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 6px rgba(200, 230, 255, 0.9);
+  background: #e8e6e0;
   animation: twinkle 4s ease-in-out infinite;
+}
+
+/* 2–3% 亮星：微弱十字光 */
+.star-bright::before,
+.star-bright::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: rgba(232, 230, 224, 0.35);
+  transform: translate(-50%, -50%);
+}
+
+.star-bright::before {
+  width: 9px;
+  height: 1px;
+}
+
+.star-bright::after {
+  width: 1px;
+  height: 9px;
 }
 
 .subtle .star {

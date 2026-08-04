@@ -21,7 +21,7 @@ export const router = createRouter({
           path: '',
           name: 'home',
           component: () => import('@/views/HomeView.vue'),
-          meta: { hideStarry: true, public: true },
+          meta: { public: true },
         },
         {
           path: 'resume/upload',

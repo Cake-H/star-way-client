@@ -1,73 +1,116 @@
 /**
  * 星途 · 全局设计系统
- * 深空星蓝 + 流星点缀，表单区保持高对比可读性
+ * 日冕暖金：中性深空黑 + 单一琥珀彩色（90/9/1 色彩纪律）
  */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap');
 
 :root {
-  /* 品牌色：星空蓝 + 赛博青 + 活力珊瑚粉 */
-  --xt-primary: #3b82f6;
-  --xt-primary-dark: #1d4ed8;
-  --xt-primary-light: #60a5fa;
-  --xt-secondary: #22d3ee;
-  --xt-accent: #fb7185;
-  --xt-accent-soft: rgba(251, 113, 133, 0.16);
+  /* 唯一彩色：日冕琥珀（主 CTA / 当前态 / 点亮节点 / 关键数字 / 焦点环） */
+  --xt-primary: #e8a33d;
+  --xt-primary-dark: #c9852a;
+  --xt-primary-light: #f0bc66;
+  /* 兼容旧变量：不再设第二彩色，统一回落琥珀 */
+  --xt-secondary: #e8a33d;
+  --xt-nebula: #e8a33d;
+  --xt-accent: #e8a33d;
+  --xt-accent-soft: rgba(232, 163, 61, 0.14);
 
-  /* 深空：宇宙蓝，贴合星空背景 */
-  --xt-space-deep: #050814;
-  --xt-space-mid: #081226;
-  --xt-space-glow: #1e3a8a;
+  /* 字体：中文标题思源宋体 Bold；英文/数字标题 Orbitron；正文思源黑体 */
+  --xt-font-display: 'Orbitron', 'Noto Serif SC', serif;
+  --xt-font-title: 'Noto Serif SC', 'Orbitron', serif;
 
-  /* 内容区（高可读性浅色） */
+  /* 哑光实底卡片（替代玻璃拟态） */
+  --xt-card-bg: #101014;
+  --xt-card-border: rgba(232, 230, 224, 0.08);
+  --xt-card-border-hover: rgba(232, 230, 224, 0.18);
+  --xt-card-highlight: rgba(232, 230, 224, 0.05);
+  /* 兼容旧玻璃变量，统一回落哑光方案 */
+  --xt-glass-bg: #101014;
+  --xt-glass-border: rgba(232, 230, 224, 0.08);
+  --xt-glass-border-hover: rgba(232, 230, 224, 0.18);
+
+  /* 深空：中性黑，不带蓝色倾向 */
+  --xt-space-deep: #060608;
+  --xt-space-mid: #0d0d12;
+  --xt-space-glow: #1a1a1f;
+
+  /* 内容区（内页浅色，待逐页迁移） */
   --xt-surface: rgba(255, 255, 255, 0.94);
   --xt-surface-solid: #ffffff;
   --xt-surface-muted: rgba(248, 250, 252, 0.88);
-  --xt-border: rgba(59,130,246, 0.14);
-  --xt-border-strong: rgba(59,130,246, 0.28);
+  --xt-border: rgba(15, 23, 42, 0.1);
+  --xt-border-strong: rgba(15, 23, 42, 0.2);
 
   /* 文字 */
   --xt-text: #0f172a;
   --xt-text-secondary: #475569;
   --xt-text-muted: #64748b;
-  --xt-text-on-dark: #f0f6ff;
-  --xt-text-on-dark-muted: rgba(239,246,255, 0.72);
+  --xt-text-on-dark: #e8e6e0;
+  --xt-text-on-dark-muted: #9a968e;
+  --xt-text-on-dark-disabled: #55524c;
 
-  /* 圆角与阴影 */
-  --xt-radius-sm: 10px;
-  --xt-radius-md: 14px;
-  --xt-radius-lg: 20px;
-  --xt-shadow-sm: 0 4px 20px rgba(15, 23, 42, 0.06);
-  --xt-shadow-md: 0 12px 40px rgba(29,78,216, 0.12);
-  --xt-shadow-glow: 0 0 40px rgba(59,130,246, 0.18);
+  /* 圆角与阴影（无彩色外发光） */
+  --xt-radius-sm: 8px;
+  --xt-radius-md: 12px;
+  --xt-radius-lg: 16px;
+  --xt-shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.25);
+  --xt-shadow-md: 0 12px 40px rgba(0, 0, 0, 0.4);
+  --xt-shadow-glow: none;
 
-  /* 星轨与发射 */
-  --xt-orbit-ring: rgba(59,130,246, 0.12);
-  --xt-orbit-ring-strong: rgba(59,130,246, 0.32);
-  --xt-orbit-dot: #93c5fd;
-  --xt-orbit-path: rgba(96,165,250, 0.22);
-  --xt-launch-glow: rgba(251, 113, 133, 0.22);
-  --xt-launch-trail: rgba(251, 113, 133, 0.45);
+  /* 星轨 */
+  --xt-orbit-ring: rgba(232, 230, 224, 0.1);
+  --xt-orbit-ring-strong: rgba(232, 163, 61, 0.4);
+  --xt-orbit-dot: #9a968e;
+  --xt-orbit-path: rgba(232, 230, 224, 0.16);
+  --xt-launch-glow: rgba(232, 163, 61, 0.2);
+  --xt-launch-trail: rgba(232, 163, 61, 0.4);
 
   /* 背景图片（由 StarryBackground 自动检测启用） */
   --xt-bg-image: none;
 
   /* Element Plus 主题对齐 */
   --el-color-primary: var(--xt-primary);
-  --el-color-primary-light-3: #93c5fd;
-  --el-color-primary-light-5: #bfdbfe;
-  --el-color-primary-light-7: #dbeafe;
-  --el-color-primary-light-8: #eff6ff;
-  --el-color-primary-light-9: #f5f7ff;
+  --el-color-primary-light-3: #f0bc66;
+  --el-color-primary-light-5: #f6d49a;
+  --el-color-primary-light-7: #fbe7c4;
+  --el-color-primary-light-8: #fdf0da;
+  --el-color-primary-light-9: #fef7ec;
   --el-color-primary-dark-2: var(--xt-primary-dark);
-  --el-border-radius-base: 10px;
-  --el-font-family: 'Plus Jakarta Sans', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --el-border-radius-base: 8px;
+  --el-font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
 }
 
 /* —— 全局基础 —— */
 body {
   font-family: var(--el-font-family);
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--xt-text);
   -webkit-font-smoothing: antialiased;
+}
+
+/* —— 全局滚动条：6px 透明轨道 + 琥珀滑块 —— */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(232, 163, 61, 0.25);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(232, 163, 61, 0.4);
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(232, 163, 61, 0.25) transparent;
 }
 
 :focus-visible {
@@ -93,12 +136,11 @@ body {
   }
 }
 
-/* —— 主内容区卡片（玻璃质感 + 可读性） —— */
+/* —— 主内容区卡片（哑光实底 + 可读性） —— */
 .xt-main-content .el-card {
   border-radius: var(--xt-radius-md);
   border: 1px solid var(--xt-border);
-  background: var(--xt-surface);
-  backdrop-filter: blur(12px);
+  background: var(--xt-surface-solid);
   box-shadow: var(--xt-shadow-sm);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -231,12 +273,11 @@ body {
   color: var(--xt-text-secondary);
 }
 
-/* 登录页深色玻璃表单 */
+/* 登录页深色哑光表单 */
 .xt-glass-dark {
   border-radius: var(--xt-radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(12, 16, 40, 0.58);
-  backdrop-filter: blur(16px);
+  border: 1px solid rgba(232, 230, 224, 0.12);
+  background: #101014;
   color: var(--xt-text-on-dark);
   --el-card-bg-color: transparent;
 }
@@ -323,8 +364,7 @@ body {
 .xt-constellation-reveal > *:nth-child(8) { animation-delay: 490ms; }
 
 .xt-glass-strong {
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(14px);
+  background: #ffffff;
 }
 
 /* —— 关键帧 —— */
