@@ -5,7 +5,12 @@ export interface ResumeParseResultVO {
   contentType: string
   ossBucket: string
   ossObjectKey: string
-  ossPublicUrl: string | null
+  /**
+   * 简历原件预签名 URL（Bucket 私有读），1 小时过期；
+   * OSS 未启用或签发失败时为 null（提示「原件暂不可预览」）。
+   * 不要长期缓存该 URL，过期后需重新调接口获取。
+   */
+  ossSignedUrl: string | null
   plainTextCharLength: number
   parseNotes: string[]
   draft: ResumeParseDraftDto | null
