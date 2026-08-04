@@ -55,14 +55,26 @@
             type="primary"
             native-type="submit"
             :loading="logging"
+            :disabled="!agreed"
             @click="onLogin"
           >
             开启星途
           </el-button>
+
+          <el-checkbox v-model="agreed" class="agreement-check">
+            <span class="agreement-text">
+              我已阅读并同意
+              <a class="agreement-link" @click.prevent="openAgreement('terms')">《用户协议》</a>
+              和
+              <a class="agreement-link" @click.prevent="openAgreement('privacy')">《隐私政策》</a>
+            </span>
+          </el-checkbox>
         </el-form>
       </el-card>
       <p class="footer-note">每一步投递，都是向理想更近一程</p>
     </div>
+
+    <AgreementDialog v-model="agreementVisible" :type="agreementType" />
   </div>
 </template>
 
@@ -73,11 +85,23 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import StarLogo from '@/components/StarLogo.vue'
 import StarryBackground from '@/components/StarryBackground.vue'
+import AgreementDialog from '@/components/AgreementDialog.vue'
 import { loginBySmsAndUnwrap, sendLoginSmsCode } from '@/api/auth'
 import { setSession } from '@/auth/session'
+import type { AgreementType } from '@/api/agreement'
 
 const router = useRouter()
 const route = useRoute()
+
+/* —— 协议同意：未勾选不允许提交登录（纯前端约束，后端不校验） —— */
+const agreed = ref(false)
+const agreementVisible = ref(false)
+const agreementType = ref<AgreementType>('terms')
+
+function openAgreement(type: AgreementType) {
+  agreementType.value = type
+  agreementVisible.value = true
+}
 
 const formRef = ref<FormInstance>()
 const form = reactive({
@@ -120,6 +144,10 @@ function startCountdown(seconds: number) {
 
 async function onSendCode() {
   if (!formRef.value) return
+  if (!agreed.value) {
+    ElMessage.warning('请先阅读并勾选同意《用户协议》和《隐私政策》')
+    return
+  }
   try {
     await formRef.value.validateField('phone')
   } catch {
@@ -137,6 +165,10 @@ async function onSendCode() {
 
 async function onLogin() {
   if (!formRef.value) return
+  if (!agreed.value) {
+    ElMessage.warning('请先阅读并勾选同意《用户协议》和《隐私政策》')
+    return
+  }
   await formRef.value.validate(async (valid) => {
     if (!valid) return
     logging.value = true
@@ -231,6 +263,27 @@ async function onLogin() {
   font-size: 16px;
   font-weight: 600;
   border-radius: var(--xt-radius-sm);
+  cursor: pointer;
+}
+
+.agreement-check {
+  margin-top: 14px;
+  height: auto;
+  align-items: flex-start;
+}
+
+.agreement-check :deep(.el-checkbox__label) {
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.agreement-text {
+  font-size: 13px;
+  color: var(--xt-text-on-dark-muted);
+}
+
+.agreement-link {
+  color: var(--el-color-primary);
   cursor: pointer;
 }
 
