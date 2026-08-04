@@ -233,7 +233,12 @@ function formatRemark(remark: string) {
   for (const [key, label] of Object.entries(remarkMap)) {
     if (remark.includes(key)) return `AI 调用消耗：${label}`
   }
-  return maskRedeemCode(remark)
+  return maskRedeemCode(stripAdminId(remark))
+}
+
+/** 管理员调整备注不向前台用户展示操作管理员 ID */
+function stripAdminId(text: string) {
+  return text.replace(/[（(]\s*操作管理员ID\s*[:：]?\s*\d+\s*[)）]/g, '').trim()
 }
 
 /** 兑换码等敏感信息中间打码，保留前4后4 */
