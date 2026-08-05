@@ -43,15 +43,16 @@ function generateStars() {
   // 移动端粒子数减半
   const mobile = typeof window !== 'undefined' && window.innerWidth < 768
   const count = props.variant === 'dark' ? (mobile ? 110 : 220) : 72
-  const opacityBase = props.variant === 'dark' ? 0.3 : 0.35
+  // subtle（内页）：透明度降 50%，静态不闪烁，以读屏效率优先
+  const opacityBase = props.variant === 'dark' ? 0.3 : 0.14
   stars.value = Array.from({ length: count }, () => ({
     top: `${Math.random() * 100}%`,
     left: `${Math.random() * 100}%`,
-    size: props.variant === 'dark' ? Math.random() * 2 + 1 : Math.random() * 1.8 + 0.4,
+    size: props.variant === 'dark' ? Math.random() * 2 + 1 : Math.random() * 1.6 + 0.4,
     delay: Math.random() * 5,
-    opacity: opacityBase + Math.random() * (1 - opacityBase),
+    opacity: opacityBase + Math.random() * (0.5 - opacityBase),
     // 仅 2–3% 亮星带微弱十字光
-    bright: Math.random() < 0.025,
+    bright: props.variant === 'dark' && Math.random() < 0.025,
   }))
 }
 
@@ -78,9 +79,8 @@ watch(() => props.variant, generateStars)
 
 .starry-root.subtle {
   background:
-    radial-gradient(ellipse 100% 60% at 50% -10%, rgba(59,130,246, 0.12), transparent 55%),
-    radial-gradient(ellipse 80% 50% at 100% 0%, rgba(56, 189, 248, 0.08), transparent 50%),
-    linear-gradient(180deg, #eff6ff 0%, #f0f6ff 38%, #f8fafc 100%);
+    radial-gradient(ellipse 90% 55% at 70% -10%, rgba(232, 163, 61, 0.04), transparent 55%),
+    linear-gradient(180deg, #08080c 0%, #0a0a0f 55%, #08080c 100%);
 }
 
 .aurora {
@@ -100,8 +100,8 @@ watch(() => props.variant, generateStars)
 
 .subtle .aurora {
   height: 40%;
-  opacity: 0.55;
-  background: radial-gradient(ellipse at 40% 0%, rgba(96,165,250, 0.18), transparent 65%);
+  opacity: 0.5;
+  background: radial-gradient(ellipse at 50% 0%, rgba(232, 163, 61, 0.05), transparent 65%);
 }
 
 .glow {
@@ -117,7 +117,7 @@ watch(() => props.variant, generateStars)
 
 .subtle .glow {
   height: 30%;
-  background: radial-gradient(ellipse at 50% 100%, rgba(59,130,246, 0.06), transparent 70%);
+  background: radial-gradient(ellipse at 50% 100%, rgba(232, 163, 61, 0.03), transparent 70%);
 }
 
 .star {
@@ -149,8 +149,8 @@ watch(() => props.variant, generateStars)
 }
 
 .subtle .star {
-  background: #3b82f6;
-  box-shadow: 0 0 4px rgba(59,130,246, 0.35);
+  background: #e8e6e0;
+  animation: none;
 }
 
 .star-static {

@@ -14,7 +14,7 @@
       </p>
     </div>
 
-    <el-steps :active="step" align-center finish-status="success" class="steps">
+    <el-steps :active="step" :direction="isMobile ? 'vertical' : 'horizontal'" align-center finish-status="success" class="steps">
       <el-step title="上传简历" description="仅支持 .pdf / .docx" />
       <el-step title="智能解析" description="上传文件并由 AI 抽取简历信息" />
       <el-step title="核对并保存" description="核对草稿后可保存，支持后续更新" />
@@ -59,7 +59,8 @@
             :disabled="parsing"
           >
             <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
-            <div class="el-upload__text">将文件拖到此处，或 <em>点击选择</em></div>
+            <div v-if="isMobile" class="el-upload__text">点击选择文件</div>
+            <div v-else class="el-upload__text">将文件拖到此处，或 <em>点击选择</em></div>
             <template #tip>
               <div class="el-upload__tip">
                 仅支持 <b>.pdf</b> 与 <b>.docx</b>，大小不超过 <b>{{ maxMb }}MB</b>。解析耗时取决于文件大小与模型负载，请耐心等待。
@@ -128,6 +129,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useMediaQuery } from '@vueuse/core'
 import { UploadFilled } from '@element-plus/icons-vue'
 import type { UploadRequestOptions } from 'element-plus'
 import type { ResumeParseDraftDto, ResumeParseResultVO } from '@/api/resumeTypes'
@@ -143,6 +145,9 @@ import { ElMessage } from 'element-plus'
 
 const maxMb = 20
 const maxBytes = maxMb * 1024 * 1024
+
+/* 移动端：stepper 纵向、上传区无拖拽场景 */
+const isMobile = useMediaQuery('(max-width: 767px)')
 
 const parsing = ref(false)
 const parseCompleted = ref(false)
@@ -377,14 +382,14 @@ function resetAll() {
 }
 
 .uploader :deep(.el-upload__tip) {
-  color: #4b5563;
+  color: var(--xt-text-secondary);
   line-height: 1.55;
   font-size: 13px;
 }
 
 .el-icon--upload {
   font-size: 48px;
-  color: #94a3b8;
+  color: var(--xt-text-muted);
   margin-bottom: 8px;
 }
 
@@ -406,7 +411,7 @@ function resetAll() {
 .notes-title {
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: var(--xt-text-secondary);
   margin-bottom: 8px;
 }
 
@@ -436,7 +441,7 @@ function resetAll() {
 .saved-hint {
   margin: 0 0 14px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--xt-text-secondary);
   line-height: 1.55;
 }
 </style>
@@ -463,6 +468,6 @@ function resetAll() {
   background: transparent !important;
 }
 .el-overlay:has(.waiting-dialog) {
-  background-color: rgba(5, 8, 20, 0.35) !important;
+  background-color: rgba(6, 6, 8, 0.4) !important;
 }
 </style>

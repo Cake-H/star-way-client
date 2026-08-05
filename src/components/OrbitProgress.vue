@@ -24,7 +24,7 @@
         v-for="(label, i) in labels"
         :key="i"
         class="orbit-label"
-        :class="{ active: i < activeIndex }"
+        :class="{ active: i < activeIndex - 1, current: i === activeIndex - 1 }"
       >
         {{ label }}
       </span>
@@ -129,11 +129,18 @@ const svgStyle = computed(() => {
   justify-content: space-between;
   width: 100%;
   font-size: 11px;
-  color: var(--xt-text-muted);
+  /* 未答：禁用灰 */
+  color: var(--xt-text-on-dark-disabled);
 }
 
+/* 已答：暖白 */
 .orbit-label.active {
-  color: var(--xt-primary-dark);
+  color: var(--xt-text-on-dark);
+}
+
+/* 当前题：琥珀 */
+.orbit-label.current {
+  color: var(--xt-primary);
   font-weight: 600;
 }
 

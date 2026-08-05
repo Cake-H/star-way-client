@@ -198,6 +198,19 @@ onMounted(async () => {
   cursor: pointer;
 }
 
+/* 删除简历：#C2554D 描边幽灵按钮，不用红实心 */
+.head-btns :deep(.el-button--danger.is-plain) {
+  background: transparent;
+  border-color: rgba(194, 85, 77, 0.55);
+  color: #c2554d;
+}
+
+.head-btns :deep(.el-button--danger.is-plain:hover) {
+  background: rgba(194, 85, 77, 0.1);
+  border-color: #c2554d;
+  color: #d4756e;
+}
+
 .btn-icon {
   margin-right: 4px;
   vertical-align: middle;

@@ -45,7 +45,7 @@
         </div>
       </OrbitalCard>
 
-      <el-row v-if="items.length" :gutter="20" class="grid">
+      <el-row v-if="items.length" v-stagger :gutter="20" class="grid">
         <el-col v-for="row in items" :key="row.resumeId" :xs="24" :sm="12" :lg="8">
           <OrbitalCard
             class="resume-card"
@@ -211,8 +211,14 @@ async function onDelete(row: ResumeListItemVO) {
 
 .plugin-banner {
   cursor: pointer;
-  background: linear-gradient(100deg, rgba(59,130,246, 0.06) 0%, rgba(52, 211, 153, 0.06) 100%);
-  border: 1px solid rgba(59,130,246, 0.18);
+  background: #101014;
+  border: 1px solid rgba(232, 230, 224, 0.08);
+  border-left: 3px solid #e8a33d;
+}
+
+.plugin-banner:hover {
+  border-color: rgba(232, 230, 224, 0.16);
+  border-left-color: #e8a33d;
 }
 
 .plugin-banner :deep(.el-card__body) {
@@ -261,6 +267,10 @@ async function onDelete(row: ResumeListItemVO) {
   height: 100%;
 }
 
+.resume-card:hover {
+  border-color: rgba(232, 163, 61, 0.25);
+}
+
 .card-top {
   display: flex;
   align-items: flex-start;
@@ -271,8 +281,9 @@ async function onDelete(row: ResumeListItemVO) {
 
 .card-title {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-family: var(--xt-font-title);
+  font-size: 18px;
+  font-weight: 700;
   color: var(--xt-text);
   line-height: 1.35;
   flex: 1;

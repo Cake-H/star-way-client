@@ -38,7 +38,7 @@
 
     <el-empty v-else-if="!sites.length" description="该分类下暂无上架站点" />
 
-    <div v-else class="site-list">
+    <div v-else v-stagger class="site-list">
       <OrbitalCard
         v-for="site in sites"
         :key="site.id"
@@ -65,7 +65,7 @@
                 v-if="site.supportAutofill === 1"
                 type="primary"
                 size="small"
-                effect="dark"
+                effect="plain"
                 class="autofill-badge"
               >
                 <el-icon class="badge-ico"><MagicStick /></el-icon>
@@ -287,14 +287,15 @@ onMounted(async () => {
 }
 
 .category-tab:hover {
-  color: var(--xt-primary-dark);
-  border-color: var(--xt-primary-light);
+  color: var(--xt-text);
+  border-color: rgba(232, 163, 61, 0.45);
 }
 
+/* 当前分类：琥珀实底 + 深色文字 */
 .category-tab.active {
   background: var(--xt-primary);
   border-color: var(--xt-primary);
-  color: #fff;
+  color: #1c1206;
   font-weight: 600;
 }
 
@@ -302,19 +303,27 @@ onMounted(async () => {
   margin-top: 8px;
 }
 
+/* 网格：PC 3 列、平板 2 列、移动端 1 列 */
 .site-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
+@media (max-width: 1024px) {
+  .site-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .site-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   background: var(--xt-surface-solid);
 }
 
 .site-card:hover {
   transform: translateY(-3px);
+  border-color: rgba(232, 163, 61, 0.25);
   box-shadow: var(--xt-shadow-md);
 }
 
@@ -342,13 +351,14 @@ onMounted(async () => {
   object-fit: cover;
 }
 
+/* 字母方块：哑光底 + 琥珀字母 + 细边 */
 .site-logo.placeholder {
-  background: linear-gradient(135deg, var(--xt-primary-light), var(--xt-primary));
-  border: none;
+  background: #1a1a1f;
+  border: 1px solid rgba(232, 230, 224, 0.12);
 }
 
 .logo-fallback {
-  color: #fff;
+  color: var(--xt-primary);
   font-size: 20px;
   font-weight: 700;
 }
@@ -369,16 +379,21 @@ onMounted(async () => {
 }
 
 .site-name {
-  font-size: 15px;
-  font-weight: 600;
+  font-family: var(--xt-font-title);
+  font-size: 16px;
+  font-weight: 700;
   color: var(--xt-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* 一键填表：琥珀描边小胶囊 */
 .autofill-badge {
   flex-shrink: 0;
+  background: transparent;
+  border-color: rgba(232, 163, 61, 0.55);
+  color: var(--xt-primary);
 }
 
 .badge-ico {
@@ -399,7 +414,7 @@ onMounted(async () => {
 }
 
 .site-card:hover .site-arrow {
-  transform: translateX(3px);
+  transform: translateX(2px);
   color: var(--xt-primary);
 }
 
@@ -437,9 +452,9 @@ onMounted(async () => {
 }
 
 .store-link:hover {
-  background: rgba(59,130,246, 0.08);
-  border-color: var(--xt-primary-light);
-  color: var(--xt-primary-dark);
+  background: rgba(232, 163, 61, 0.08);
+  border-color: rgba(232, 163, 61, 0.45);
+  color: var(--xt-primary);
 }
 
 .dialog-footer {

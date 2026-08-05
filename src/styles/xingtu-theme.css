@@ -34,20 +34,25 @@
   --xt-space-mid: #0d0d12;
   --xt-space-glow: #1a1a1f;
 
-  /* 内容区（内页浅色，待逐页迁移） */
-  --xt-surface: rgba(255, 255, 255, 0.94);
-  --xt-surface-solid: #ffffff;
-  --xt-surface-muted: rgba(248, 250, 252, 0.88);
-  --xt-border: rgba(15, 23, 42, 0.1);
-  --xt-border-strong: rgba(15, 23, 42, 0.2);
+  /* 内容区（内页深色：哑光卡片 + 暖灰描边） */
+  --xt-surface: #101014;
+  --xt-surface-solid: #101014;
+  --xt-surface-muted: #16161b;
+  --xt-border: rgba(232, 230, 224, 0.08);
+  --xt-border-strong: rgba(232, 230, 224, 0.16);
 
   /* 文字 */
-  --xt-text: #0f172a;
-  --xt-text-secondary: #475569;
-  --xt-text-muted: #64748b;
+  --xt-text: #e8e6e0;
+  --xt-text-secondary: #9a968e;
+  --xt-text-muted: #7d7a72;
   --xt-text-on-dark: #e8e6e0;
   --xt-text-on-dark-muted: #9a968e;
   --xt-text-on-dark-disabled: #55524c;
+
+  /* 语义色（深色低饱和版） */
+  --xt-success: #3e9e6e;
+  --xt-success-bg: rgba(62, 158, 110, 0.12);
+  --xt-danger: #c2554d;
 
   /* 圆角与阴影（无彩色外发光） */
   --xt-radius-sm: 8px;
@@ -136,12 +141,12 @@ html {
   }
 }
 
-/* —— 主内容区卡片（哑光实底 + 可读性） —— */
+/* —— 主内容区卡片（哑光实底 + 顶部 1px 内高光） —— */
 .xt-main-content .el-card {
   border-radius: var(--xt-radius-md);
   border: 1px solid var(--xt-border);
   background: var(--xt-surface-solid);
-  box-shadow: var(--xt-shadow-sm);
+  box-shadow: inset 0 1px 0 var(--xt-card-highlight), var(--xt-shadow-sm);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -186,32 +191,16 @@ html {
   transform: translateY(0);
 }
 
-/* Hero 区块 */
+/* Hero 区块（内页页头：哑光卡片，不再使用彩色渐变） */
 .xt-hero {
   position: relative;
   overflow: hidden;
   border-radius: var(--xt-radius-lg);
   padding: 32px 28px;
   color: var(--xt-text-on-dark);
-  background: linear-gradient(
-    125deg,
-    #1d4ed8 0%,
-    #1e3a8a 38%,
-    #172554 72%,
-    #030b1e 100%
-  );
-  box-shadow: var(--xt-shadow-md), var(--xt-shadow-glow);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.xt-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 15% 25%, rgba(251, 113, 133, 0.18), transparent 40%),
-    radial-gradient(circle at 85% 15%, rgba(34, 211, 238, 0.22), transparent 45%);
-  pointer-events: none;
+  background: var(--xt-card-bg);
+  box-shadow: inset 0 1px 0 var(--xt-card-highlight), var(--xt-shadow-md);
+  border: 1px solid var(--xt-card-border);
 }
 
 .xt-hero-inner {
@@ -223,15 +212,16 @@ html {
   margin: 0 0 10px;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--xt-accent);
 }
 
 .xt-hero-title {
   margin: 0 0 12px;
+  font-family: var(--xt-font-title);
   font-size: clamp(22px, 4vw, 28px);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.02em;
 }
@@ -254,12 +244,13 @@ html {
   border-radius: var(--xt-radius-lg);
   background: var(--xt-surface);
   border: 1px solid var(--xt-border);
-  box-shadow: var(--xt-shadow-sm);
+  box-shadow: inset 0 1px 0 var(--xt-card-highlight), var(--xt-shadow-sm);
 }
 
 .xt-section-title {
   margin: 0 0 8px;
-  font-size: 24px;
+  font-family: var(--xt-font-title);
+  font-size: 28px;
   font-weight: 700;
   color: var(--xt-text);
   letter-spacing: -0.02em;
@@ -364,7 +355,7 @@ html {
 .xt-constellation-reveal > *:nth-child(8) { animation-delay: 490ms; }
 
 .xt-glass-strong {
-  background: #ffffff;
+  background: var(--xt-card-bg);
 }
 
 /* —— 关键帧 —— */
@@ -415,4 +406,313 @@ html {
     transform: translateX(120%) rotate(-35deg);
     opacity: 0;
   }
+}
+
+/* ============================================================
+   Element Plus 深色覆盖：日冕暖金（90% 中性黑灰 + ≤9% 琥珀）
+   在 element-plus/theme-chalk/dark/css-vars.css 之上微调，
+   将默认冷灰/蓝色语义全部换成暖中性 + 琥珀 + 低饱和语义色。
+   ============================================================ */
+html.dark {
+  /* 主色阶：light-* 在深色体系里作为「琥珀底纹/描边」使用，改为透明琥珀 */
+  --el-color-primary-light-3: #f0bc66;
+  --el-color-primary-light-5: rgba(232, 163, 61, 0.4);
+  --el-color-primary-light-7: rgba(232, 163, 61, 0.22);
+  --el-color-primary-light-8: rgba(232, 163, 61, 0.16);
+  --el-color-primary-light-9: rgba(232, 163, 61, 0.12);
+  --el-color-primary-dark-2: #c9852a;
+
+  /* 语义色（深色低饱和版） */
+  --el-color-success: #3e9e6e;
+  --el-color-success-light-3: #58b186;
+  --el-color-success-light-5: rgba(62, 158, 110, 0.35);
+  --el-color-success-light-7: rgba(62, 158, 110, 0.2);
+  --el-color-success-light-8: rgba(62, 158, 110, 0.15);
+  --el-color-success-light-9: rgba(62, 158, 110, 0.12);
+  --el-color-success-dark-2: #2e7d56;
+
+  --el-color-warning: #e8a33d;
+  --el-color-warning-light-3: #f0bc66;
+  --el-color-warning-light-5: rgba(232, 163, 61, 0.35);
+  --el-color-warning-light-7: rgba(232, 163, 61, 0.2);
+  --el-color-warning-light-8: rgba(232, 163, 61, 0.15);
+  --el-color-warning-light-9: rgba(232, 163, 61, 0.12);
+  --el-color-warning-dark-2: #c9852a;
+
+  --el-color-danger: #c2554d;
+  --el-color-danger-light-3: #d4756e;
+  --el-color-danger-light-5: rgba(194, 85, 77, 0.35);
+  --el-color-danger-light-7: rgba(194, 85, 77, 0.2);
+  --el-color-danger-light-8: rgba(194, 85, 77, 0.15);
+  --el-color-danger-light-9: rgba(194, 85, 77, 0.12);
+  --el-color-danger-dark-2: #9e443d;
+
+  --el-color-error: #c2554d;
+  --el-color-error-light-3: #d4756e;
+  --el-color-error-light-5: rgba(194, 85, 77, 0.35);
+  --el-color-error-light-7: rgba(194, 85, 77, 0.2);
+  --el-color-error-light-8: rgba(194, 85, 77, 0.15);
+  --el-color-error-light-9: rgba(194, 85, 77, 0.12);
+  --el-color-error-dark-2: #9e443d;
+
+  --el-color-info: #9a968e;
+  --el-color-info-light-3: #b3b0a8;
+  --el-color-info-light-5: rgba(154, 150, 142, 0.3);
+  --el-color-info-light-7: rgba(154, 150, 142, 0.18);
+  --el-color-info-light-8: rgba(154, 150, 142, 0.14);
+  --el-color-info-light-9: rgba(154, 150, 142, 0.1);
+  --el-color-info-dark-2: #75716a;
+
+  /* 基底：哑光黑灰，无蓝色倾向 */
+  --el-bg-color: #101014;
+  --el-bg-color-page: #08080c;
+  --el-bg-color-overlay: #16161b;
+
+  /* 文字：暖白 / 暖灰 / 禁用灰 */
+  --el-text-color-primary: #e8e6e0;
+  --el-text-color-regular: rgba(232, 230, 224, 0.88);
+  --el-text-color-secondary: #9a968e;
+  --el-text-color-placeholder: #55524c;
+  --el-text-color-disabled: #55524c;
+
+  /* 描边与填充 */
+  --el-border-color: rgba(232, 230, 224, 0.14);
+  --el-border-color-light: rgba(232, 230, 224, 0.1);
+  --el-border-color-lighter: rgba(232, 230, 224, 0.07);
+  --el-border-color-extra-light: rgba(232, 230, 224, 0.05);
+  --el-border-color-hover: rgba(232, 163, 61, 0.5);
+  --el-fill-color: rgba(232, 230, 224, 0.08);
+  --el-fill-color-light: rgba(232, 230, 224, 0.05);
+  --el-fill-color-lighter: rgba(232, 230, 224, 0.03);
+  --el-fill-color-extra-light: rgba(232, 230, 224, 0.02);
+  --el-fill-color-blank: #101014;
+  --el-fill-color-dark: rgba(232, 230, 224, 0.12);
+  --el-disabled-bg-color: rgba(232, 230, 224, 0.04);
+  --el-disabled-text-color: #55524c;
+  --el-disabled-border-color: rgba(232, 230, 224, 0.1);
+
+  /* 遮罩与阴影 */
+  --el-overlay-color-lighter: rgba(4, 4, 6, 0.6);
+  --el-mask-color: rgba(6, 6, 8, 0.7);
+  --el-box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --el-box-shadow-light: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --el-box-shadow-lighter: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --el-box-shadow-dark: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+/* 幽灵按钮：透明底 + 细描边 + 暖白字，hover 描边变琥珀 */
+html.dark .el-button {
+  --el-button-bg-color: transparent;
+  --el-button-border-color: rgba(232, 230, 224, 0.18);
+  --el-button-text-color: rgba(232, 230, 224, 0.88);
+  --el-button-hover-bg-color: rgba(232, 230, 224, 0.06);
+  --el-button-hover-border-color: rgba(232, 163, 61, 0.55);
+  --el-button-hover-text-color: #e8a33d;
+  --el-button-active-bg-color: rgba(232, 230, 224, 0.1);
+  --el-button-active-border-color: rgba(232, 163, 61, 0.4);
+  --el-button-disabled-bg-color: transparent;
+  --el-button-disabled-border-color: rgba(232, 230, 224, 0.1);
+  --el-button-disabled-text-color: #55524c;
+}
+
+/* 琥珀实心主按钮：琥珀底 + 深色文字（对比度优先，与首页主 CTA 一致） */
+html.dark .el-button--primary {
+  --el-button-bg-color: #e8a33d;
+  --el-button-border-color: #e8a33d;
+  --el-button-text-color: #1c1206;
+  --el-button-hover-bg-color: #f0bc66;
+  --el-button-hover-border-color: #f0bc66;
+  --el-button-hover-text-color: #1c1206;
+  --el-button-active-bg-color: #c9852a;
+  --el-button-active-border-color: #c9852a;
+  --el-button-active-text-color: #1c1206;
+}
+
+/* 实心危险按钮：#C2554D 底 + 暖白字 */
+html.dark .el-button--danger {
+  --el-button-bg-color: #c2554d;
+  --el-button-border-color: #c2554d;
+  --el-button-text-color: #f5efe4;
+  --el-button-hover-bg-color: #d4756e;
+  --el-button-hover-border-color: #d4756e;
+  --el-button-hover-text-color: #f5efe4;
+  --el-button-active-bg-color: #9e443d;
+  --el-button-active-border-color: #9e443d;
+}
+
+/* 实心成功按钮：#3E9E6E 底 + 暖白字 */
+html.dark .el-button--success {
+  --el-button-bg-color: #3e9e6e;
+  --el-button-border-color: #3e9e6e;
+  --el-button-text-color: #f5efe4;
+  --el-button-hover-bg-color: #58b186;
+  --el-button-hover-border-color: #58b186;
+  --el-button-hover-text-color: #f5efe4;
+  --el-button-active-bg-color: #2e7d56;
+  --el-button-active-border-color: #2e7d56;
+}
+
+/* 实心警告/进行中按钮：琥珀底 + 深色字 */
+html.dark .el-button--warning {
+  --el-button-bg-color: #e8a33d;
+  --el-button-border-color: #e8a33d;
+  --el-button-text-color: #1c1206;
+  --el-button-hover-bg-color: #f0bc66;
+  --el-button-hover-border-color: #f0bc66;
+  --el-button-hover-text-color: #1c1206;
+}
+
+/* 实心 info 按钮：暖灰底 + 深色字 */
+html.dark .el-button--info {
+  --el-button-bg-color: #9a968e;
+  --el-button-border-color: #9a968e;
+  --el-button-text-color: #1c1206;
+  --el-button-hover-bg-color: #b3b0a8;
+  --el-button-hover-border-color: #b3b0a8;
+  --el-button-hover-text-color: #1c1206;
+}
+
+/* plain（幽灵）变体：细描边 + 底纹，hover 才转为实心 */
+html.dark .el-button--primary.is-plain,
+html.dark .el-button--warning.is-plain {
+  --el-button-bg-color: rgba(232, 163, 61, 0.12);
+  --el-button-border-color: rgba(232, 163, 61, 0.4);
+  --el-button-text-color: #e8a33d;
+  --el-button-hover-bg-color: #e8a33d;
+  --el-button-hover-border-color: #e8a33d;
+  --el-button-hover-text-color: #1c1206;
+}
+
+html.dark .el-button--danger.is-plain {
+  --el-button-bg-color: rgba(194, 85, 77, 0.1);
+  --el-button-border-color: rgba(194, 85, 77, 0.4);
+  --el-button-text-color: #c2554d;
+  --el-button-hover-bg-color: #c2554d;
+  --el-button-hover-border-color: #c2554d;
+  --el-button-hover-text-color: #f5efe4;
+}
+
+html.dark .el-button--success.is-plain {
+  --el-button-bg-color: rgba(62, 158, 110, 0.1);
+  --el-button-border-color: rgba(62, 158, 110, 0.35);
+  --el-button-text-color: #3e9e6e;
+  --el-button-hover-bg-color: #3e9e6e;
+  --el-button-hover-border-color: #3e9e6e;
+  --el-button-hover-text-color: #f5efe4;
+}
+
+html.dark .el-button--info.is-plain {
+  --el-button-bg-color: transparent;
+  --el-button-border-color: rgba(232, 230, 224, 0.18);
+  --el-button-text-color: rgba(232, 230, 224, 0.88);
+  --el-button-hover-bg-color: rgba(232, 230, 224, 0.06);
+  --el-button-hover-border-color: rgba(232, 163, 61, 0.55);
+  --el-button-hover-text-color: #e8a33d;
+}
+
+/* 文字/链接按钮 */
+html.dark .el-button.is-link,
+html.dark .el-button.is-text {
+  --el-button-text-color: rgba(232, 230, 224, 0.88);
+  --el-button-hover-text-color: #e8a33d;
+}
+
+html.dark .el-button--primary.is-link,
+html.dark .el-button--primary.is-text {
+  --el-button-text-color: #e8a33d;
+  --el-button-hover-text-color: #f0bc66;
+}
+
+html.dark .el-button--danger.is-link,
+html.dark .el-button--danger.is-text {
+  --el-button-text-color: #c2554d;
+  --el-button-hover-text-color: #d4756e;
+}
+
+/* 输入控件深色化：底 #16161B、细描边、focus 琥珀 */
+html.dark .el-input__wrapper,
+html.dark .el-textarea__inner,
+html.dark .el-select__wrapper {
+  background: #16161b;
+  box-shadow: 0 0 0 1px rgba(232, 230, 224, 0.12) inset;
+}
+
+html.dark .el-input__wrapper:hover,
+html.dark .el-textarea__inner:hover,
+html.dark .el-select__wrapper:hover {
+  box-shadow: 0 0 0 1px rgba(232, 230, 224, 0.22) inset;
+}
+
+html.dark .el-input__wrapper.is-focus,
+html.dark .el-textarea__inner:focus,
+html.dark .el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px #e8a33d inset;
+}
+
+/* 提示横幅：哑光底 + 左侧 3px 琥珀竖条，禁止蓝色 */
+html.dark .el-alert--info {
+  --el-alert-bg-color: #101014;
+  border: 1px solid rgba(232, 230, 224, 0.08);
+  border-left: 3px solid #e8a33d;
+}
+
+html.dark .el-alert--info .el-alert__title {
+  color: #e8e6e0;
+}
+
+html.dark .el-alert--info .el-alert__description {
+  color: #9a968e;
+}
+
+html.dark .el-alert--info .el-alert__icon {
+  color: #9a968e;
+}
+
+html.dark .el-alert--warning {
+  --el-alert-bg-color: rgba(232, 163, 61, 0.08);
+  border: 1px solid rgba(232, 163, 61, 0.18);
+  border-left: 3px solid #e8a33d;
+}
+
+html.dark .el-alert--success {
+  --el-alert-bg-color: rgba(62, 158, 110, 0.1);
+  border: 1px solid rgba(62, 158, 110, 0.2);
+  border-left: 3px solid #3e9e6e;
+}
+
+html.dark .el-alert--error {
+  --el-alert-bg-color: rgba(194, 85, 77, 0.1);
+  border: 1px solid rgba(194, 85, 77, 0.2);
+  border-left: 3px solid #c2554d;
+}
+
+/* 折叠面板：标题行宋体暖白，面板间细线 */
+html.dark .el-collapse {
+  --el-collapse-header-bg-color: transparent;
+  --el-collapse-content-bg-color: transparent;
+  --el-collapse-header-text-color: #e8e6e0;
+  --el-collapse-content-text-color: rgba(232, 230, 224, 0.88);
+  --el-collapse-border-color: rgba(232, 230, 224, 0.06);
+}
+
+/* 标签：低饱和底纹 */
+html.dark .el-tag {
+  --el-tag-bg-color: rgba(232, 230, 224, 0.08);
+  --el-tag-border-color: rgba(232, 230, 224, 0.14);
+  --el-tag-text-color: #9a968e;
+}
+
+/* 骨架屏/空状态/分页等随深色变量自然适配 */
+html.dark .el-empty__description p {
+  color: #9a968e;
+}
+
+/* 空状态插画：弱化存在感，不抢注意力 */
+html.dark .el-empty__image {
+  opacity: 0.45;
+}
+
+html.dark .el-skeleton {
+  --el-skeleton-color: rgba(232, 230, 224, 0.06);
+  --el-skeleton-to-color: rgba(232, 230, 224, 0.12);
 }

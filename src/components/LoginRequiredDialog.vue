@@ -82,13 +82,13 @@ function goLogin() {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1px dashed rgba(59,130,246, 0.35);
+  border: 1px dashed rgba(232, 163, 61, 0.35);
   animation: spin 14s linear infinite;
 }
 
 .orbit-ring.inner {
   inset: 12px;
-  border-color: rgba(34, 211, 238, 0.25);
+  border-color: rgba(232, 163, 61, 0.22);
   animation-duration: 10s;
   animation-direction: reverse;
 }
@@ -100,8 +100,8 @@ function goLogin() {
   display: grid;
   place-items: center;
   background: linear-gradient(135deg, var(--xt-primary) 0%, var(--xt-primary-dark) 100%);
-  color: #fff;
-  box-shadow: 0 0 24px rgba(59,130,246, 0.35);
+  color: #1c1206;
+  box-shadow: 0 0 24px rgba(232, 163, 61, 0.3);
 }
 
 .dialog-lead {

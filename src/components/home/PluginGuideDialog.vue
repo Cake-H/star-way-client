@@ -217,7 +217,7 @@ function goCreateResume() {
   place-items: center;
   border-radius: 50%;
   background: var(--xt-primary);
-  color: #fff;
+  color: #1c1206;
   font-size: 14px;
   font-weight: 700;
 }
@@ -265,9 +265,9 @@ function goCreateResume() {
 }
 
 .store-link:hover {
-  background: rgba(59,130,246, 0.08);
-  border-color: var(--xt-primary-light);
-  color: var(--xt-primary-dark);
+  background: rgba(232, 163, 61, 0.08);
+  border-color: rgba(232, 163, 61, 0.45);
+  color: var(--xt-primary);
 }
 
 .guide-tip {
@@ -275,7 +275,7 @@ function goCreateResume() {
   gap: 10px;
   padding: 12px 14px;
   border-radius: var(--xt-radius-sm);
-  background: rgba(59,130,246, 0.06);
+  background: rgba(232, 163, 61, 0.06);
   color: var(--xt-text-secondary);
   font-size: 13px;
   line-height: 1.55;

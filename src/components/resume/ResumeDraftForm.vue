@@ -955,7 +955,7 @@ onUnmounted(() => {
   border-radius: 12px;
   overflow: hidden;
   background: var(--el-bg-color);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   scroll-margin-top: 90px;
 }
 
@@ -963,8 +963,9 @@ onUnmounted(() => {
   height: auto;
   min-height: 52px;
   padding: 14px 20px;
-  font-size: 15px;
-  font-weight: 600;
+  font-family: var(--xt-font-title);
+  font-size: 16px;
+  font-weight: 700;
   color: var(--el-text-color-primary);
   background: var(--el-fill-color-light);
   border-bottom: 1px solid var(--el-border-color-lighter);

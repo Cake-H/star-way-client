@@ -141,7 +141,7 @@
       </el-button>
       <el-button
         v-if="canSaveCurrent"
-        type="success"
+        type="primary"
         plain
         :loading="saving"
         @click="onSaveAndNextVoice"
@@ -404,7 +404,7 @@ async function onSaveAndNextVoice() {
 }
 
 .voice-card :deep(.el-card__header) {
-  background: linear-gradient(90deg, var(--el-color-primary-light-9), transparent);
+  background: linear-gradient(90deg, rgba(232, 163, 61, 0.07), transparent);
 }
 
 .card-head {
@@ -422,14 +422,16 @@ async function onSaveAndNextVoice() {
   margin-right: 8px;
 }
 
+/* “推荐”：琥珀描边小胶囊 */
 .card-badge {
   display: inline-block;
   font-size: 11px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 999px;
-  background: var(--xt-primary);
-  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(232, 163, 61, 0.55);
+  color: var(--xt-primary);
   vertical-align: middle;
 }
 

@@ -183,7 +183,7 @@ const micBtnStyle = computed(() => {
   if (!isRecording.value) return undefined
   const glow = 12 + level.value * 28
   return {
-    boxShadow: `0 12px 32px rgba(220, 38, 38, ${0.35 + level.value * 0.25}), 0 0 ${glow}px rgba(248, 113, 113, ${0.35 + level.value * 0.4})`,
+    boxShadow: `0 12px 32px rgba(232, 163, 61, ${0.3 + level.value * 0.25}), 0 0 ${glow}px rgba(240, 188, 102, ${0.3 + level.value * 0.4})`,
   }
 })
 
@@ -441,17 +441,17 @@ onBeforeUnmount(() => {
   padding: 24px 16px 20px;
   border-radius: var(--xt-radius-lg);
   border: 1px solid var(--xt-border-strong);
-  background: linear-gradient(165deg, var(--el-color-primary-light-9) 0%, #fff 55%);
-  box-shadow: var(--xt-shadow-sm);
+  background: #101014;
+  box-shadow: inset 0 1px 0 var(--xt-card-highlight), var(--xt-shadow-sm);
 }
 
 .voice-hero.recording {
-  border-color: rgba(239, 68, 68, 0.35);
-  background: linear-gradient(165deg, #fef2f2 0%, #fff 55%);
+  border-color: rgba(232, 163, 61, 0.4);
+  background: #101014;
 }
 
 .voice-hero.summarizing {
-  border-color: rgba(59, 130, 246, 0.35);
+  border-color: rgba(232, 163, 61, 0.35);
 }
 
 .mic-orb {
@@ -464,19 +464,21 @@ onBeforeUnmount(() => {
   margin: 0 auto;
 }
 
+/* 外圈脉冲环：琥珀 2s 呼吸（录音中加速为 1s，颜色不变） */
 .sonic-ring {
   position: absolute;
   width: 132px;
   height: 132px;
   border-radius: 50%;
-  border: 2px solid rgba(59,130,246, 0.28);
+  border: 2px solid rgba(232, 163, 61, 0.2);
   pointer-events: none;
+  animation: sonic-breathe 2s ease-in-out infinite;
   transition: transform 0.09s ease-out, opacity 0.1s ease;
 }
 
 .mic-orb.recording .sonic-ring {
-  border-color: rgba(248, 113, 113, 0.55);
-  animation: sonic-pulse 2.2s ease-in-out infinite;
+  border-color: rgba(232, 163, 61, 0.45);
+  animation: sonic-breathe 1s ease-in-out infinite;
 }
 
 .sonic-spokes {
@@ -495,17 +497,19 @@ onBeforeUnmount(() => {
   margin-top: -78px;
   transform-origin: 50% 100%;
   border-radius: 3px;
-  background: linear-gradient(to top, rgba(248, 113, 113, 0.95), rgba(96,165,250, 0.75));
-  box-shadow: 0 0 8px rgba(248, 113, 113, 0.45);
+  background: linear-gradient(to top, rgba(232, 163, 61, 0.95), rgba(240, 188, 102, 0.7));
+  box-shadow: 0 0 8px rgba(232, 163, 61, 0.4);
   transition: transform 0.06s ease-out;
 }
 
-@keyframes sonic-pulse {
+@keyframes sonic-breathe {
   0%,
   100% {
+    opacity: 0.6;
     filter: blur(0);
   }
   50% {
+    opacity: 1;
     filter: blur(0.5px);
   }
 }
@@ -523,9 +527,9 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #fff;
+  color: #1c1206;
   background: linear-gradient(145deg, var(--xt-primary-light) 0%, var(--xt-primary-dark) 100%);
-  box-shadow: 0 12px 32px rgba(29,78,216, 0.35);
+  box-shadow: 0 12px 32px rgba(232, 163, 61, 0.28);
   transition: transform 0.15s ease, box-shadow 0.1s ease;
 }
 
@@ -538,15 +542,16 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 
+/* 录音中：颜色不变，仅脉冲加速（见 .sonic-ring） */
 .voice-main-btn.recording {
-  background: linear-gradient(145deg, #f87171 0%, #dc2626 100%);
+  background: linear-gradient(145deg, var(--xt-primary-light) 0%, var(--xt-primary-dark) 100%);
 }
 
 .btn-level-glow {
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(254, 202, 202, 0.9) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(240, 188, 102, 0.85) 0%, transparent 70%);
   pointer-events: none;
   transition: opacity 0.08s ease, transform 0.08s ease;
 }
@@ -555,12 +560,12 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  border: 2px solid rgba(59,130,246, 0.25);
+  border: 2px solid rgba(232, 163, 61, 0.22);
   pointer-events: none;
 }
 
 .voice-main-btn.recording .btn-ring {
-  border-color: rgba(239, 68, 68, 0.45);
+  border-color: rgba(232, 163, 61, 0.45);
 }
 
 .btn-icon {
@@ -587,18 +592,18 @@ onBeforeUnmount(() => {
   margin: 8px 0 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--el-color-danger);
+  color: var(--xt-primary);
 }
 
 .hero-live.summarizing {
-  color: var(--el-color-primary);
+  color: var(--xt-primary);
 }
 
 .hero-time {
   margin: 6px 0 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--el-color-danger);
+  color: var(--xt-primary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -624,7 +629,7 @@ onBeforeUnmount(() => {
   border-radius: var(--xt-radius-md);
   border: 1px solid var(--xt-border);
   overflow: hidden;
-  background: #fff;
+  background: #101014;
 }
 
 .text-supplement-title {

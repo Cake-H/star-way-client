@@ -192,6 +192,7 @@ async function onDeleteSession() {
 
 .session-title {
   margin: 0 0 8px;
+  font-family: var(--xt-font-title);
   font-size: 22px;
   font-weight: 700;
   color: var(--xt-text);

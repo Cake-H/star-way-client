@@ -65,8 +65,7 @@ function preview(text: string, max = 72) {
   border-radius: var(--xt-radius-md);
   border: 1px solid var(--xt-border);
   background: var(--xt-surface);
-  backdrop-filter: blur(12px);
-  box-shadow: var(--xt-shadow-sm);
+  box-shadow: inset 0 1px 0 var(--xt-card-highlight), var(--xt-shadow-sm);
   cursor: pointer;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   outline: none;
@@ -87,14 +86,12 @@ function preview(text: string, max = 72) {
   margin-bottom: 10px;
 }
 
+/* Q 序号：琥珀小字，不用色块 */
 .q-index {
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--xt-primary);
-  background: var(--el-color-primary-light-9);
-  padding: 2px 8px;
-  border-radius: 6px;
 }
 
 .q-title {
@@ -127,7 +124,7 @@ function preview(text: string, max = 72) {
 .practice-hint {
   margin: 0 0 8px;
   font-size: 12px;
-  color: var(--el-color-warning-dark-2);
+  color: var(--xt-text-secondary);
   line-height: 1.5;
 }
 

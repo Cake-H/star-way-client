@@ -253,7 +253,7 @@ function initStarfield(width: number, height: number) {
     for (let i = 0; i < layer.count; i++) {
       const colorRoll = Math.random()
       const color =
-        colorRoll > 0.88 ? '#00f0ff' : colorRoll > 0.76 ? '#ffb627' : '#ffffff'
+        colorRoll > 0.9 ? '#f0bc66' : colorRoll > 0.78 ? '#fff8ec' : '#e8e6e0'
       newStars.push({
         x: rand(0, width),
         y: rand(0, height),
@@ -401,7 +401,7 @@ function applyThrust() {
       nozzleY,
       Math.cos(angle) * speed - WORLD_SPEED_PLAYING,
       Math.sin(angle) * speed,
-      i % 3 === 0 ? '#00f0ff' : i % 3 === 1 ? '#ffb627' : '#ffffff',
+      i % 3 === 0 ? '#f0bc66' : i % 3 === 1 ? '#e8a33d' : '#fff8ec',
       1.5 + Math.random() * 2.5,
     )
   }
@@ -497,7 +497,7 @@ function updatePhysics(dt: number) {
         r.y,
         -speed - Math.random() * 2,
         (Math.random() - 0.5) * 1.5,
-        Math.random() > 0.5 ? '#00f0ff' : '#ffb627',
+        Math.random() > 0.5 ? '#f0bc66' : '#e8a33d',
         1 + Math.random(),
       )
     }
@@ -569,7 +569,7 @@ function updatePhysics(dt: number) {
         score.value++
         scoreBump.value = true
         setTimeout(() => (scoreBump.value = false), 180)
-        spawnFloatingText(c.x, c.y - 20, '+1', '#39ff14')
+        spawnFloatingText(c.x, c.y - 20, '+1', '#f0bc66')
         // 收集爆炸粒子
         for (let i = 0; i < (reducedMotion.value ? 6 : 14); i++) {
           const angle = (i / 14) * Math.PI * 2
@@ -578,7 +578,7 @@ function updatePhysics(dt: number) {
             c.y,
             Math.cos(angle) * (2 + Math.random() * 4),
             Math.sin(angle) * (2 + Math.random() * 4),
-            ['#00f0ff', '#39ff14', '#ffb627', '#ff4d6d'][i % 4],
+            ['#f0bc66', '#e8a33d', '#fff8ec', '#d97706'][i % 4],
             1.5 + Math.random() * 2,
           )
         }
@@ -625,17 +625,17 @@ function drawRocket() {
   // 引擎辉光（尾部左侧）
   const glow = 0.3 + engineGlow * 0.7
   const glowGradient = ctx.createRadialGradient(-w * 0.45, 0, 2, -w * 0.45, 0, 45 * glow)
-  glowGradient.addColorStop(0, 'rgba(255, 255, 255, 0.95)')
-  glowGradient.addColorStop(0.2, 'rgba(255, 182, 39, 0.75)')
-  glowGradient.addColorStop(0.5, 'rgba(0, 240, 255, 0.35)')
-  glowGradient.addColorStop(1, 'rgba(0, 240, 255, 0)')
+  glowGradient.addColorStop(0, 'rgba(255, 248, 236, 0.95)')
+  glowGradient.addColorStop(0.2, 'rgba(240, 188, 102, 0.75)')
+  glowGradient.addColorStop(0.5, 'rgba(232, 163, 61, 0.35)')
+  glowGradient.addColorStop(1, 'rgba(232, 163, 61, 0)')
   ctx.fillStyle = glowGradient
   ctx.beginPath()
   ctx.arc(-w * 0.45, 0, 45 * glow, 0, Math.PI * 2)
   ctx.fill()
 
   // 尾翼（上下两片，在尾部左侧）
-  ctx.fillStyle = '#9ca3af'
+  ctx.fillStyle = '#a89e8d'
   ctx.beginPath()
   ctx.moveTo(-w * 0.35, -h * 0.32)
   ctx.lineTo(-w * 0.78, -h * 0.62)
@@ -651,9 +651,9 @@ function drawRocket() {
 
   // 机身（水平圆柱）
   const bodyGradient = ctx.createLinearGradient(-w * 0.5, -h * 0.5, w * 0.5, h * 0.5)
-  bodyGradient.addColorStop(0, '#e2e8f0')
-  bodyGradient.addColorStop(0.45, '#94a3b8')
-  bodyGradient.addColorStop(1, '#64748b')
+  bodyGradient.addColorStop(0, '#f2ece0')
+  bodyGradient.addColorStop(0.45, '#b5aa97')
+  bodyGradient.addColorStop(1, '#7d7261')
   ctx.fillStyle = bodyGradient
   ctx.beginPath()
   ctx.roundRect(-w * 0.42, -h * 0.34, w * 0.78, h * 0.68, h * 0.34)
@@ -689,21 +689,21 @@ function drawRocket() {
   }
 
   // 舷窗（机身中部偏右）
-  ctx.fillStyle = '#0f172a'
+  ctx.fillStyle = '#1a1410'
   ctx.beginPath()
   ctx.arc(w * 0.08, -h * 0.05, h * 0.22, 0, Math.PI * 2)
   ctx.fill()
   const windowGlow = ctx.createRadialGradient(w * 0.05, -h * 0.1, 2, w * 0.08, -h * 0.05, h * 0.22)
-  windowGlow.addColorStop(0, '#7dd3fc')
-  windowGlow.addColorStop(0.55, '#0ea5e9')
-  windowGlow.addColorStop(1, '#0f172a')
+  windowGlow.addColorStop(0, '#f6cd82')
+  windowGlow.addColorStop(0.55, '#e8a33d')
+  windowGlow.addColorStop(1, '#1a1410')
   ctx.fillStyle = windowGlow
   ctx.beginPath()
   ctx.arc(w * 0.08, -h * 0.05, h * 0.18, 0, Math.PI * 2)
   ctx.fill()
 
   // 喷口（左侧）
-  ctx.fillStyle = '#475569'
+  ctx.fillStyle = '#57503f'
   ctx.beginPath()
   ctx.moveTo(-w * 0.42, -h * 0.2)
   ctx.lineTo(-w * 0.58, -h * 0.28)
@@ -747,15 +747,15 @@ function drawCollectibles() {
 
     // 外发光
     const glow = ctx!.createRadialGradient(0, 0, c.radius * 0.3, 0, 0, c.radius * 2)
-    glow.addColorStop(0, 'rgba(57, 255, 20, 0.6)')
-    glow.addColorStop(1, 'rgba(57, 255, 20, 0)')
+    glow.addColorStop(0, 'rgba(232, 163, 61, 0.55)')
+    glow.addColorStop(1, 'rgba(232, 163, 61, 0)')
     ctx!.fillStyle = glow
     ctx!.beginPath()
     ctx!.arc(0, 0, c.radius * 2, 0, Math.PI * 2)
     ctx!.fill()
 
     // 八面晶体
-    ctx!.fillStyle = '#39ff14'
+    ctx!.fillStyle = '#e8a33d'
     ctx!.beginPath()
     for (let i = 0; i < 8; i++) {
       const angle = (i / 8) * Math.PI * 2
@@ -769,7 +769,7 @@ function drawCollectibles() {
     ctx!.fill()
 
     // 内核
-    ctx!.fillStyle = '#e8f4ff'
+    ctx!.fillStyle = '#fff8ec'
     ctx!.beginPath()
     ctx!.arc(0, 0, c.radius * 0.25, 0, Math.PI * 2)
     ctx!.fill()
@@ -786,9 +786,9 @@ function drawAsteroids() {
     ctx!.rotate(a.rotation)
 
     const gradient = ctx!.createRadialGradient(-a.radius * 0.3, -a.radius * 0.3, 2, 0, 0, a.radius)
-    gradient.addColorStop(0, '#4b5563')
-    gradient.addColorStop(0.6, '#1f2937')
-    gradient.addColorStop(1, '#0f172a')
+    gradient.addColorStop(0, '#57503f')
+    gradient.addColorStop(0.6, '#2a2419')
+    gradient.addColorStop(1, '#14100a')
     ctx!.fillStyle = gradient
     ctx!.beginPath()
     a.vertices.forEach((v, i) => {
@@ -880,9 +880,9 @@ function drawShootingStars() {
     const tailX = ss.x - ss.vx * (ss.length / 12)
     const tailY = ss.y - ss.vy * (ss.length / 12)
     const gradient = ctx!.createLinearGradient(ss.x, ss.y, tailX, tailY)
-    gradient.addColorStop(0, 'rgba(255,255,255,0.9)')
-    gradient.addColorStop(0.3, 'rgba(0,240,255,0.5)')
-    gradient.addColorStop(1, 'rgba(0,240,255,0)')
+    gradient.addColorStop(0, 'rgba(255, 248, 236, 0.9)')
+    gradient.addColorStop(0.3, 'rgba(240, 188, 102, 0.5)')
+    gradient.addColorStop(1, 'rgba(240, 188, 102, 0)')
     ctx!.strokeStyle = gradient
     ctx!.lineWidth = 2
     ctx!.lineCap = 'round'
@@ -974,7 +974,7 @@ onBeforeUnmount(() => {
   height: 100%;
   border-radius: var(--xt-radius-lg);
   overflow: hidden;
-  background: radial-gradient(ellipse at 20% 30%, rgba(10, 12, 28, 0.95) 0%, #03040a 60%, #020205 100%);
+  background: radial-gradient(ellipse at 70% 40%, #14141a 0%, #0d0d12 55%, #060608 100%);
   outline: none;
   user-select: none;
 }
@@ -990,9 +990,9 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: -30%;
   background:
-    radial-gradient(circle at 70% 30%, rgba(255, 77, 109, 0.08) 0%, transparent 35%),
-    radial-gradient(circle at 30% 70%, rgba(0, 240, 255, 0.06) 0%, transparent 40%),
-    radial-gradient(circle at 80% 80%, rgba(255, 182, 39, 0.05) 0%, transparent 30%);
+    radial-gradient(circle at 72% 40%, rgba(232, 163, 61, 0.06) 0%, transparent 38%),
+    radial-gradient(circle at 22% 74%, rgba(232, 230, 224, 0.035) 0%, transparent 42%),
+    radial-gradient(circle at 84% 84%, rgba(240, 188, 102, 0.04) 0%, transparent 32%);
   animation: nebula-drift 28s linear infinite;
 }
 
@@ -1019,21 +1019,22 @@ onBeforeUnmount(() => {
   inset: 0;
   border-radius: 50%;
   background:
-    linear-gradient(150deg, rgba(232,244,255,0.12) 0%, transparent 40%),
-    radial-gradient(circle at 35% 35%, #5a6478 0%, #2a3142 45%, #101520 100%);
+    radial-gradient(circle at 32% 26%, rgba(255, 248, 236, 0.16) 0%, transparent 42%),
+    radial-gradient(circle at 35% 32%, #f6cd82 0%, #e8a33d 24%, #6b5a3e 56%, #100d08 100%);
   box-shadow:
-    inset -20px -20px 40px rgba(0,0,0,0.6),
-    inset 10px 10px 30px rgba(232,244,255,0.08),
-    0 0 60px rgba(255,255,255,0.06);
+    inset -24px -20px 48px rgba(4, 3, 2, 0.88),
+    inset 12px 9px 32px rgba(255, 248, 236, 0.12),
+    inset 0 0 0 1px rgba(255, 248, 236, 0.05),
+    0 0 56px rgba(232, 163, 61, 0.1);
 }
 
 .gas-giant .planet-ring {
   position: absolute;
   inset: -30%;
   border-radius: 50%;
-  border: 2px solid rgba(232,244,255,0.15);
+  border: 1.5px solid rgba(232, 163, 61, 0.32);
   transform: rotateX(72deg) rotateY(-12deg) rotateZ(25deg);
-  box-shadow: 0 0 20px rgba(0,240,255,0.1);
+  box-shadow: 0 0 18px rgba(240, 188, 102, 0.12);
   animation: ring-spin 30s linear infinite;
 }
 
@@ -1049,10 +1050,10 @@ onBeforeUnmount(() => {
   inset: 0;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 30% 30%, #ff6b4a 0%, #b91c1c 40%, #450a0a 100%);
+    radial-gradient(circle at 30% 30%, #f0bc66 0%, #b45309 42%, #1c0f04 100%);
   box-shadow:
-    inset -10px -10px 20px rgba(0,0,0,0.6),
-    0 0 30px rgba(255,77,109,0.2);
+    inset -10px -10px 20px rgba(0,0,0,0.65),
+    0 0 30px rgba(232, 163, 61, 0.18);
 }
 
 .lava-planet .planet-body::after {
@@ -1061,16 +1062,16 @@ onBeforeUnmount(() => {
   inset: 0;
   border-radius: 50%;
   background:
-    linear-gradient(60deg, transparent 55%, rgba(255,182,39,0.35) 60%, transparent 65%),
-    linear-gradient(120deg, transparent 35%, rgba(255,77,109,0.3) 40%, transparent 45%);
+    linear-gradient(60deg, transparent 55%, rgba(255, 248, 236, 0.28) 60%, transparent 65%),
+    linear-gradient(120deg, transparent 35%, rgba(232, 163, 61, 0.25) 40%, transparent 45%);
 }
 
 .lava-planet .atmosphere {
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  border: 1px solid rgba(255,77,109,0.25);
-  box-shadow: 0 0 16px rgba(255,77,109,0.15);
+  border: 1px solid rgba(232, 163, 61, 0.22);
+  box-shadow: 0 0 16px rgba(232, 163, 61, 0.14);
 }
 
 .station {
@@ -1089,14 +1090,14 @@ onBeforeUnmount(() => {
 }
 
 .station-core {
-  fill: rgba(200,208,231,0.08);
-  stroke: rgba(232,244,255,0.35);
+  fill: rgba(240, 230, 214, 0.08);
+  stroke: rgba(255, 248, 236, 0.32);
   stroke-width: 1;
 }
 
 .station-arm {
-  fill: rgba(200,208,231,0.1);
-  stroke: rgba(232,244,255,0.25);
+  fill: rgba(240, 230, 214, 0.1);
+  stroke: rgba(255, 248, 236, 0.22);
   stroke-width: 0.8;
 }
 
@@ -1104,9 +1105,9 @@ onBeforeUnmount(() => {
   animation: blink 2s infinite;
 }
 
-.station-light.red { fill: #ff4d6d; animation-delay: 0s; }
-.station-light.green { fill: #39ff14; animation-delay: 0.6s; }
-.station-light.cyan { fill: #00f0ff; animation-delay: 1.2s; }
+.station-light.red { fill: #e8a33d; animation-delay: 0s; }
+.station-light.green { fill: #fff8ec; animation-delay: 0.6s; }
+.station-light.cyan { fill: #f0bc66; animation-delay: 1.2s; }
 
 @keyframes ring-spin {
   from { transform: rotateX(72deg) rotateY(-12deg) rotateZ(0deg); }
@@ -1128,7 +1129,7 @@ onBeforeUnmount(() => {
   position: absolute;
   width: 120px;
   height: 2px;
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(232,244,255,0.9) 50%, rgba(0,240,255,0.4) 100%);
+  background: linear-gradient(90deg, rgba(255, 248, 236, 0) 0%, rgba(255, 248, 236, 0.85) 50%, rgba(240, 188, 102, 0.4) 100%);
   border-radius: 2px;
   opacity: 0;
 }
@@ -1174,16 +1175,16 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0,240,255,0.4), transparent);
-  opacity: 0.35;
+  background: linear-gradient(90deg, transparent, rgba(240, 188, 102, 0.3), transparent);
+  opacity: 0.3;
   animation: scan 6s ease-in-out infinite;
   pointer-events: none;
 }
 
 @keyframes scan {
   0% { top: 0; opacity: 0; }
-  10% { opacity: 0.35; }
-  90% { opacity: 0.35; }
+  10% { opacity: 0.3; }
+  90% { opacity: 0.3; }
   100% { top: 100%; opacity: 0; }
 }
 
@@ -1225,15 +1226,15 @@ onBeforeUnmount(() => {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: rgba(0, 240, 255, 0.7);
-  text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+  color: rgba(240, 188, 102, 0.85);
+  text-shadow: 0 0 8px rgba(232, 163, 61, 0.35);
 }
 
 .mission-name {
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: #e8f4ff;
+  color: #f5efe4;
   letter-spacing: 0.04em;
   text-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
@@ -1248,8 +1249,8 @@ onBeforeUnmount(() => {
   display: inline-block;
   animation: dot-bounce 1.2s ease-in-out infinite;
   font-weight: 700;
-  color: #00f0ff;
-  text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+  color: #f0bc66;
+  text-shadow: 0 0 10px rgba(232, 163, 61, 0.5);
 }
 
 .loading-dots .dot-1 { animation-delay: 0s; }
@@ -1268,24 +1269,24 @@ onBeforeUnmount(() => {
   gap: 2px;
   padding: 8px 14px;
   border-radius: var(--xt-radius-sm);
-  background: rgba(3, 4, 10, 0.55);
-  border: 1px solid rgba(57, 255, 20, 0.25);
-  box-shadow: 0 0 20px rgba(57, 255, 20, 0.1);
+  background: rgba(13, 13, 18, 0.55);
+  border: 1px solid rgba(232, 163, 61, 0.28);
+  box-shadow: 0 0 20px rgba(232, 163, 61, 0.1);
 }
 
 .score-label {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: rgba(57, 255, 20, 0.75);
+  color: rgba(240, 188, 102, 0.8);
 }
 
 .score-value {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 24px;
   font-weight: 800;
-  color: #39ff14;
-  text-shadow: 0 0 16px rgba(57, 255, 20, 0.6);
+  color: #f0bc66;
+  text-shadow: 0 0 16px rgba(232, 163, 61, 0.55);
   transition: transform 0.15s ease;
 }
 
@@ -1299,33 +1300,33 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
-  border: 1px solid rgba(0, 240, 255, 0.45);
+  border: 1px solid rgba(240, 188, 102, 0.4);
   border-radius: 999px;
-  background: rgba(3, 4, 10, 0.5);
+  background: rgba(13, 13, 18, 0.5);
   backdrop-filter: blur(8px);
-  color: #e8f4ff;
+  color: #f5efe4;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   pointer-events: auto;
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+  box-shadow: 0 0 20px rgba(232, 163, 61, 0.1);
   transition: all 0.25s ease;
 }
 
 .mode-toggle:hover {
-  border-color: #00f0ff;
-  box-shadow: 0 0 28px rgba(0, 240, 255, 0.25), inset 0 0 12px rgba(0, 240, 255, 0.08);
+  border-color: #f0bc66;
+  box-shadow: 0 0 28px rgba(232, 163, 61, 0.22), inset 0 0 12px rgba(232, 163, 61, 0.08);
   transform: translateY(-1px);
 }
 
 .mode-toggle.back {
-  border-color: rgba(232, 244, 255, 0.3);
-  box-shadow: 0 0 16px rgba(232, 244, 255, 0.08);
+  border-color: rgba(245, 239, 228, 0.28);
+  box-shadow: 0 0 16px rgba(245, 239, 228, 0.08);
 }
 
 .mode-toggle.back:hover {
-  border-color: rgba(232, 244, 255, 0.6);
-  box-shadow: 0 0 24px rgba(232, 244, 255, 0.15);
+  border-color: rgba(245, 239, 228, 0.55);
+  box-shadow: 0 0 24px rgba(245, 239, 228, 0.15);
 }
 
 .toggle-icon {
@@ -1343,8 +1344,8 @@ onBeforeUnmount(() => {
   gap: 12px;
   padding: 16px 20px;
   border-radius: var(--xt-radius-md);
-  background: rgba(3, 4, 10, 0.55);
-  border: 1px solid rgba(232, 244, 255, 0.12);
+  background: rgba(13, 13, 18, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   pointer-events: auto;
@@ -1356,8 +1357,8 @@ onBeforeUnmount(() => {
   height: 8px;
   margin-top: 7px;
   border-radius: 50%;
-  background: #39ff14;
-  box-shadow: 0 0 10px #39ff14;
+  background: #e8a33d;
+  box-shadow: 0 0 10px rgba(232, 163, 61, 0.8);
   animation: pulse-beat 1.5s ease-in-out infinite;
 }
 
@@ -1370,7 +1371,7 @@ onBeforeUnmount(() => {
   margin: 0;
   font-size: 14px;
   line-height: 1.65;
-  color: rgba(232, 244, 255, 0.88);
+  color: rgba(245, 239, 228, 0.88);
 }
 
 /* 过渡动画 */
@@ -1395,7 +1396,7 @@ onBeforeUnmount(() => {
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(3, 4, 10, 0.85);
+  background: rgba(6, 6, 8, 0.85);
   backdrop-filter: blur(6px);
   animation: finish-fade 1.2s ease forwards;
   z-index: 10;
@@ -1414,10 +1415,10 @@ onBeforeUnmount(() => {
   height: 80px;
   border-radius: 50%;
   border: 3px solid transparent;
-  border-top-color: #00f0ff;
-  border-right-color: #39ff14;
+  border-top-color: #f0bc66;
+  border-right-color: #e8a33d;
   animation: finish-spin 0.8s linear infinite;
-  box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 30px rgba(232, 163, 61, 0.3);
 }
 
 .finish-text {
@@ -1425,8 +1426,8 @@ onBeforeUnmount(() => {
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.15em;
-  color: #e8f4ff;
-  text-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
+  color: #f5efe4;
+  text-shadow: 0 0 16px rgba(232, 163, 61, 0.45);
 }
 
 @keyframes finish-fade {

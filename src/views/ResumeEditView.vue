@@ -160,9 +160,21 @@ onMounted(async () => {
   gap: 12px 16px;
   padding: 12px 16px;
   border-radius: var(--xt-radius-md);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  background: rgba(254, 226, 226, 0.45);
-  backdrop-filter: blur(8px);
+  border: 1px solid rgba(194, 85, 77, 0.28);
+  background: rgba(194, 85, 77, 0.07);
+}
+
+/* 删除简历：#C2554D 描边幽灵按钮，不用红实心 */
+.danger-zone :deep(.el-button--danger.is-plain) {
+  background: transparent;
+  border-color: rgba(194, 85, 77, 0.55);
+  color: #c2554d;
+}
+
+.danger-zone :deep(.el-button--danger.is-plain:hover) {
+  background: rgba(194, 85, 77, 0.12);
+  border-color: #c2554d;
+  color: #d4756e;
 }
 
 .danger-hint {

@@ -13,10 +13,14 @@
           <el-icon class="btn-ico"><Ticket /></el-icon>
           兑换码充值
         </el-button>
-        <el-button type="primary" disabled>
-          <el-icon class="btn-ico"><CreditCard /></el-icon>
-          在线充值
-        </el-button>
+        <el-tooltip content="暂未开放" placement="top">
+          <span class="disabled-btn-wrap">
+            <el-button type="primary" disabled>
+              <el-icon class="btn-ico"><CreditCard /></el-icon>
+              在线充值
+            </el-button>
+          </span>
+        </el-tooltip>
       </div>
     </div>
 
@@ -24,12 +28,12 @@
 
     <template v-else>
       <!-- 三列概览卡片 -->
-      <el-row :gutter="20" class="overview-grid">
+      <el-row v-stagger :gutter="20" class="overview-grid">
         <el-col :xs="24" :sm="8">
           <OrbitalCard class="overview-card" shadow="hover">
             <p class="overview-label">当前余额</p>
             <div class="overview-value-row">
-              <span class="overview-value primary">{{ balance.balance }}</span>
+              <span ref="balanceElRef" class="overview-value primary">{{ balanceDisplay }}</span>
               <span class="overview-unit">点</span>
             </div>
             <p class="overview-tip" :class="{ fresh: isDailyGranted }">
@@ -41,7 +45,7 @@
           <OrbitalCard class="overview-card" shadow="hover">
             <p class="overview-label">累计额度</p>
             <div class="overview-value-row">
-              <span class="overview-value secondary">{{ balance.totalQuota }}</span>
+              <span ref="totalElRef" class="overview-value secondary">{{ totalDisplay }}</span>
               <span class="overview-unit">点</span>
             </div>
             <p class="overview-tip">含每日免费 + 充值 + 兑换</p>
@@ -138,6 +142,7 @@ import { ElMessage } from 'element-plus'
 import { Refresh, Ticket, CreditCard } from '@element-plus/icons-vue'
 import OrbitalCard from '@/components/OrbitalCard.vue'
 import { formatDateTime } from '@/utils/format'
+import { useCountUp } from '@/composables/useCountUp'
 import {
   getQuotaBalance,
   getQuotaTransactions,
@@ -168,6 +173,14 @@ const isDailyGranted = computed(() => {
   const dd = String(today.getDate()).padStart(2, '0')
   return balance.value.lastDailyGrantDate === `${yyyy}-${mm}-${dd}`
 })
+
+/* 统计数字 count-up（1.2s，reduced-motion 直出） */
+const { display: balanceDisplay, elRef: balanceElRef } = useCountUp(
+  computed(() => balance.value.balance),
+)
+const { display: totalDisplay, elRef: totalElRef } = useCountUp(
+  computed(() => balance.value.totalQuota),
+)
 
 async function loadBalance() {
   balance.value = await getQuotaBalance()
@@ -290,9 +303,9 @@ function maskRedeemCode(text: string) {
 
 .overview-label {
   margin: 0 0 10px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--xt-text);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--xt-text-secondary);
 }
 
 .overview-value-row {
@@ -302,22 +315,16 @@ function maskRedeemCode(text: string) {
   margin-bottom: 8px;
 }
 
+/* 统计数字：琥珀 Orbitron */
 .overview-value {
+  font-family: var(--xt-font-display);
   font-size: 40px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
-}
-
-.overview-value.primary {
   color: var(--xt-primary);
 }
 
-.overview-value.secondary {
-  color: var(--xt-secondary);
-}
-
 .overview-value.accent {
-  color: var(--xt-accent);
   font-size: 32px;
 }
 
@@ -333,7 +340,7 @@ function maskRedeemCode(text: string) {
 }
 
 .overview-tip.fresh {
-  color: #22c55e;
+  color: var(--xt-success);
   font-weight: 500;
 }
 
@@ -346,7 +353,7 @@ function maskRedeemCode(text: string) {
 .redeem-error {
   margin: 0;
   font-size: 13px;
-  color: var(--el-color-danger);
+  color: var(--xt-danger);
 }
 
 .dialog-footer {
@@ -369,6 +376,7 @@ function maskRedeemCode(text: string) {
 
 .section-title {
   margin: 0;
+  font-family: var(--xt-font-title);
   font-size: 18px;
   font-weight: 700;
   color: var(--xt-text);
@@ -377,23 +385,25 @@ function maskRedeemCode(text: string) {
 .transaction-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
+/* 流水：行间渐隐细线分隔 */
 .transaction-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 16px;
-  border-radius: var(--xt-radius-sm);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 14px 4px;
+  border-bottom: 1px solid rgba(232, 230, 224, 0.06);
   transition: background 0.2s ease;
 }
 
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
 .transaction-item:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(232, 230, 224, 0.03);
 }
 
 .item-left {
@@ -428,19 +438,26 @@ function maskRedeemCode(text: string) {
 .item-points {
   font-size: 16px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
+/* 正负金额：正数成功绿，负数暖白 */
 .item-points.income {
-  color: #22c55e;
+  color: var(--xt-success);
 }
 
 .item-points.expense {
-  color: var(--xt-text-muted);
+  color: var(--xt-text);
 }
 
 .item-time {
-  font-size: 12px;
-  color: var(--xt-text-muted);
+  font-size: 13px;
+  color: var(--xt-text-secondary);
+}
+
+.disabled-btn-wrap {
+  display: inline-flex;
+  cursor: not-allowed;
 }
 
 .btn-ico {

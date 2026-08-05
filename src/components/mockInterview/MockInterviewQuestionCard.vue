@@ -47,14 +47,13 @@ defineProps<{
   border-radius: var(--xt-radius-md);
   border: 1px solid var(--xt-border);
   background: var(--xt-surface);
-  backdrop-filter: blur(12px);
-  box-shadow: var(--xt-shadow-sm);
+  box-shadow: inset 0 1px 0 var(--xt-card-highlight), var(--xt-shadow-sm);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .mock-q-card.is-practice {
-  border-color: var(--el-color-warning-light-5);
-  background: linear-gradient(180deg, var(--xt-surface) 0%, var(--el-color-warning-light-9) 100%);
+  border-color: rgba(232, 163, 61, 0.22);
+  background: var(--xt-surface);
 }
 
 .q-head {
@@ -65,14 +64,12 @@ defineProps<{
   margin-bottom: 12px;
 }
 
+/* Q 序号：琥珀小字，不用色块 */
 .q-index {
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--xt-primary);
-  background: var(--el-color-primary-light-9);
-  padding: 2px 8px;
-  border-radius: 6px;
 }
 
 .q-title {
@@ -92,6 +89,7 @@ defineProps<{
   margin-bottom: 6px;
   font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--xt-primary);
 }
 
@@ -99,18 +97,19 @@ defineProps<{
   margin: 0;
   font-size: 14px;
   line-height: 1.7;
-  color: var(--xt-text-secondary);
+  color: rgba(232, 230, 224, 0.88);
   white-space: pre-wrap;
 }
 
+/* 已遮盖：细虚线框 + 暖灰提示 */
 .practice-hint {
   margin: 16px 0 0;
   padding: 14px;
   text-align: center;
   font-size: 13px;
-  color: var(--el-color-warning-dark-2);
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px dashed var(--el-color-warning-light-3);
+  color: var(--xt-text-secondary);
+  background: rgba(232, 230, 224, 0.02);
+  border: 1px dashed rgba(232, 230, 224, 0.15);
   border-radius: var(--xt-radius-sm);
 }
 </style>

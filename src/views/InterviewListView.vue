@@ -23,7 +23,7 @@
       </el-button>
     </el-empty>
 
-    <el-row v-else :gutter="20" class="grid">
+    <el-row v-else v-stagger :gutter="20" class="grid">
       <el-col v-for="row in items" :key="row.sessionId" :xs="24" :sm="12" :lg="8">
         <OrbitalCard
           class="session-card"
@@ -159,8 +159,9 @@ async function onDelete(row: InterviewSessionListItemVO) {
 
 .card-title {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-family: var(--xt-font-title);
+  font-size: 18px;
+  font-weight: 700;
   color: var(--xt-text);
   line-height: 1.35;
   flex: 1;

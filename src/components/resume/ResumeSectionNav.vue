@@ -84,12 +84,14 @@ const nav = useResumeSectionNav()
 }
 
 .nav-item:hover {
-  background: var(--el-fill-color-light);
+  background: rgba(232, 230, 224, 0.04);
   color: var(--xt-text);
 }
 
+/* 当前项：左侧 2px 琥珀竖条 + 琥珀文字，不用色块底 */
 .nav-item.active {
-  background: var(--el-color-primary-light-9);
+  background: transparent;
+  box-shadow: inset 2px 0 0 var(--xt-primary);
   color: var(--xt-primary);
   font-weight: 600;
 }
@@ -115,7 +117,7 @@ const nav = useResumeSectionNav()
   text-overflow: ellipsis;
 }
 
-/* 窄屏：变成顶部横向导航 */
+/* 窄屏：改为顶部横向滚动 chips 条（scroll-snap，当前项琥珀） */
 @media (max-width: 991px) {
   .resume-section-nav {
     position: relative;
@@ -129,22 +131,47 @@ const nav = useResumeSectionNav()
 
   .nav-list {
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 2px;
   }
 
   .nav-item {
     width: auto;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     min-width: auto;
     justify-content: flex-start;
+    scroll-snap-align: start;
+    border: 1px solid var(--xt-border);
+    border-radius: 999px;
+    background: var(--xt-surface-muted);
+    padding: 6px 14px;
+  }
+
+  .nav-item:hover {
+    background: var(--xt-surface-muted);
+    border-color: rgba(232, 163, 61, 0.45);
+  }
+
+  /* 当前 chip：琥珀文字 + 琥珀描边（不用色块底） */
+  .nav-item.active {
+    box-shadow: none;
+    border-color: rgba(232, 163, 61, 0.55);
+    background: transparent;
+    color: var(--xt-primary);
+  }
+
+  .nav-dot {
+    display: none;
   }
 }
 
 @media (max-width: 767px) {
   .nav-item {
     font-size: 12px;
-    padding: 6px 8px;
+    padding: 6px 12px;
   }
 
   .nav-label {

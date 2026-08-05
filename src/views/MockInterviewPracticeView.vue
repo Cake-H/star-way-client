@@ -47,18 +47,20 @@
           </el-button>
         </el-button-group>
 
-        <el-button
-          size="large"
-          :type="answerRevealed ? 'default' : 'primary'"
-          plain
-          @click="toggleReveal"
-        >
-          {{ answerRevealed ? '隐藏答案' : '查看答案' }}
-        </el-button>
+        <div class="action-row">
+          <el-button
+            size="large"
+            :type="answerRevealed ? 'default' : 'primary'"
+            plain
+            @click="toggleReveal"
+          >
+            {{ answerRevealed ? '隐藏答案' : '查看答案' }}
+          </el-button>
 
-        <el-button v-if="isLast" type="success" size="large" :loading="finishing" @click="finish"
-          >完成练习
-        </el-button>
+          <el-button v-if="isLast" type="primary" size="large" :loading="finishing" @click="finish"
+            >完成练习
+          </el-button>
+        </div>
       </div>
     </template>
   </div>
@@ -258,6 +260,8 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  /* 为底部固定操作条预留空间 */
+  padding-bottom: 96px;
 }
 
 .page-head {
@@ -303,31 +307,72 @@ onBeforeUnmount(() => {
   margin-bottom: 24px;
 }
 
+/* 底部操作条：哑光固定底栏（移动端避让底部 Tab Bar） */
 .practice-toolbar {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 90;
+  width: min(1068px, calc(100% - 32px));
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
   flex-wrap: wrap;
-  padding: 20px;
+  padding: 14px 20px;
   border-radius: var(--xt-radius-md);
-  background: var(--xt-surface);
-  border: 1px solid var(--xt-border);
-  box-shadow: var(--xt-shadow-sm);
+  background: rgba(16, 16, 20, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(232, 230, 224, 0.1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 @media (max-width: 768px) {
+  /* 进度圆环缩小至 56px，置于标题行右侧；数字标签过挤则隐藏 */
+  .practice-header {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .practice-header :deep(.orbit-progress.size-md) {
+    width: 56px;
+    flex-shrink: 0;
+  }
+
+  .practice-header :deep(.orbit-labels) {
+    display: none;
+  }
+
   .practice-toolbar {
     flex-direction: column;
     align-items: stretch;
+    /* 避让移动端底部 Tab Bar（56px + safe-area） */
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    gap: 10px;
   }
 
+  /* 两行布局：导航一行、操作一行 */
   .practice-toolbar .el-button-group {
     display: flex;
+    width: 100%;
+  }
+
+  .practice-toolbar .action-row {
+    width: 100%;
+    gap: 10px;
   }
 
   .practice-toolbar .el-button {
     flex: 1;
+    min-height: 44px;
+    margin-left: 0;
   }
 }
 </style>

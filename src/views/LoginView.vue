@@ -219,7 +219,7 @@ async function onLogin() {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 0.12em;
-  background: linear-gradient(135deg, #f8faff 0%, #bfdbfe 100%);
+  background: linear-gradient(135deg, #fff8ec 0%, #f0bc66 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -269,7 +269,7 @@ async function onLogin() {
 .agreement-check {
   margin-top: 14px;
   height: auto;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .agreement-check :deep(.el-checkbox__label) {

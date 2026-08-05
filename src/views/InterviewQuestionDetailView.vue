@@ -360,7 +360,7 @@ async function onDelete() {
 }
 
 .block.covered {
-  background: linear-gradient(180deg, var(--el-color-warning-light-9) 0%, transparent 100%);
+  background: rgba(232, 163, 61, 0.04);
   margin: 0 -20px;
   padding-left: 20px;
   padding-right: 20px;
@@ -370,12 +370,12 @@ async function onDelete() {
 .cover-placeholder {
   margin: 0;
   font-size: 14px;
-  color: var(--xt-text-muted);
+  color: var(--xt-text-secondary);
   font-style: italic;
   padding: 12px 14px;
   border-radius: var(--xt-radius-sm);
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px dashed var(--xt-border-strong);
+  background: rgba(232, 230, 224, 0.02);
+  border: 1px dashed rgba(232, 230, 224, 0.15);
 }
 
 .reveal-all {

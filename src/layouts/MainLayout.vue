@@ -119,7 +119,11 @@
       </router-link>
     </nav>
     <main class="content xt-main-content" :class="{ 'content--wide': isHome, 'content--tabbar': isMobile }">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <transition name="page-fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
 
     <LoginRequiredDialog
@@ -540,6 +544,24 @@ function onSettingsCommand(command: string) {
   max-width: 1100px;
   margin: 0 auto;
   padding: 20px 16px 48px;
+}
+
+/* 内页切换：fadeIn + translateY(12px) 0.3s（reduced-motion 由全局规则降级） */
+.page-fade-enter-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.page-fade-leave-active {
+  transition: opacity 0.12s ease;
+}
+
+.page-fade-leave-to {
+  opacity: 0;
 }
 
 .content--wide {
