@@ -19,11 +19,10 @@
           <h2 class="interview-title">{{ interview.title }}</h2>
           <p class="interview-sub">{{ interview.questionCount }} 题 · 第 {{ currentIndex + 1 }} 题</p>
         </div>
-        <OrbitProgress
+        <ConstellationProgress
+          class="practice-constellation"
           :steps="interview.mockInterviewQuestions.length"
           :active="currentIndex"
-          size="md"
-          :labels="progressLabels"
         />
       </div>
 
@@ -79,7 +78,7 @@ import {
   updateMockInterviewStatus,
 } from '@/services/mockInterviewService'
 import MockInterviewQuestionCard from '@/components/mockInterview/MockInterviewQuestionCard.vue'
-import OrbitProgress from '@/components/OrbitProgress.vue'
+import ConstellationProgress from '@/components/ConstellationProgress.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -93,9 +92,6 @@ const finishing = ref(false)
 const mockInterviewId = computed(() => String(route.params.mockInterviewId))
 const currentQuestion = computed(() => interview.value?.mockInterviewQuestions[currentIndex.value])
 const isLast = computed(() => currentIndex.value >= (interview.value?.mockInterviewQuestions.length ?? 1) - 1)
-const progressLabels = computed(() =>
-  interview.value ? interview.value.mockInterviewQuestions.map((_, i) => `${i + 1}`) : [],
-)
 
 let hasUnsavedProgress = false
 
@@ -290,6 +286,13 @@ onBeforeUnmount(() => {
   flex: 1 1 auto;
 }
 
+/* 星座折线进度：靠右置于标题行右侧 */
+.practice-constellation {
+  flex-shrink: 0;
+  width: 300px;
+  align-self: center;
+}
+
 .interview-title {
   margin: 0 0 6px;
   font-size: 18px;
@@ -335,19 +338,8 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 768px) {
-  /* 进度圆环缩小至 56px，置于标题行右侧；数字标签过挤则隐藏 */
-  .practice-header {
-    flex-wrap: nowrap;
-    align-items: center;
-  }
-
-  .practice-header :deep(.orbit-progress.size-md) {
-    width: 56px;
-    flex-shrink: 0;
-  }
-
-  .practice-header :deep(.orbit-labels) {
-    display: none;
+  .practice-constellation {
+    width: 168px;
   }
 
   .practice-toolbar {

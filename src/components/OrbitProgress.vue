@@ -1,6 +1,6 @@
 <template>
-  <div class="orbit-progress" :class="[`size-${size}`]">
-    <svg viewBox="0 0 100 100" class="orbit-svg" :style="svgStyle">
+  <div class="orbit-progress" :class="[`size-${size}`, { 'no-ring': !ring }]">
+    <svg v-if="ring" viewBox="0 0 100 100" class="orbit-svg" :style="svgStyle">
       <circle class="orbit-track" cx="50" cy="50" :r="radius" />
       <circle
         class="orbit-active"
@@ -41,9 +41,12 @@ const props = withDefaults(
     active: number
     size?: 'sm' | 'md' | 'lg'
     labels?: string[]
+    /** 是否显示圆环；false 时仅渲染数字标签 */
+    ring?: boolean
   }>(),
   {
     size: 'md',
+    ring: true,
   }
 )
 
@@ -142,6 +145,19 @@ const svgStyle = computed(() => {
 .orbit-label.current {
   color: var(--xt-primary);
   font-weight: 600;
+}
+
+/* 无圆环模式：数字条自适应铺开、可换行 */
+.orbit-progress.no-ring {
+  width: auto;
+  max-width: 420px;
+}
+
+.no-ring .orbit-labels {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px 10px;
+  font-size: 13px;
 }
 
 .size-sm {

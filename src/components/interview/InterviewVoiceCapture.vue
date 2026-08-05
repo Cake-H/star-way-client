@@ -441,13 +441,13 @@ onBeforeUnmount(() => {
   padding: 24px 16px 20px;
   border-radius: var(--xt-radius-lg);
   border: 1px solid var(--xt-border-strong);
-  background: #101014;
+  background: var(--xt-card-bg);
   box-shadow: inset 0 1px 0 var(--xt-card-highlight), var(--xt-shadow-sm);
 }
 
 .voice-hero.recording {
   border-color: rgba(232, 163, 61, 0.4);
-  background: #101014;
+  background: var(--xt-card-bg);
 }
 
 .voice-hero.summarizing {
@@ -629,7 +629,7 @@ onBeforeUnmount(() => {
   border-radius: var(--xt-radius-md);
   border: 1px solid var(--xt-border);
   overflow: hidden;
-  background: #101014;
+  background: var(--xt-card-bg);
 }
 
 .text-supplement-title {

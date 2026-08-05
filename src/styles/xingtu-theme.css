@@ -19,15 +19,15 @@
   --xt-font-display: 'Orbitron', 'Noto Serif SC', serif;
   --xt-font-title: 'Noto Serif SC', 'Orbitron', serif;
 
-  /* 哑光实底卡片（替代玻璃拟态） */
-  --xt-card-bg: #101014;
-  --xt-card-border: rgba(232, 230, 224, 0.08);
-  --xt-card-border-hover: rgba(232, 230, 224, 0.18);
-  --xt-card-highlight: rgba(232, 230, 224, 0.05);
+  /* 哑光实底卡片（替代玻璃拟态）：略亮于页面底色 #08080C，保证模块可辨 */
+  --xt-card-bg: #131318;
+  --xt-card-border: rgba(232, 230, 224, 0.12);
+  --xt-card-border-hover: rgba(232, 230, 224, 0.26);
+  --xt-card-highlight: rgba(232, 230, 224, 0.07);
   /* 兼容旧玻璃变量，统一回落哑光方案 */
-  --xt-glass-bg: #101014;
-  --xt-glass-border: rgba(232, 230, 224, 0.08);
-  --xt-glass-border-hover: rgba(232, 230, 224, 0.18);
+  --xt-glass-bg: #131318;
+  --xt-glass-border: rgba(232, 230, 224, 0.12);
+  --xt-glass-border-hover: rgba(232, 230, 224, 0.26);
 
   /* 深空：中性黑，不带蓝色倾向 */
   --xt-space-deep: #060608;
@@ -35,11 +35,11 @@
   --xt-space-glow: #1a1a1f;
 
   /* 内容区（内页深色：哑光卡片 + 暖灰描边） */
-  --xt-surface: #101014;
-  --xt-surface-solid: #101014;
+  --xt-surface: #131318;
+  --xt-surface-solid: #131318;
   --xt-surface-muted: #16161b;
-  --xt-border: rgba(232, 230, 224, 0.08);
-  --xt-border-strong: rgba(232, 230, 224, 0.16);
+  --xt-border: rgba(232, 230, 224, 0.12);
+  --xt-border-strong: rgba(232, 230, 224, 0.22);
 
   /* 文字 */
   --xt-text: #e8e6e0;
@@ -58,13 +58,13 @@
   --xt-radius-sm: 8px;
   --xt-radius-md: 12px;
   --xt-radius-lg: 16px;
-  --xt-shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.25);
-  --xt-shadow-md: 0 12px 40px rgba(0, 0, 0, 0.4);
+  --xt-shadow-sm: 0 6px 24px rgba(0, 0, 0, 0.35);
+  --xt-shadow-md: 0 14px 44px rgba(0, 0, 0, 0.5);
   --xt-shadow-glow: none;
 
   /* 星轨 */
-  --xt-orbit-ring: rgba(232, 230, 224, 0.1);
-  --xt-orbit-ring-strong: rgba(232, 163, 61, 0.4);
+  --xt-orbit-ring: rgba(232, 230, 224, 0.14);
+  --xt-orbit-ring-strong: rgba(232, 163, 61, 0.55);
   --xt-orbit-dot: #9a968e;
   --xt-orbit-path: rgba(232, 230, 224, 0.16);
   --xt-launch-glow: rgba(232, 163, 61, 0.2);
@@ -154,6 +154,11 @@ html {
   border-color: var(--xt-border-strong);
 }
 
+/* 可点击卡片（OrbitalCard）：hover 描边提亮为琥珀 */
+.xt-main-content .el-card.clickable:hover {
+  border-color: rgba(232, 163, 61, 0.4);
+}
+
 .xt-main-content .el-card.is-hover-shadow:hover {
   box-shadow: var(--xt-shadow-md);
 }
@@ -175,7 +180,7 @@ html {
   border: 1px dashed var(--xt-border-strong);
 }
 
-/* 可点击卡片 */
+/* 可点击卡片：hover 描边提亮为琥珀，反馈明确 */
 .xt-clickable {
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
@@ -184,7 +189,7 @@ html {
 .xt-clickable:hover {
   transform: translateY(-2px);
   box-shadow: var(--xt-shadow-md);
-  border-color: var(--xt-border-strong);
+  border-color: rgba(232, 163, 61, 0.4);
 }
 
 .xt-clickable:active {
@@ -464,7 +469,7 @@ html.dark {
   --el-color-info-dark-2: #75716a;
 
   /* 基底：哑光黑灰，无蓝色倾向 */
-  --el-bg-color: #101014;
+  --el-bg-color: #131318;
   --el-bg-color-page: #08080c;
   --el-bg-color-overlay: #16161b;
 
@@ -485,7 +490,7 @@ html.dark {
   --el-fill-color-light: rgba(232, 230, 224, 0.05);
   --el-fill-color-lighter: rgba(232, 230, 224, 0.03);
   --el-fill-color-extra-light: rgba(232, 230, 224, 0.02);
-  --el-fill-color-blank: #101014;
+  --el-fill-color-blank: #131318;
   --el-fill-color-dark: rgba(232, 230, 224, 0.12);
   --el-disabled-bg-color: rgba(232, 230, 224, 0.04);
   --el-disabled-text-color: #55524c;
@@ -651,8 +656,8 @@ html.dark .el-select__wrapper.is-focused {
 
 /* 提示横幅：哑光底 + 左侧 3px 琥珀竖条，禁止蓝色 */
 html.dark .el-alert--info {
-  --el-alert-bg-color: #101014;
-  border: 1px solid rgba(232, 230, 224, 0.08);
+  --el-alert-bg-color: #16161b;
+  border: 1px solid rgba(232, 230, 224, 0.12);
   border-left: 3px solid #e8a33d;
 }
 

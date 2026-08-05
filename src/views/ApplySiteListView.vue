@@ -323,7 +323,7 @@ onMounted(async () => {
 
 .site-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(232, 163, 61, 0.25);
+  border-color: rgba(232, 163, 61, 0.4);
   box-shadow: var(--xt-shadow-md);
 }
 

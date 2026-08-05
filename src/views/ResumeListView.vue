@@ -211,13 +211,13 @@ async function onDelete(row: ResumeListItemVO) {
 
 .plugin-banner {
   cursor: pointer;
-  background: #101014;
-  border: 1px solid rgba(232, 230, 224, 0.08);
+  background: var(--xt-card-bg);
+  border: 1px solid var(--xt-card-border);
   border-left: 3px solid #e8a33d;
 }
 
 .plugin-banner:hover {
-  border-color: rgba(232, 230, 224, 0.16);
+  border-color: rgba(232, 163, 61, 0.4);
   border-left-color: #e8a33d;
 }
 
@@ -268,7 +268,7 @@ async function onDelete(row: ResumeListItemVO) {
 }
 
 .resume-card:hover {
-  border-color: rgba(232, 163, 61, 0.25);
+  border-color: rgba(232, 163, 61, 0.4);
 }
 
 .card-top {
