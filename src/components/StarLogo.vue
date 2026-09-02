@@ -1,55 +1,12 @@
 <template>
-  <svg
+  <img
     class="star-logo"
     :class="[`size-${size}`, { 'with-glow': glow }]"
     :width="dim"
     :height="dim"
-    viewBox="0 0 48 48"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-  >
-    <defs>
-      <linearGradient id="star-grad" x1="12" y1="4" x2="36" y2="44" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#FFF8EC" />
-        <stop offset="0.35" stop-color="#F0BC66" />
-        <stop offset="0.7" stop-color="#E8A33D" />
-        <stop offset="1" stop-color="#6B5A3E" />
-      </linearGradient>
-      <linearGradient id="arc-grad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="rgba(240,188,102,0.55)" />
-        <stop offset="0.55" stop-color="rgba(232,163,61,0.2)" />
-        <stop offset="1" stop-color="rgba(232,163,61,0)" />
-      </linearGradient>
-    </defs>
-
-    <!-- 单道轨道弧线 -->
-    <path
-      d="M7 30 Q16 42, 34 38"
-      stroke="url(#arc-grad)"
-      stroke-width="1.4"
-      stroke-linecap="round"
-      fill="none"
-    />
-
-    <!-- 主星：修长四芒，底部延伸为流星尾 -->
-    <path
-      d="M24 5 C25.5 15, 33 22.5, 41 24 C33 25.5, 26 31, 24 43 C22 31, 15 25.5, 7 24 C15 22.5, 22.5 15, 24 5 Z"
-      fill="url(#star-grad)"
-      stroke="rgba(255,255,255,0.45)"
-      stroke-width="0.7"
-      stroke-linejoin="round"
-    />
-
-    <!-- 细腻高光 -->
-    <path
-      d="M20 14 Q22 12, 24 12"
-      stroke="rgba(255,255,255,0.6)"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      fill="none"
-    />
-  </svg>
+    src="/logo.png"
+    alt="星途·智能求职助手"
+  />
 </template>
 
 <script setup lang="ts">
@@ -70,15 +27,10 @@ const dim = computed(() => ({ sm: 32, md: 40, lg: 48 }[props.size]))
 .star-logo {
   display: block;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .star-logo.with-glow {
   filter: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .star-logo {
-    filter: none;
-  }
 }
 </style>

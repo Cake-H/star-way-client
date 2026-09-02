@@ -13,7 +13,7 @@ export default defineConfig({
         name: '星途 · 智能简历投递助手',
         short_name: '星途',
         description: '智能简历投递助手，助力高效求职与面试复盘',
-        theme_color: '#863bff',
+        theme_color: '#E8A33D',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
