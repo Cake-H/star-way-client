@@ -11,10 +11,6 @@
     :close-on-click-modal="false"
   >
     <div class="guide-body">
-      <p class="guide-lead">
-        安装浏览器插件后，在任意网申页打开插件侧栏，即可把星途云端简历一键填入招聘表单，省去反复复制粘贴。
-      </p>
-
       <el-alert
         v-if="!hasResume"
         title="还没有简历"
@@ -44,42 +40,92 @@
         <div class="step-item">
           <div class="step-num">1</div>
           <div class="step-content">
-            <h4 class="step-title">安装插件</h4>
-            <p class="step-desc">从浏览器商店安装扩展；如尚未上架，可加载插件仓库的 dist 目录作为「已解压的扩展程序」。</p>
-            <div class="store-actions">
-              <a
-                v-if="storeUrls.chrome"
-                :href="storeUrls.chrome"
-                target="_blank"
-                rel="noopener"
-                class="store-link"
+            <h4 class="step-title">安装插件（需在电脑端 Edge / Chrome 操作）</h4>
+            <div class="channel-switch">
+              <button
+                type="button"
+                class="channel-btn"
+                :class="{ active: channel === 'stable' }"
+                @click="selectStable"
               >
-                <el-icon><ChromeFilled /></el-icon>
-                Chrome 商店
-              </a>
-              <a
-                v-if="storeUrls.edge"
-                :href="storeUrls.edge"
-                target="_blank"
-                rel="noopener"
-                class="store-link"
+                安装正式版
+              </button>
+              <button
+                type="button"
+                class="channel-btn"
+                :class="{ active: channel === 'beta' }"
+                @click="channel = 'beta'"
               >
-                <el-icon><ChromeFilled /></el-icon>
-                Edge 加载项
-              </a>
-              <a
-                v-if="storeUrls.firefox"
-                :href="storeUrls.firefox"
-                target="_blank"
-                rel="noopener"
-                class="store-link"
-              >
-                <el-icon><ChromeFilled /></el-icon>
-                Firefox 附加组件
-              </a>
-              <el-tag v-if="!hasStoreUrl" type="info" size="small" effect="plain">
-                商店链接待配置，请联系管理员获取安装包
-              </el-tag>
+                安装最新测试版
+                <span v-if="betaVersion" class="beta-ver">{{ betaVersion }}</span>
+              </button>
+            </div>
+
+            <!-- 正式版：浏览器商店一键安装，自动更新 -->
+            <div v-if="channel === 'stable'" class="channel-panel">
+              <p class="step-desc">通过浏览器扩展商店一键安装，后续版本自动更新，无需手动维护。</p>
+              <div class="store-actions">
+                <a
+                  v-if="storeUrls.chrome"
+                  :href="storeUrls.chrome"
+                  target="_blank"
+                  rel="noopener"
+                  class="store-link"
+                >
+                  <el-icon><ChromeFilled /></el-icon>
+                  Chrome 商店
+                </a>
+                <a
+                  v-if="storeUrls.edge"
+                  :href="storeUrls.edge"
+                  target="_blank"
+                  rel="noopener"
+                  class="store-link"
+                >
+                  <el-icon><ChromeFilled /></el-icon>
+                  Edge 加载项
+                </a>
+                <a
+                  v-if="storeUrls.firefox"
+                  :href="storeUrls.firefox"
+                  target="_blank"
+                  rel="noopener"
+                  class="store-link"
+                >
+                  <el-icon><ChromeFilled /></el-icon>
+                  Firefox 附加组件
+                </a>
+              </div>
+            </div>
+
+            <!-- 测试版：下载 zip + 开发者模式加载 -->
+            <div v-else class="channel-panel">
+              <p class="step-desc">
+                公测阶段通过测试包安装，功能与正式版一致；后续有新版时重新下载、按同样步骤覆盖加载即可。
+              </p>
+              <div class="beta-actions">
+                <el-button
+                  type="primary"
+                  :disabled="!zipUrl"
+                  @click="downloadBeta"
+                >
+                  <el-icon style="margin-right: 6px"><Download /></el-icon>
+                  下载插件测试包{{ betaVersion ? ` ${betaVersion}` : '' }}
+                </el-button>
+                <el-tag v-if="!zipUrl" type="info" size="small" effect="plain">
+                  测试包即将上传，请稍后再试
+                </el-tag>
+              </div>
+              <ol class="install-steps">
+                <li>下载完成后解压 zip，记住解压出的文件夹位置。</li>
+                <li>Edge 地址栏输入 <code>edge://extensions</code> 并回车（Chrome 用 <code>chrome://extensions</code>）。</li>
+                <li>打开页面左侧的「开发人员模式」开关。</li>
+                <li>点击「加载解压缩的扩展」，选中刚解压出的文件夹。</li>
+                <li>在扩展卡片上点「固定」，把图标固定到浏览器工具栏。</li>
+              </ol>
+              <p class="step-desc beta-warn">
+                每次启动浏览器若提示「已禁用开发人员模式扩展」，选择「保留」即可，不影响使用。
+              </p>
             </div>
           </div>
         </div>
@@ -114,15 +160,6 @@
           </div>
         </div>
       </div>
-
-      <el-divider />
-
-      <div class="guide-tip">
-        <el-icon><InfoFilled /></el-icon>
-        <span>
-          小提示：把扩展固定在浏览器工具栏，并在招聘页打开侧栏，可与网申页面并排操作，填表进度实时可见。
-        </span>
-      </div>
     </div>
 
     <template #footer>
@@ -135,10 +172,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ChromeFilled, InfoFilled } from '@element-plus/icons-vue'
-import { EXTENSION_NAME, EXTENSION_STORE_URLS } from '@/config'
+import { ElMessage } from 'element-plus'
+import { ChromeFilled, Download } from '@element-plus/icons-vue'
+import {
+  EXTENSION_BETA_VERSION,
+  EXTENSION_NAME,
+  EXTENSION_STORE_URLS,
+  EXTENSION_ZIP_URL,
+} from '@/config'
 
 const props = defineProps<{
   modelValue: boolean
@@ -161,6 +204,29 @@ const storeUrls = EXTENSION_STORE_URLS
 const hasStoreUrl = computed(
   () => !!storeUrls.chrome || !!storeUrls.edge || !!storeUrls.firefox,
 )
+const zipUrl = EXTENSION_ZIP_URL
+const betaVersion = EXTENSION_BETA_VERSION
+
+/** 安装渠道：公测期默认展示测试版；正式版商店上架后切到 stable */
+const channel = ref<'stable' | 'beta'>(hasStoreUrl.value ? 'stable' : 'beta')
+
+function selectStable() {
+  if (!hasStoreUrl.value) {
+    ElMessage.info('正式版暂未开启，商店上架后开放，可先使用测试版')
+    return
+  }
+  channel.value = 'stable'
+}
+
+function downloadBeta() {
+  if (!zipUrl) return
+  const a = document.createElement('a')
+  a.href = zipUrl
+  a.rel = 'noopener'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+}
 
 function goCreateResume() {
   visible.value = false
@@ -173,17 +239,6 @@ function goCreateResume() {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.guide-body :deep(.el-divider) {
-  margin: 4px 0;
-}
-
-.guide-lead {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--xt-text-secondary);
 }
 
 .resume-alert :deep(.el-alert__content) {
@@ -217,7 +272,7 @@ function goCreateResume() {
   place-items: center;
   border-radius: 50%;
   background: var(--xt-primary);
-  color: #1c1206;
+  color: var(--xt-on-accent);
   font-size: 14px;
   font-weight: 700;
 }
@@ -250,6 +305,84 @@ function goCreateResume() {
   margin-top: 4px;
 }
 
+.channel-switch {
+  display: flex;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.channel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--xt-radius-sm);
+  border: 1px solid var(--xt-border);
+  background: var(--xt-surface);
+  color: var(--xt-text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.channel-btn:hover {
+  border-color: rgba(var(--xt-accent-rgb), 0.45);
+  color: var(--xt-primary);
+}
+
+.channel-btn.active {
+  background: rgba(var(--xt-accent-rgb), 0.12);
+  border-color: var(--xt-primary);
+  color: var(--xt-primary);
+  font-weight: 600;
+}
+
+.beta-ver {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(var(--xt-accent-rgb), 0.16);
+  color: var(--xt-primary);
+}
+
+.channel-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: var(--xt-radius-sm);
+  border: 1px dashed var(--xt-border);
+  background: var(--xt-surface);
+}
+
+.beta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.install-steps {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--xt-text-secondary);
+}
+
+.install-steps code {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(var(--xt-accent-rgb), 0.1);
+  color: var(--xt-primary);
+  font-size: 12px;
+}
+
+.beta-warn {
+  color: var(--xt-warning, #b88230);
+}
+
 .store-link {
   display: inline-flex;
   align-items: center;
@@ -265,25 +398,8 @@ function goCreateResume() {
 }
 
 .store-link:hover {
-  background: rgba(232, 163, 61, 0.08);
-  border-color: rgba(232, 163, 61, 0.45);
-  color: var(--xt-primary);
-}
-
-.guide-tip {
-  display: flex;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: var(--xt-radius-sm);
-  background: rgba(232, 163, 61, 0.06);
-  color: var(--xt-text-secondary);
-  font-size: 13px;
-  line-height: 1.55;
-}
-
-.guide-tip .el-icon {
-  flex-shrink: 0;
-  margin-top: 2px;
+  background: rgba(var(--xt-accent-rgb), 0.08);
+  border-color: rgba(var(--xt-accent-rgb), 0.45);
   color: var(--xt-primary);
 }
 
