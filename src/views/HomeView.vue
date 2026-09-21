@@ -40,7 +40,13 @@
           <HeroStats class="hero-stats-block" />
         </div>
 
-        <div ref="visualRef" class="hero-visual" :style="visualStyle" aria-hidden="true">
+        <div
+          ref="visualRef"
+          class="hero-visual"
+          :style="visualStyle"
+          aria-hidden="true"
+          @click="onPlanetClick"
+        >
           <HeroPlanet />
         </div>
       </div>
@@ -92,6 +98,12 @@ import ShipNavFab from '@/components/home/ShipNavFab.vue'
 import { useHomeJourney } from '@/composables/useHomeJourney'
 import { useStarParallax } from '@/composables/useStarParallax'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'
+import { toggleDawn } from '@/theme/useDawnTransition'
+
+/** 破晓：点击星球切换日/夜（完整 2.4s 仪式动画） */
+function onPlanetClick() {
+  toggleDawn('planet')
+}
 
 const router = useRouter()
 const prefersReducedMotion = usePreferredReducedMotion()

@@ -1,0 +1,10 @@
+# git diff --stat HEAD -- src/ index.html  (fix6 后)
+ index.html                         |   9 +
+ src/components/home/HeroCanvas.vue | 435 ++++++++++++++++++-
+ src/layouts/MainLayout.vue         |  46 ++
+ src/style.css                      |   2 +
+ src/theme/dawn.css                 | 832 +++++++++++++++++++++++++++++++++++++
+ src/theme/planetDawnGL.js          | 408 ++++++++++++++++++
+ src/theme/useDawnTransition.ts     | 262 ++++++++++++
+ src/views/HomeView.vue             |  14 +-
+ 8 files changed, 1997 insertions(+), 11 deletions(-)

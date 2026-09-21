@@ -53,6 +53,16 @@
       </div>
       <!-- PC：额度 + 退出/登录 + 设置（账号注销） -->
       <div v-if="!isMobile" class="right-actions">
+        <!-- 破晓：日/夜切换（复用同一时间线，压缩至 1.2s） -->
+        <button
+          type="button"
+          class="theme-toggle"
+          :aria-label="dawnTheme === 'dawn' ? '切换到夜间模式' : '切换到破晓模式'"
+          :title="dawnTheme === 'dawn' ? '切换到夜间模式' : '切换到破晓模式'"
+          @click="toggleDawn('nav')"
+        >
+          <el-icon :size="17"><Sunny v-if="dawnTheme === 'dawn'" /><Moon v-else /></el-icon>
+        </button>
         <el-button v-if="isLoggedIn" class="quota-btn" type="info" plain @click="goQuota">
           <el-icon class="quota-ico"><Wallet /></el-icon>
           额度
@@ -72,6 +82,15 @@
       </div>
       <!-- 移动端：头像入口（额度、退出登录收入菜单） -->
       <div v-else class="avatar-entry">
+        <!-- 破晓：日/夜切换 -->
+        <button
+          type="button"
+          class="theme-toggle"
+          :aria-label="dawnTheme === 'dawn' ? '切换到夜间模式' : '切换到破晓模式'"
+          @click="toggleDawn('nav')"
+        >
+          <el-icon :size="17"><Sunny v-if="dawnTheme === 'dawn'" /><Moon v-else /></el-icon>
+        </button>
         <el-button v-if="!isLoggedIn" class="logout-btn" type="primary" plain @click="goLogin">登录/注册</el-button>
         <button
           v-else
@@ -144,8 +163,10 @@ import {
   Document,
   House,
   MagicStick,
+  Moon,
   Setting,
   Share,
+  Sunny,
   SwitchButton,
   User,
   Wallet,
@@ -155,6 +176,7 @@ import StarryBackground from '@/components/StarryBackground.vue'
 import LoginRequiredDialog from '@/components/LoginRequiredDialog.vue'
 import QuotaInsufficientDialog from '@/components/QuotaInsufficientDialog.vue'
 import AccountDeleteDialog from '@/components/AccountDeleteDialog.vue'
+import { dawnTheme, toggleDawn } from '@/theme/useDawnTransition'
 import { usePWA } from '@/composables/usePWA'
 import { usePWAInstall } from '@/composables/usePWAInstall'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'
@@ -424,6 +446,30 @@ function onSettingsCommand(command: string) {
 .settings-btn:hover {
   border-color: rgba(232, 163, 61, 0.5);
   color: #e8a33d;
+}
+
+/* 破晓：日/夜切换按钮（样式与 settings-btn 一致；亮主题配色由 dawn.css 变量接管） */
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(232, 230, 224, 0.16);
+  background: transparent;
+  color: var(--xt-text-on-dark);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.theme-toggle:hover {
+  border-color: rgba(232, 163, 61, 0.5);
+  color: #e8a33d;
+}
+
+.avatar-entry .theme-toggle {
+  margin-right: 10px;
 }
 
 /* —— 移动端：头像入口 + 菜单 + 底部 Tab Bar —— */
