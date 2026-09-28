@@ -88,6 +88,8 @@ function glRingStyle(r: { size: number; alpha: number }) {
 let dawn: DawnFrame = {
   phase: 0,
   bright: 1,
+  starGlow: 0,
+  swirl: 0,
   radiusK: 0,
   ringOpacity: 0,
   skyWarm: 0,
@@ -321,9 +323,26 @@ function drawStarfield() {
       ? 1
       : 0.75 + Math.sin(time * s.twinkleSpeed + s.twinklePhase) * 0.25
     let alpha = s.opacity * twinkle
-    let color = s.color
+    let drawSize = s.size
+    let cr = s.rgb?.[0] ?? 232
+    let cg = s.rgb?.[1] ?? 230
+    let cb = s.rgb?.[2] ?? 224
 
     if (engage) {
+      // v9.1 星辉变换①：星球自转裹挟星点（绕球心角位移，近球强远球弱；绘制期偏移，不污染坐标）。
+      // v9.4：角位移由 swirl 标量匀速推进（0.1→2.2s），持续旋转直到光圈铺满全屏才停，
+      // 不再随自转缓动末尾刹车；白昼微尘永久停在最终角位移；倒放随 swirl 匀速退回
+      const dxs = x - freezeCx
+      const dys = y - freezeCy
+      const ds = Math.hypot(dxs, dys)
+      const fall = Math.exp(-ds / (maxDist * 0.5))
+      const ang = -0.55 * dawn.swirl * fall
+      if (ang !== 0 && maxDist > 1) {
+        const ca = Math.cos(ang)
+        const sa = Math.sin(ang)
+        x = freezeCx + dxs * ca - dys * sa
+        y = freezeCy + dxs * sa + dys * ca
+      }
       if (s.dust) {
         // 白昼微尘：约 5% 星点保留，缓慢漂浮（10~20s 一个来回），颜色向暖金推移
         if (dawn.dustFade > 0) {
@@ -333,23 +352,45 @@ function drawStarfield() {
             x += Math.sin(time * w + s.driftPhase) * s.driftAmp * dawn.dustFade
             y += Math.cos(time * w * 0.8 + s.driftPhase) * s.driftAmp * 0.6 * dawn.dustFade
           }
-          if (s.rgb) {
-            const k = dawn.dustFade
-            color = `rgb(${Math.round(s.rgb[0] + (232 - s.rgb[0]) * k)},${Math.round(
-              s.rgb[1] + (163 - s.rgb[1]) * k,
-            )},${Math.round(s.rgb[2] + (61 - s.rgb[2]) * k)})`
-          }
+          const k = dawn.dustFade
+          cr += (232 - cr) * k
+          cg += (163 - cg) * k
+          cb += (61 - cb) * k
         }
-      } else if (dawn.radiusK > 0) {
-        // 破晓环吞没：环先提亮 1.5×（0.1s）再熄灭（0.3s）；反转经过时重新点亮
+      } else if (dawn.radiusK > 0 || dawn.starGlow > 0) {
+        // v9.3 星场渐亮·修正：按离球心距离分级唤醒（近球强、远球微），取消尺寸膨胀、
+        // 提亮收敛——整屏同步变大变亮会产生密集光斑的不适感，渐层点亮才像晨光漫过星海；
+        // 波前到达后再进入点燃/吞没流程——先点亮星空，再点亮世界
+        if (dawn.starGlow > 0 && dawn.radiusK - (s.deathK ?? 0.5) <= -0.07) {
+          const wk = dawn.starGlow * (0.3 + 0.7 * Math.exp(-ds / (maxDist * 0.55)))
+          alpha *= 1 + 0.9 * wk
+          cr += (255 - cr) * 0.3 * wk
+          cg += (230 - cg) * 0.3 * wk
+          cb += (195 - cb) * 0.3 * wk
+        }
+        // 破晓环吞没：环先点亮再吞没（反转经过时重新点亮）
         const rel = dawn.radiusK - (s.deathK ?? 0.5)
         const brightBand = 0.07
         if (rel <= -brightBand) {
-          // 环未到，保持原样
+          // v9.1 星辉变换②·前导辉光：波前逼近的星点先被晨光"点亮"（微亮 + 色温转暖）
+          const pre = rel + brightBand + 0.14
+          if (pre > 0) {
+            const k2 = pre / 0.14
+            alpha *= 1 + 0.35 * k2
+            cr += (255 - cr) * k2 * 0.5
+            cg += (224 - cg) * k2 * 0.5
+            cb += (170 - cb) * k2 * 0.5
+          }
         } else if (rel <= 0) {
-          alpha *= 1 + (0.5 * (rel + brightBand)) / brightBand
+          // v9.1 星辉变换③·点燃：抵近波前急剧提亮、放大、转为暖金星辉，再被吞没
+          const k = (rel + brightBand) / brightBand
+          alpha *= 1 + 1.3 * k
+          drawSize = s.size * (1 + 0.7 * k)
+          cr += (255 - cr) * k * 0.85
+          cg += (214 - cg) * k * 0.85
+          cb += (150 - cb) * k * 0.85
         } else if (rel <= (s.fadeK ?? 0.33)) {
-          alpha *= 1.5 * (1 - rel / (s.fadeK ?? 0.33))
+          alpha *= 2.3 * (1 - rel / (s.fadeK ?? 0.33))
         } else {
           alpha = 0
         }
@@ -358,22 +399,22 @@ function drawStarfield() {
       if (alpha <= 0.004) return
     }
 
+    const ri = Math.round(cr)
+    const gi = Math.round(cg)
+    const bi = Math.round(cb)
     ctx!.globalAlpha = alpha
-    ctx!.fillStyle = color
+    ctx!.fillStyle = `rgb(${ri},${gi},${bi})`
     ctx!.beginPath()
-    ctx!.arc(x, y, s.size, 0, Math.PI * 2)
+    ctx!.arc(x, y, drawSize, 0, Math.PI * 2)
     ctx!.fill()
 
-    if (s.size > 1.6 && alpha > 0.5) {
-      const r = parseInt(s.color.slice(1, 3), 16)
-      const g = parseInt(s.color.slice(3, 5), 16)
-      const b = parseInt(s.color.slice(5, 7), 16)
-      const glow = ctx!.createRadialGradient(x, y, 0, x, y, s.size * 3)
-      glow.addColorStop(0, `rgba(${r},${g},${b},${alpha * 0.45})`)
-      glow.addColorStop(1, `rgba(${r},${g},${b},0)`)
+    if (drawSize > 1.6 && alpha > 0.5) {
+      const glow = ctx!.createRadialGradient(x, y, 0, x, y, drawSize * 3)
+      glow.addColorStop(0, `rgba(${ri},${gi},${bi},${alpha * 0.45})`)
+      glow.addColorStop(1, `rgba(${ri},${gi},${bi},0)`)
       ctx!.fillStyle = glow
       ctx!.beginPath()
-      ctx!.arc(x, y, s.size * 3, 0, Math.PI * 2)
+      ctx!.arc(x, y, drawSize * 3, 0, Math.PI * 2)
       ctx!.fill()
     }
   })
@@ -524,6 +565,61 @@ function drawSkyWarm() {
 }
 
 /**
+ * v9.1 破晓波前（canvas 层，screen 混合）：不规则大气扰动环形 + 两条尾随波纹。
+ * 角向摆动（3/7/13 波数叠加、缓慢旋转）让光锋面不再是规则几何圆；
+ * 尾随波纹制造"光的波动"。摆幅经 front_sim.py 形态模拟标定。
+ * 仅过渡中绘制；夜间路径不进入。DOM 破晓环（z50）负责内容层之上的部分，本层补充细节。
+ */
+function drawDawnFront() {
+  if (!ctx) return
+  if (!dawn.active || dawn.ringOpacity <= 0.001 || dawn.radiusK <= 0) return
+  const R0 = dawn.radiusK * maxDist
+  if (R0 < 8) return
+  const t = performance.now() / 1000
+  const rotA = t * 0.25 + dawn.phase * 2.0
+  const bands: Array<{ k: number; half: number; peak: number; hue: [number, number, number] }> = [
+    { k: 1.0, half: Math.max(40, R0 * 0.06), peak: 0.5, hue: [239, 151, 18] },
+    { k: 0.88, half: Math.max(24, R0 * 0.045), peak: 0.16, hue: [240, 178, 90] },
+    { k: 0.76, half: Math.max(16, R0 * 0.035), peak: 0.08, hue: [245, 200, 140] },
+  ]
+  const N = 48
+  ctx.save()
+  ctx.globalCompositeOperation = 'screen'
+  for (const b of bands) {
+    const Rb = R0 * b.k
+    if (Rb - b.half <= 1) continue
+    const a = b.peak * dawn.ringOpacity
+    const grad = ctx.createRadialGradient(
+      freezeCx, freezeCy, Math.max(0, Rb - b.half),
+      freezeCx, freezeCy, Rb + b.half,
+    )
+    grad.addColorStop(0, `rgba(${b.hue[0]},${b.hue[1]},${b.hue[2]},0)`)
+    grad.addColorStop(0.5, `rgba(${b.hue[0]},${b.hue[1]},${b.hue[2]},${a.toFixed(3)})`)
+    grad.addColorStop(1, `rgba(${b.hue[0]},${b.hue[1]},${b.hue[2]},0)`)
+    ctx.fillStyle = grad
+    ctx.beginPath()
+    for (let i = 0; i <= N; i++) {
+      const th = (i / N) * Math.PI * 2
+      const w = 1 + 0.022 * Math.sin(3 * th + rotA * 1.7) + 0.013 * Math.sin(7 * th - rotA * 1.1) + 0.007 * Math.sin(13 * th + rotA * 2.3)
+      const r = (Rb + b.half) * w
+      const wx = freezeCx + Math.cos(th) * r
+      const wy = freezeCy + Math.sin(th) * r
+      if (i === 0) ctx.moveTo(wx, wy)
+      else ctx.lineTo(wx, wy)
+    }
+    for (let i = N; i >= 0; i--) {
+      const th = (i / N) * Math.PI * 2
+      const w = 1 + 0.022 * Math.sin(3 * th + rotA * 1.7) + 0.013 * Math.sin(7 * th - rotA * 1.1) + 0.007 * Math.sin(13 * th + rotA * 2.3)
+      const r = Math.max(0, Rb - b.half) * (2 - w)
+      ctx.lineTo(freezeCx + Math.cos(th) * r, freezeCy + Math.sin(th) * r)
+    }
+    ctx.closePath()
+    ctx.fill('evenodd')
+  }
+  ctx.restore()
+}
+
+/**
  * WebGL 星球层逐帧同步：跟随原版 .hero-planet 位置/尺寸（含视差），
  * 按压回弹 scale(dawn.press)，随后渲染着色器星球。
  * 尺寸写 style 仅在变化时；位移走 transform（GPU 合成）。
@@ -576,6 +672,7 @@ function drawStaticOnce() {
   ctx.clearRect(0, 0, canvasWidth, canvasHeight)
   drawBackground()
   drawSkyWarm()
+  drawDawnFront()
   drawStarfield()
   let cx = canvasWidth * (canvasWidth >= 768 ? 0.78 : 0.5)
   let cy = canvasHeight * 0.5
@@ -603,7 +700,7 @@ function onDawnFrame(f: DawnFrame) {
   if (f.active && !wasActive) {
     captureFreeze()
     if (ringRef.value) {
-      ringRef.value.style.transform = `translate3d(${freezeCx - 1700}px, ${freezeCy - 1700}px, 0)`
+      ringRef.value.style.transform = `translate3d(${freezeCx - 1200}px, ${freezeCy - 1200}px, 0)`
     }
   }
   const reveal = revealRef.value
@@ -621,7 +718,12 @@ function onDawnFrame(f: DawnFrame) {
     if (f.active && f.radiusK > 0 && f.ringOpacity > 0.001) {
       ring.style.display = 'block'
       ring.style.opacity = f.ringOpacity.toFixed(3)
-      ring.style.setProperty('--dawn-ring-r', `${(f.radiusK * maxDist).toFixed(1)}px`)
+      // v9.1：半径改由 transform scale 驱动（基准半径 1000px，层宽 2400px 控内存），
+      // 微椭圆（1.025/0.975）+ 缓慢旋转，配合 CSS 角向光丝遮罩，破除规则几何圆
+      const k = (f.radiusK * maxDist) / 1000
+      const t = performance.now() / 1000
+      const rot = t * 7 + Math.sin(t * 0.6) * 4
+      ring.style.transform = `translate3d(${freezeCx - 1200}px, ${freezeCy - 1200}px, 0) rotate(${rot.toFixed(2)}deg) scale(${(k * 1.025).toFixed(4)}, ${(k * 0.975).toFixed(4)})`
     } else if (ring.style.display !== 'none') {
       ring.style.display = 'none'
     }
@@ -736,6 +838,7 @@ function drawFrame(time: number) {
 
   drawBackground()
   drawSkyWarm()
+  drawDawnFront()
   drawStarfield()
   drawShootingStars()
 

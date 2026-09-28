@@ -23,6 +23,10 @@ export interface DawnFrame {
   phase: number
   /** 星球亮度 1.0 → 1.18（随自转爬升） → 1.5（铺满后绽放） → 1.25（恒星态），无平台无爆闪 */
   bright: number
+  /** 星场渐亮 0→1：光锋面启程前，星星先被星球的晨光整体唤醒（先点亮星空，再点亮世界） */
+  starGlow: number
+  /** 星场裹挟进度 0→1：匀速旋转（不随自转缓动刹车），直到光圈铺满全屏才停 */
+  swirl: number
   /** 破晓环/揭示层归一化半径 0→1（光锋面：随球亮起即由球心向外连续铺满） */
   radiusK: number
   /** 破晓环透明度：光锋面的亮边，扩散中段达峰，抵达边缘前自然衰减 */
@@ -55,6 +59,8 @@ export function setDawnFlipRadiusK(k: number) {
 }
 /** 日常入口（导航按钮）复用同一时间线，时长压缩 2.4s → 1.2s */
 const NAV_TIMESCALE = 2
+/** 星球点击完整仪式 2.4s（v9.2：总时长恢复，重新分配编舞——光锋面铺满与星辉点亮过程拉长） */
+const PLANET_TIMESCALE = 1
 
 gsap.registerPlugin(CustomEase)
 // 光先快后慢：cubic-bezier(0.16, 1, 0.3, 1)
@@ -82,6 +88,8 @@ function isReducedMotion(): boolean {
 const state = {
   phase: 0,
   bright: 1,
+  starGlow: 0,
+  swirl: 0,
   radiusK: 0,
   ringOpacity: 0,
   skyWarm: 0,
@@ -136,13 +144,12 @@ function sync() {
 
 /*
  * 破晓时间线（总时长 2.4s，仅首页 Hero 有完整视觉；其他页面复用同一进度驱动翻转到 data-theme）
- * v4 因果连续模型（星球是光源，一切光效随自转同步发生）+ v6 两处时序修正：
- *   自转 0.05→2.2s 全程不停；亮度前段随自转爬升，揭示圈铺满（1.6s）后 uBright 绽放至 1.5、
- *   保持 0.2s 再平复 1.25（绽放必须被看见，规范第三节）；
- *   光锋面 0.1s 随第一缕光启程、由内到外连续铺满；主题翻转 = 半径驱动：
- *   揭示圈盖住 Hero 文字块（最远角+40px）即翻转 data-theme，消除文字灰影窗口（规范第四节）；
+ * v4 因果连续模型（星球是光源，一切光效随自转同步发生）+ v6 时序修正 + v9.3 顺序重排：
+ *   自转 0.05→2.2s 全程不停；星场先被晨光整体唤醒（0.1→0.9s 渐亮），光圈 0.7s 才启程、
+ *   1.5s 铺满（2.2s）——先点亮星空，再点亮世界；铺满后 uBright 绽放至 1.5 再平复 1.25；
+ *   主题翻转 = 半径驱动：揭示圈盖住 Hero 文字块（最远角+40px）即翻转 data-theme，消除文字灰影窗口；
  *   回夜 = 同一时间线反向播放：光随自转回收、由外而内熄灭 —— 同一物理过程的两个方向。
- * 参与者：①星球=主角 ②星星=被晨光吞没 ③天空=从球心向外变暖 ④破晓环=光的边界 ⑤揭示层=带来白昼
+ * 参与者：①星球=主角 ②星星=被晨光点亮再吞没 ③天空=从球心向外变暖 ④破晓环=光的边界 ⑤揭示层=带来白昼
  */
 const tl = gsap.timeline({
   paused: true,
@@ -160,22 +167,29 @@ tl.to(state, { press: 1, duration: 0.1, ease: 'back.out(1.4)' }, 0.05)
 // 过冲必须发生在揭示圈铺满画布之后，否则闪耀被揭示层盖住观众看不见）
 tl.to(state, { phase: 1, duration: 2.15, ease: 'dawnPhase' }, 0.05)
 tl.to(state, { bright: 1.18, duration: 1.55, ease: 'power1.inOut' }, 0.05)
-// 绽放：1.6s（揭示圈铺满）→ 1.85s 达 uBright=1.5 峰值，保持 0.2s → 2.4s 平复 1.25 恒星态
-tl.to(state, { bright: 1.5, duration: 0.25, ease: 'power2.out' }, 1.6)
-tl.to(state, { bright: 1.25, duration: 0.35, ease: 'power2.inOut' }, 2.05)
+// 绽放：2.0s（揭示圈即将铺满）→ 2.2s 达 uBright=1.5 峰值，即刻 → 2.4s 平复 1.25 恒星态
+tl.to(state, { bright: 1.5, duration: 0.2, ease: 'power2.out' }, 2.0)
+tl.to(state, { bright: 1.25, duration: 0.2, ease: 'power2.inOut' }, 2.2)
 
-// 光锋面随第一缕光启程：0.1s 由球心向外连续铺满，1.6s 铺满（主题翻转按文字块覆盖阈值，见 sync）
-tl.to(state, { radiusK: 1, duration: 1.5, ease: 'power1.inOut' }, 0.1)
-// 破晓环 = 光锋面的亮边：随扩散自然增亮，抵达边缘前淡出
-tl.to(state, { ringOpacity: 1, duration: 0.4, ease: 'power1.out' }, 0.15)
-tl.to(state, { ringOpacity: 0, duration: 0.45, ease: 'power1.in' }, 1.1)
-// 夜空环带变暖 → 融入白昼（与光锋面同步进退，不再独立成段）
-tl.to(state, { skyWarm: 1, duration: 1.1, ease: 'power1.inOut' }, 0.1)
-tl.to(state, { skyWarm: 0, duration: 0.8, ease: 'power1.inOut' }, 1.2)
+// v9.3 时序重排：先点亮星空，再点亮世界 ——
+// ① 星场渐亮（0.1→0.9s）：光锋面启程前，星星先被星球的晨光整体唤醒、越来越亮（过渡过程，
+//    一开始的光芒不该强烈）；② 光圈 0.7s 才启程（星场已亮到 ~85%），1.5s 铺满（2.2s）；
+// 主题翻转按文字块覆盖阈值（见 sync）
+tl.to(state, { starGlow: 1, duration: 0.8, ease: 'power1.inOut' }, 0.1)
+tl.to(state, { radiusK: 1, duration: 1.5, ease: 'power1.inOut' }, 0.7)
+// v9.4：星场裹挟匀速推进（0.1→2.2s 线性）——持续旋转直到光圈铺满全屏才停，
+// 不随自转缓动在末尾刹车；倒放同样匀速退回
+tl.to(state, { swirl: 1, duration: 2.1, ease: 'none' }, 0.1)
+// 破晓环 = 光锋面的亮边：随扩散自然增亮，铺满前才淡出
+tl.to(state, { ringOpacity: 1, duration: 0.4, ease: 'power1.out' }, 0.75)
+tl.to(state, { ringOpacity: 0, duration: 0.5, ease: 'power1.in' }, 1.6)
+// 夜空环带变暖 → 融入白昼（与光锋面同步进退）
+tl.to(state, { skyWarm: 1, duration: 1.1, ease: 'power1.inOut' }, 0.65)
+tl.to(state, { skyWarm: 0, duration: 0.6, ease: 'power1.inOut' }, 1.75)
 // 星星跟随光锋面逐渐被晨光吞没（而非阶段开关）
-tl.to(state, { dustFade: 1, duration: 1.3, ease: 'power1.inOut' }, 0.5)
-// 铺满翻转后揭示层淡出，交出真实白昼界面
-tl.to(state, { revealAlpha: 0, duration: 0.6, ease: 'power1.inOut' }, 1.6)
+tl.to(state, { dustFade: 1, duration: 1.3, ease: 'power1.inOut' }, 0.8)
+// 铺满（2.2s）前揭示层开始淡出，交出真实白昼界面
+tl.to(state, { revealAlpha: 0, duration: 0.4, ease: 'power1.inOut' }, 2.0)
 
 // 以亮主题加载时直接落到终点帧（无动效）
 if (dawnTheme.value === 'dawn') {
@@ -215,7 +229,7 @@ export function toggleDawn(source: 'planet' | 'nav' = 'nav') {
    *   若先归一化速率再判断 isActive() 会误判为"中途"并反转回去（表现为点击无效）；
    * ② play() 强制正向，从破晓终点回夜必须用 reverse()。
    */
-  tl.timeScale(source === 'nav' ? NAV_TIMESCALE : 1)
+  tl.timeScale(source === 'nav' ? NAV_TIMESCALE : PLANET_TIMESCALE)
   if (dawnTheme.value === 'night') {
     tl.reversed(false)
     tl.play()

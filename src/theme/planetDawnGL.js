@@ -212,6 +212,10 @@ void main(){
     vec2 sunDir2 = normalize(vec2(0.62, 0.45));
     float dirW = 0.5 + 0.5 * dot(normalize(uv + vec2(1e-4, 1e-4)), sunDir2);
     skyLin *= mix(vec3(1.0), vec3(1.09, 0.99, 0.84), uPhase * exp(-g*1.5) * 0.4 * dirW);
+    // v9.1 天空竖向晨曦梯度:近球上空微冷(奶油 #E6E0DC 方向)、低处微暖(海面日出 #F1D9BC 方向),
+    // 随 g 衰减,远端精确回落 #F7F3EC,不破晓画布边缘无缝
+    float vgrad = smoothstep(-1.2, 1.2, -uv.y);
+    skyLin *= mix(vec3(1.0), mix(vec3(0.965, 0.985, 1.045), vec3(1.075, 1.0, 0.85), vgrad), uPhase * exp(-g*1.2) * 0.55);
     float skyVis = smoothstep(0.88, 1.00, uPhase);
     col = mix(nightCol, tone(skyLin + glowLin*1.55), skyVis);
     alpha = mix(nightAlpha, 1.0, skyVis);

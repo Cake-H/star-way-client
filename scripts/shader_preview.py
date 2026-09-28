@@ -158,6 +158,10 @@ def render(phase, bright, size=540, params=None):
         ul = np.sqrt(uvx**2 + uvy**2) + 1e-4
         dirW = 0.5 + 0.5 * (uvx / ul * sunDir2[0] + uvy / ul * sunDir2[1])
         skyLin *= mix(1.0, np.array([1.09, 0.99, 0.84]), (phase * np.exp(-g * 1.5) * 0.4 * dirW)[..., None])
+        # v9.1 天空竖向晨曦梯度：近球上空微冷、低处微暖（海面日出），远端精确回落 #F7F3EC
+        vgrad = smoothstep(-1.2, 1.2, -uvy)
+        skyLin *= mix(1.0, mix(np.array([0.965, 0.985, 1.045]), np.array([1.075, 1.0, 0.85]), vgrad[..., None]),
+                      (phase * np.exp(-g * 1.2) * 0.55)[..., None])
         skyVis = smoothstep(0.88, 1.00, phase)
         glowCol = tone(skyLin + glowLin * 1.55)
         gcol = mix(nightCol, glowCol, skyVis)

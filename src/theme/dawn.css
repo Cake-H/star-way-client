@@ -541,7 +541,9 @@ html[data-theme='dawn'] .layout .tab.active {
    或在 GL 画布边缘形成色差断层）；暖辐照远场在画布内已精确落回 #F7F3EC，故无缝
    ============================================================ */
 html[data-theme='dawn'] .home-hero {
-  background: var(--bg-base);
+  /* v9.1：极微妙的竖向晨曦层次（顶 #f8f5ef → 底 #f5efe4，画布区域精确落在 --bg-base，
+     与着色器天空远端无色差；告别"背景只换一种颜色"） */
+  background: linear-gradient(180deg, #f8f5ef 0%, var(--bg-base) 45%, #f5efe4 100%);
   border-color: var(--border);
 }
 
@@ -624,7 +626,8 @@ html[data-theme='dawn'] .home .nav-mask {
    ============================================================ */
 
 /* 揭示层：转场期的白昼光圈（亮主题底色 + 球心暖核），以球心为原点 clip-path 扩散；
-   定格后由着色器天空接班（淡出无缝），本层 display:none 不常驻 */
+   定格后由着色器天空接班（淡出无缝），本层 display:none 不常驻；
+   v9.1：JS 每帧写入 mask 羽化（内侧 90px 软过渡），与不规则波前衔接，无生硬圆边界 */
 .dawn-reveal {
   position: absolute;
   inset: 0;
@@ -632,39 +635,75 @@ html[data-theme='dawn'] .home .nav-mask {
   pointer-events: none;
   display: none;
   /* 色值给兜底：揭示层在 data-theme 翻转前（仍是 night）就要开始扩张，
-     此时 dawn 令牌尚未挂上 :root，缺兜底的 var() 会让整张渐变失效 */
+     此时 dawn 令牌尚未挂上 :root，缺兜底的 var() 会让整张渐变失效；
+     v9.1：核心加一档暖金 #f6dca8（光从球心来，色彩更丰富） */
   background: radial-gradient(
     circle var(--dawn-glow-r, 375px) at var(--dawn-cx, 72%) var(--dawn-cy, 46%),
-    var(--hero-sky-glow, #f5e1c4) 0%,
-    var(--hero-sky-top, #ede7df) 55%,
+    #f6dca8 0%,
+    var(--hero-sky-glow, #f5e1c4) 32%,
+    var(--hero-sky-top, #ede7df) 62%,
     var(--bg-base, #f7f3ec) 100%
   );
   will-change: clip-path, opacity;
 }
 
-/* 破晓环：饱和曙光窄带（v7.3 规范第二节）：
-   总宽 ~110px 量级，色谱以 #EF9712 为峰，两侧透明；禁止 #F5E1C4 及以上浅色 stop（那是雾不是曙光）、
-   禁止 blur 雾边与 screen/overlay 混合模式；与揭示圈 clip 同步扩张 */
+/* 破晓环：饱和曙光窄带（v7.3 规范第二节）+ v9.1 不规则化：
+   基准半径 1000px 的固定色带，JS 每帧用 translate+rotate+scale 映射到真实波前半径
+   （scale 微椭圆 1.025/0.975 随旋转漂移，环体缓慢形变）；
+   角向光丝遮罩（conic-gradient）让环亮度沿圆周起伏，::before 第二层细密光丝反向缓旋，
+   两层干涉出大气闪动；色谱以 #EF9712 为峰、两侧透明，禁止浅色雾边与 screen/overlay 混合 */
 .dawn-ring {
   position: absolute;
   left: 0;
   top: 0;
-  width: 3400px;
-  height: 3400px;
+  width: 2400px;
+  height: 2400px;
   z-index: 50;
   pointer-events: none;
   display: none;
   opacity: 0;
   will-change: transform, opacity;
   mix-blend-mode: normal;
+  transform-origin: 50% 50%;
   background: radial-gradient(
     circle at 50% 50%,
-    transparent calc(var(--dawn-ring-r, 0px) - 110px),
-    rgba(201, 122, 36, 0.28) calc(var(--dawn-ring-r, 0px) - 55px),
-    rgba(239, 151, 18, 0.55) var(--dawn-ring-r, 0px),
-    rgba(245, 189, 116, 0.22) calc(var(--dawn-ring-r, 0px) + 45px),
-    transparent calc(var(--dawn-ring-r, 0px) + 110px)
+    transparent 888px,
+    rgba(201, 122, 36, 0.3) 944px,
+    rgba(239, 151, 18, 0.6) 1000px,
+    rgba(245, 189, 116, 0.24) 1046px,
+    transparent 1112px
   );
+  -webkit-mask-image: conic-gradient(from 12deg at 50% 50%,
+    rgba(0, 0, 0, 0.55) 0deg, #000 30deg, rgba(0, 0, 0, 0.62) 74deg, #000 120deg,
+    rgba(0, 0, 0, 0.52) 168deg, #000 214deg, rgba(0, 0, 0, 0.66) 262deg, #000 306deg,
+    rgba(0, 0, 0, 0.55) 360deg);
+  mask-image: conic-gradient(from 12deg at 50% 50%,
+    rgba(0, 0, 0, 0.55) 0deg, #000 30deg, rgba(0, 0, 0, 0.62) 74deg, #000 120deg,
+    rgba(0, 0, 0, 0.52) 168deg, #000 214deg, rgba(0, 0, 0, 0.66) 262deg, #000 306deg,
+    rgba(0, 0, 0, 0.55) 360deg);
+}
+
+/* v9.1 第二层细密光丝：静态错角（from 200deg），由主层 scale/旋转拖动形成干涉，
+   不开常驻动画（遮罩图层持续动画会强制每帧重栅格化，是转场卡顿主因） */
+.dawn-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 912px,
+    rgba(232, 163, 61, 0.26) 968px,
+    rgba(255, 214, 150, 0.4) 1012px,
+    transparent 1080px
+  );
+  -webkit-mask-image: conic-gradient(from 200deg at 50% 50%,
+    #000 0deg, rgba(0, 0, 0, 0.45) 22deg, #000 51deg, rgba(0, 0, 0, 0.6) 83deg, #000 128deg,
+    rgba(0, 0, 0, 0.5) 176deg, #000 225deg, rgba(0, 0, 0, 0.62) 271deg, #000 318deg,
+    rgba(0, 0, 0, 0.5) 340deg, #000 360deg);
+  mask-image: conic-gradient(from 200deg at 50% 50%,
+    #000 0deg, rgba(0, 0, 0, 0.45) 22deg, #000 51deg, rgba(0, 0, 0, 0.6) 83deg, #000 128deg,
+    rgba(0, 0, 0, 0.5) 176deg, #000 225deg, rgba(0, 0, 0, 0.62) 271deg, #000 318deg,
+    rgba(0, 0, 0, 0.5) 340deg, #000 360deg);
 }
 
 /* WebGL 星球层：星球本体之上叠原版行星环/环绕光点，保证构图不变；
