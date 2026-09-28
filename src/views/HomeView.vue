@@ -46,6 +46,8 @@
           :style="visualStyle"
           aria-hidden="true"
           @click="onPlanetClick"
+          @pointermove="onVisualPointerMove"
+          @pointerleave="onVisualPointerLeave"
         >
           <HeroPlanet />
         </div>
@@ -103,6 +105,21 @@ import { toggleDawn } from '@/theme/useDawnTransition'
 /** 破晓：点击星球切换日/夜（完整 2.4s 仪式动画） */
 function onPlanetClick() {
   toggleDawn('planet')
+}
+
+/** v9.7：悬停邀请收窄到球体圆盘内（圆盘 = 容器中心 60% 直径区域），
+ *  仅指针落在球盘上才点亮背光/手型光标；容器四角不再触发 */
+function onVisualPointerMove(e: PointerEvent) {
+  const el = visualRef.value
+  if (!el) return
+  const r = el.getBoundingClientRect()
+  const dx = e.clientX - (r.left + r.width / 2)
+  const dy = e.clientY - (r.top + r.height / 2)
+  el.classList.toggle('planet-hover', Math.hypot(dx, dy) <= r.width * 0.3)
+}
+
+function onVisualPointerLeave() {
+  visualRef.value?.classList.remove('planet-hover')
 }
 
 const router = useRouter()

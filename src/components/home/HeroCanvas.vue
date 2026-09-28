@@ -4,6 +4,8 @@
   <div ref="revealRef" class="dawn-reveal" aria-hidden="true"></div>
   <!-- 破晓 · 破晓环：三层光边界，与揭示层同步扩散，禁止硬边 -->
   <div ref="ringRef" class="dawn-ring" aria-hidden="true"></div>
+  <!-- 破晓 · 绽放脉冲：铺满瞬间从球心荡开的柔光余晖（v9.5） -->
+  <div ref="pulseRef" class="dawn-pulse" aria-hidden="true"></div>
   <!-- 破晓 · WebGL 星球层：星球本体 + 复刻行星环/环绕光点（z60，保证 t=50% 星球可见） -->
   <div ref="glOverlayRef" class="planet-gl-overlay" aria-hidden="true">
     <div ref="planetBoxRef" class="planet-gl-box">
@@ -55,6 +57,7 @@ const canvasRef = ref<HTMLCanvasElement>()
 /* —— 破晓：WebGL 星球层与动效层引用（全部为新增） —— */
 const revealRef = ref<HTMLDivElement>()
 const ringRef = ref<HTMLDivElement>()
+const pulseRef = ref<HTMLDivElement>()
 const glOverlayRef = ref<HTMLDivElement>()
 const planetBoxRef = ref<HTMLDivElement>()
 const glCanvasRef = ref<HTMLCanvasElement>()
@@ -90,6 +93,7 @@ let dawn: DawnFrame = {
   bright: 1,
   starGlow: 0,
   swirl: 0,
+  pulse: 0,
   radiusK: 0,
   ringOpacity: 0,
   skyWarm: 0,
@@ -726,6 +730,18 @@ function onDawnFrame(f: DawnFrame) {
       ring.style.transform = `translate3d(${freezeCx - 1200}px, ${freezeCy - 1200}px, 0) rotate(${rot.toFixed(2)}deg) scale(${(k * 1.025).toFixed(4)}, ${(k * 0.975).toFixed(4)})`
     } else if (ring.style.display !== 'none') {
       ring.style.display = 'none'
+    }
+  }
+  const pulseEl = pulseRef.value
+  if (pulseEl) {
+    if (f.active && f.pulse > 0.001 && f.pulse < 0.999) {
+      pulseEl.style.display = 'block'
+      // v9.9：1.6s 匀速慢脉冲——从 0.3R 荡到 1.3R，衰减进一步驻留（(1-t)^1.6），暖金、有效峰值≈0.3
+      pulseEl.style.opacity = (Math.pow(1 - f.pulse, 1.6) * 0.55).toFixed(3)
+      const kp = ((0.3 + 1.0 * f.pulse) * maxDist) / 1000
+      pulseEl.style.transform = `translate3d(${freezeCx - 1200}px, ${freezeCy - 1200}px, 0) scale(${kp.toFixed(4)})`
+    } else if (pulseEl.style.display !== 'none') {
+      pulseEl.style.display = 'none'
     }
   }
   if (rafId === null) {

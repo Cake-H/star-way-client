@@ -541,9 +541,10 @@ html[data-theme='dawn'] .layout .tab.active {
    或在 GL 画布边缘形成色差断层）；暖辐照远场在画布内已精确落回 #F7F3EC，故无缝
    ============================================================ */
 html[data-theme='dawn'] .home-hero {
-  /* v9.1：极微妙的竖向晨曦层次（顶 #f8f5ef → 底 #f5efe4，画布区域精确落在 --bg-base，
-     与着色器天空远端无色差；告别"背景只换一种颜色"） */
-  background: linear-gradient(180deg, #f8f5ef 0%, var(--bg-base) 45%, #f5efe4 100%);
+  /* v9.6：回退 v9.1 的 DOM 竖向渐变——它与着色器天空远端（精确 #F7F3EC）在 GL 画布
+     边缘形成可见竖向白边；竖向色彩层次完全由着色器在画布内负责（v6 规范第六节），
+     DOM 保持纯净 --bg-base 才能无缝 */
+  background: var(--bg-base);
   border-color: var(--border);
 }
 
@@ -757,6 +758,60 @@ html[data-planet-gl='ready'] .hero-planet {
   height: 180%;
   transform: translate(-50%, -50%);
   z-index: 2;
+  /* v9.5 P1 hover 邀请：独立 scale 属性，与 transform 复合（GPU 合成，无重排） */
+  transition: scale 0.5s ease;
+}
+
+/* v9.5 P1 hover 邀请：球体是开关——悬停时背光光晕渐显 + 球体微膨 2%，
+   克制地提示可点（符合"它是光源"的叙事）；:has 不支持时静默降级为无动效 */
+.planet-gl-box::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 130%;
+  height: 130%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 1;
+  background: radial-gradient(circle, rgba(232, 163, 61, 0.22), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.home-hero:has(.hero-visual.planet-hover) .planet-gl-box::after {
+  opacity: 1;
+}
+
+.home-hero:has(.hero-visual.planet-hover) .planet-gl-canvas {
+  scale: 1.02;
+}
+
+/* v9.5 P1 绽放脉冲：铺满瞬间从球心荡开的大半径柔光余晖（基准半径 1000px，JS scale 驱动），
+   v9.8 加强为暖金可见带（有效峰值≈0.3）；display:none 不常驻；
+   v9.9 修复：外侧透明停止点 1250→1150px，避免 scale 较小时元素边缘把未衰减完的渐变硬切；
+   v9.10 白边根修：层级 50→65——脉冲必须盖在 WebGL 天空画布（z60）之上，
+   否则余晖只染 DOM 背景、染不到画布内部，画布矩形边会被对比成竖向白边；
+   仍低于白昼文字层（z70）与导航（z100），不洗刷内容 */
+.dawn-pulse {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2400px;
+  height: 2400px;
+  z-index: 65;
+  pointer-events: none;
+  display: none;
+  opacity: 0;
+  will-change: transform, opacity;
+  transform-origin: 50% 50%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 700px,
+    rgba(240, 190, 110, 0.55) 1000px,
+    transparent 1150px
+  );
 }
 
 /* 行星环复刻（与原版 HeroPlanet 同几何：三环同一扁椭圆，前亮后淡） */
@@ -797,6 +852,29 @@ html[data-planet-gl='ready'] .hero-planet {
   animation: dawn-orbit-spin 26s linear infinite;
   pointer-events: none;
   z-index: 3;
+}
+
+/* v9.5 P0 白昼星环/光点换肤：球体已进入白昼，卫星系统同步转深金/暖棕
+   （夜金环 + 暖白光点在奶油天空下浮色/隐身）；随主题翻转 0.6s 平滑过渡 */
+html[data-theme='dawn'] .gl-ring-back {
+  border-color: rgba(176, 105, 26, calc(var(--ring-alpha, 0.4) * 0.35));
+}
+
+html[data-theme='dawn'] .gl-ring-front {
+  border-color: rgba(176, 105, 26, calc(var(--ring-alpha, 0.4) * 0.85));
+}
+
+html[data-theme='dawn'] .gl-sat-amber {
+  background: #b0691a;
+}
+
+html[data-theme='dawn'] .gl-sat-warm {
+  background: #7a7266;
+}
+
+.gl-ring,
+.gl-sat {
+  transition: border-color 0.6s ease, background-color 0.6s ease;
 }
 
 .gl-orbit-1 {
@@ -857,15 +935,21 @@ html[data-planet-gl='lost'] .home-hero::after {
   pointer-events: none;
 }
 
-/* 星球可点反馈（两种主题均生效；点击绑定在 HomeView .hero-visual 上） */
-.hero-visual {
+/* 星球可点反馈（两种主题均生效；点击绑定在 HomeView .hero-visual 上；
+   v9.7：手型光标仅指针落在球体圆盘内时出现，由 .planet-hover 类驱动） */
+.hero-visual.planet-hover {
   cursor: pointer;
 }
 
 /* reduced-motion：全部动效层禁用，仅 0.3s 透明度淡切（由 useDawnTransition 驱动） */
 @media (prefers-reduced-motion: reduce) {
   .dawn-reveal,
-  .dawn-ring {
+  .dawn-ring,
+  .dawn-pulse {
     display: none !important;
+  }
+
+  .planet-gl-box::after {
+    display: none;
   }
 }

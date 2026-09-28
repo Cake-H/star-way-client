@@ -27,6 +27,8 @@ export interface DawnFrame {
   starGlow: number
   /** 星场裹挟进度 0→1：匀速旋转（不随自转缓动刹车），直到光圈铺满全屏才停 */
   swirl: number
+  /** 绽放脉冲 0→1：铺满瞬间从球心荡开的柔光余晖（确认感），仅转场末段非零 */
+  pulse: number
   /** 破晓环/揭示层归一化半径 0→1（光锋面：随球亮起即由球心向外连续铺满） */
   radiusK: number
   /** 破晓环透明度：光锋面的亮边，扩散中段达峰，抵达边缘前自然衰减 */
@@ -90,6 +92,7 @@ const state = {
   bright: 1,
   starGlow: 0,
   swirl: 0,
+  pulse: 0,
   radiusK: 0,
   ringOpacity: 0,
   skyWarm: 0,
@@ -166,10 +169,9 @@ tl.to(state, { press: 1, duration: 0.1, ease: 'back.out(1.4)' }, 0.05)
 // 亮度前段随自转平滑爬升（无平台），世界铺满后绽放一次再安定（v6 规范第三节：
 // 过冲必须发生在揭示圈铺满画布之后，否则闪耀被揭示层盖住观众看不见）
 tl.to(state, { phase: 1, duration: 2.15, ease: 'dawnPhase' }, 0.05)
-tl.to(state, { bright: 1.18, duration: 1.55, ease: 'power1.inOut' }, 0.05)
-// 绽放：2.0s（揭示圈即将铺满）→ 2.2s 达 uBright=1.5 峰值，即刻 → 2.4s 平复 1.25 恒星态
-tl.to(state, { bright: 1.5, duration: 0.2, ease: 'power2.out' }, 2.0)
-tl.to(state, { bright: 1.25, duration: 0.2, ease: 'power2.inOut' }, 2.2)
+// v9.8：取消 uBright 1.5 绽放尖峰——白昼画面上的全局亮度骤升骤降是"白色频闪"，观感差；
+// 亮度全程平滑爬升至 1.25 恒星态，"光覆盖世界"的高潮确认改由绽放脉冲（pulse）承担
+tl.to(state, { bright: 1.25, duration: 2.15, ease: 'power1.inOut' }, 0.05)
 
 // v9.3 时序重排：先点亮星空，再点亮世界 ——
 // ① 星场渐亮（0.1→0.9s）：光锋面启程前，星星先被星球的晨光整体唤醒、越来越亮（过渡过程，
@@ -190,6 +192,9 @@ tl.to(state, { skyWarm: 0, duration: 0.6, ease: 'power1.inOut' }, 1.75)
 tl.to(state, { dustFade: 1, duration: 1.3, ease: 'power1.inOut' }, 0.8)
 // 铺满（2.2s）前揭示层开始淡出，交出真实白昼界面
 tl.to(state, { revealAlpha: 0, duration: 0.4, ease: 'power1.inOut' }, 2.0)
+// v9.5 绽放脉冲：铺满瞬间从球心荡开的大半径柔光余晖——"光覆盖世界"的确认感；
+// v9.9 放慢至 1.6s 匀速（1.75→3.35s）：荡开—驻留—散去完整可读；倒放时作为光回收前的最后一晕
+tl.to(state, { pulse: 1, duration: 1.6, ease: 'none' }, 1.75)
 
 // 以亮主题加载时直接落到终点帧（无动效）
 if (dawnTheme.value === 'dawn') {
