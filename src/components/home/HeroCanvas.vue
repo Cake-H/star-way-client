@@ -6,24 +6,12 @@
   <div ref="ringRef" class="dawn-ring" aria-hidden="true"></div>
   <!-- 破晓 · 绽放脉冲：铺满瞬间从球心荡开的柔光余晖（v9.5） -->
   <div ref="pulseRef" class="dawn-pulse" aria-hidden="true"></div>
-  <!-- 破晓 · WebGL 星球层：星球本体 + 复刻行星环/环绕光点（z60，保证 t=50% 星球可见） -->
+  <!-- 破晓 · WebGL 星球层：星球本体 + 真实投影轨道/小行星（z60，保证 t=50% 星球可见） -->
   <div ref="glOverlayRef" class="planet-gl-overlay" aria-hidden="true">
     <div ref="planetBoxRef" class="planet-gl-box">
-      <div
-        v-for="r in planetRings"
-        :key="`gl-ring-back-${r.size}`"
-        class="gl-ring gl-ring-back"
-        :style="glRingStyle(r)"
-      />
       <canvas ref="glCanvasRef" class="planet-gl-canvas"></canvas>
-      <div
-        v-for="r in planetRings"
-        :key="`gl-ring-front-${r.size}`"
-        class="gl-ring gl-ring-front"
-        :style="glRingStyle(r)"
-      />
-      <div class="gl-orbit gl-orbit-1"><span class="gl-sat gl-sat-amber" /></div>
-      <div class="gl-orbit gl-orbit-2"><span class="gl-sat gl-sat-warm" /></div>
+      <!-- P2.1 轨道画布：单图层绘制前/后弧与两颗球形小行星；背面进入星球投影区时自然遮挡 -->
+      <canvas ref="orbitCanvasRef" class="orbit-canvas"></canvas>
     </div>
   </div>
 </template>
@@ -61,6 +49,7 @@ const pulseRef = ref<HTMLDivElement>()
 const glOverlayRef = ref<HTMLDivElement>()
 const planetBoxRef = ref<HTMLDivElement>()
 const glCanvasRef = ref<HTMLCanvasElement>()
+const orbitCanvasRef = ref<HTMLCanvasElement>()
 
 interface PlanetGLRenderer {
   resize(sizePx: number, dpr: number): void
@@ -72,20 +61,20 @@ interface PlanetGLRenderer {
 /** 破晓调参台预览帧（仅 ?dawnlab=1 面板注入；null = 交还时间线驱动） */
 let dawnLabFrame: { phase: number; bright: number } | null = null
 
-/** 行星环复刻参数：与原版 HeroPlanet 完全一致（尺寸/透明度/几何） */
-const planetRings = [
-  { size: 86, alpha: 0.22 },
-  { size: 108, alpha: 0.4 },
-  { size: 122, alpha: 0.28 },
+/* P2.1 轨道系统：真实 3D 倾角投影（比旧 CSS 74° 压扁更立体），
+   半径以 GL 星球半径为 1；前后半周由 z 深度判定，背弧被球体投影遮挡 */
+const ORBIT_ROT = (-18 * Math.PI) / 180
+const ORBIT_TILT = 0.4
+const ORBIT_DEPTH = Math.sqrt(1 - ORBIT_TILT * ORBIT_TILT)
+const ORBIT_COS = Math.cos(ORBIT_ROT)
+const ORBIT_SIN = Math.sin(ORBIT_ROT)
+const ORBIT_RINGS = [
+  { radius: 1.42, width: 1.0, alpha: 0.16 },
+  { radius: 1.78, width: 1.35, alpha: 0.34 },
+  { radius: 2.04, width: 1.0, alpha: 0.2 },
 ]
-
-function glRingStyle(r: { size: number; alpha: number }) {
-  return {
-    width: `${r.size}%`,
-    height: `${r.size}%`,
-    '--ring-alpha': r.alpha,
-  } as Record<string, string | number>
-}
+let orbitCtx: CanvasRenderingContext2D | null = null
+let orbitCanvasSize = 0
 
 /* 破晓帧快照（subscribeDawn 立即回调一次，保证以亮主题加载时首帧即正确） */
 let dawn: DawnFrame = {
@@ -106,6 +95,12 @@ let dawn: DawnFrame = {
 let unsubscribeDawn: (() => void) | null = null
 let planetGL: PlanetGLRenderer | null = null
 let planetElCache: HTMLElement | null | undefined
+let dawnLabActive = false
+
+/* P2 省电：夜间稳定态 GL 颗粒降帧（约 12fps）；过渡/白昼/调参台仍全帧率 */
+const NIGHT_GL_FRAME_MS = 1000 / 12
+let lastPlanetRenderAt = Number.NEGATIVE_INFINITY
+let planetRenderTime = 0
 
 /* 冻结状态：触发瞬间的星星时间/球心/最大半径（反转同路径复用，保证严格可逆） */
 let frozenTime = 0
@@ -310,8 +305,10 @@ function drawBackground() {
 
 function drawStarfield() {
   if (!ctx) return
-  // 破晓：触发瞬间星星冻结在最后状态（暂停，不继续闪）；夜间恒为实时时间，逐像素不变
-  const time = dawn.active ? frozenTime : Date.now() / 1000
+  // 破晓：触发瞬间星星位置冻结在最后状态；夜间恒为实时时间，逐像素不变。
+  // liveTime 仅供唤醒呼吸使用（振幅从 0 渐入，不破坏冻结沿的连续性）
+  const liveTime = Date.now() / 1000
+  const time = dawn.active ? frozenTime : liveTime
   const parallaxFactors = [0.12, 0.25, 0.45]
   // 破晓相关绘制仅在（过渡中 / 亮主题 / 微尘落定中）启用，否则与原版完全同路径
   const engage = dawn.active || dawn.theme === 'dawn' || dawn.radiusK > 0 || dawn.dustFade > 0
@@ -331,6 +328,9 @@ function drawStarfield() {
     let cr = s.rgb?.[0] ?? 232
     let cg = s.rgb?.[1] ?? 230
     let cb = s.rgb?.[2] ?? 224
+    /** P2 十字星芒强度：仅最大一批亮星在被点燃/吞没交界短暂出现 */
+    let flare = 0
+    const flareEligible = s.layer === 2 && s.size >= 2.0
 
     if (engage) {
       // v9.1 星辉变换①：星球自转裹挟星点（绕球心角位移，近球强远球弱；绘制期偏移，不污染坐标）。
@@ -367,7 +367,11 @@ function drawStarfield() {
         // 波前到达后再进入点燃/吞没流程——先点亮星空，再点亮世界
         if (dawn.starGlow > 0 && dawn.radiusK - (s.deathK ?? 0.5) <= -0.07) {
           const wk = dawn.starGlow * (0.3 + 0.7 * Math.exp(-ds / (maxDist * 0.55)))
-          alpha *= 1 + 0.9 * wk
+          // P2 苏醒呼吸：唤醒期在冻结基准上叠加 ±12% 的活性闪烁；wk 从 0 渐入，无跳变
+          const breath = props.reducedMotion
+            ? 1
+            : 1 + Math.sin(liveTime * (1.1 + s.twinkleSpeed * 0.65) + s.twinklePhase) * 0.12 * wk
+          alpha *= (1 + 0.9 * wk) * breath
           cr += (255 - cr) * 0.3 * wk
           cg += (230 - cg) * 0.3 * wk
           cb += (195 - cb) * 0.3 * wk
@@ -393,8 +397,13 @@ function drawStarfield() {
           cr += (255 - cr) * k * 0.85
           cg += (214 - cg) * k * 0.85
           cb += (150 - cb) * k * 0.85
+          // P2：十字星芒随点燃爬升，抵达波前交界时达到最亮
+          if (flareEligible) flare = Math.sin(k * Math.PI * 0.5)
         } else if (rel <= (s.fadeK ?? 0.33)) {
-          alpha *= 2.3 * (1 - rel / (s.fadeK ?? 0.33))
+          const fadeOut = 1 - rel / (s.fadeK ?? 0.33)
+          alpha *= 2.3 * fadeOut
+          // P2：星芒越过波前后随星体一起熄灭，不出现突然消失
+          if (flareEligible) flare = Math.max(0, fadeOut)
         } else {
           alpha = 0
         }
@@ -420,6 +429,37 @@ function drawStarfield() {
       ctx!.beginPath()
       ctx!.arc(x, y, drawSize * 3, 0, Math.PI * 2)
       ctx!.fill()
+    }
+
+    if (flare > 0.01 && alpha > 0.03) {
+      // P2 十字星芒：两条正交细线（横长竖短），screen 叠加，中心暖白、两端透明
+      const a = Math.min(1, alpha * 0.72) * flare
+      const len = drawSize * (7 + 4 * flare)
+      ctx!.save()
+      ctx!.globalCompositeOperation = 'screen'
+      ctx!.globalAlpha = 1
+      ctx!.lineCap = 'round'
+      ctx!.lineWidth = Math.max(0.55, drawSize * 0.16)
+      const hor = ctx!.createLinearGradient(x - len, y, x + len, y)
+      hor.addColorStop(0, 'rgba(255,244,214,0)')
+      hor.addColorStop(0.5, `rgba(255,244,214,${a.toFixed(3)})`)
+      hor.addColorStop(1, 'rgba(255,244,214,0)')
+      ctx!.strokeStyle = hor
+      ctx!.beginPath()
+      ctx!.moveTo(x - len, y)
+      ctx!.lineTo(x + len, y)
+      ctx!.stroke()
+      const vLen = len * 0.72
+      const ver = ctx!.createLinearGradient(x, y - vLen, x, y + vLen)
+      ver.addColorStop(0, 'rgba(255,244,214,0)')
+      ver.addColorStop(0.5, `rgba(255,244,214,${(a * 0.82).toFixed(3)})`)
+      ver.addColorStop(1, 'rgba(255,244,214,0)')
+      ctx!.strokeStyle = ver
+      ctx!.beginPath()
+      ctx!.moveTo(x, y - vLen)
+      ctx!.lineTo(x, y + vLen)
+      ctx!.stroke()
+      ctx!.restore()
     }
   })
   ctx!.globalAlpha = 1
@@ -623,9 +663,155 @@ function drawDawnFront() {
   ctx.restore()
 }
 
+/** P2.1 数值工具：轨道角向明暗/背面遮挡都用平滑阶跃，避免硬切边 */
+function smooth01(edge0: number, edge1: number, x: number) {
+  const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)))
+  return t * t * (3 - 2 * t)
+}
+
+function mixRgb(a: [number, number, number], b: [number, number, number], k: number): [number, number, number] {
+  return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]
+}
+
+function rgba(rgb: [number, number, number], a: number) {
+  return `rgba(${Math.round(rgb[0])},${Math.round(rgb[1])},${Math.round(rgb[2])},${Math.min(1, Math.max(0, a)).toFixed(3)})`
+}
+
+/** 轨道平面 3D 投影：x/y 为屏幕坐标，z 为正表示在星球前方 */
+function orbitPoint(theta: number, radius: number, cx: number, cy: number): [number, number, number] {
+  const cosT = Math.cos(theta)
+  const sinT = Math.sin(theta)
+  return [
+    cx + radius * (cosT * ORBIT_COS - sinT * ORBIT_SIN * ORBIT_TILT),
+    cy + radius * (cosT * ORBIT_SIN + sinT * ORBIT_COS * ORBIT_TILT),
+    radius * sinT * ORBIT_DEPTH,
+  ]
+}
+
+/** 轨道画布与 GL 画布同尺寸、同中心；尺寸变化时重建 2D 上下文 */
+function resizeOrbitCanvas(sizeCss: number) {
+  const canvas = orbitCanvasRef.value
+  if (!canvas || sizeCss <= 0) return
+  const size = Math.max(2, Math.round(sizeCss))
+  if (size === orbitCanvasSize && orbitCtx) return
+  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  orbitCanvasSize = size
+  canvas.width = Math.round(size * dpr)
+  canvas.height = Math.round(size * dpr)
+  orbitCtx = canvas.getContext('2d')
+  orbitCtx?.setTransform(dpr, 0, 0, dpr, 0, 0)
+}
+
+/**
+ * P2.1 轨道系统重设计：三条细环有真实倾角、角向明暗与轻微有机扰动；
+ * 两颗小行星按 3D 轨道运行，背面进入星球圆形投影区时平滑消隐，
+ * 前侧更大更亮、后侧更小更暗，取代旧 CSS 压扁圆点。
+ */
+function drawOrbitSystem(boxW: number) {
+  const c = orbitCtx
+  if (!c || boxW <= 0 || orbitCanvasSize <= 0) return
+  const size = orbitCanvasSize
+  const cx = size / 2
+  const cy = size / 2
+  const sphereR = boxW * 0.3
+  const uiScale = Math.min(1, Math.max(0.72, boxW / 520))
+  const dayMix = smooth01(0.88, 1, dawn.phase)
+  const ringColor = mixRgb([232, 163, 61], [176, 105, 26], dayMix)
+  const time = props.reducedMotion ? 0 : performance.now() / 1000
+
+  c.clearRect(0, 0, size, size)
+  c.save()
+  c.lineCap = 'round'
+  c.lineJoin = 'round'
+
+  // 轨道：背弧淡、前弧亮；背弧穿过星球投影圆时按临边淡出（真实遮挡，不靠层级硬切）
+  ORBIT_RINGS.forEach((ring, ringIndex) => {
+    const R = sphereR * ring.radius
+    const segments = 128
+    for (let i = 0; i < segments; i++) {
+      const t0 = (i / segments) * Math.PI * 2
+      const t1 = ((i + 1) / segments) * Math.PI * 2
+      const tm = (t0 + t1) / 2
+      const [x0, y0] = orbitPoint(t0, R, cx, cy)
+      const [x1, y1] = orbitPoint(t1, R, cx, cy)
+      const [xm, ym, zm] = orbitPoint(tm, R, cx, cy)
+      const front = smooth01(-0.08 * R, 0.08 * R, zm)
+      const dist = Math.hypot(xm - cx, ym - cy)
+      const visible = zm >= 0 ? 1 : smooth01(sphereR * 0.93, sphereR * 1.04, dist)
+      const organic = 0.84 + 0.16 * Math.sin(2 * tm + ringIndex * 0.9) * Math.sin(5 * tm - 0.4)
+      const a = ring.alpha * (0.35 + 0.65 * front) * visible * organic * (1 - dayMix * 0.08)
+      if (a <= 0.003) continue
+      if (ring.width > 1.2) {
+        c.strokeStyle = rgba(ringColor, a * 0.16)
+        c.lineWidth = ring.width * 3.2 * uiScale
+        c.beginPath()
+        c.moveTo(x0, y0)
+        c.lineTo(x1, y1)
+        c.stroke()
+      }
+      c.strokeStyle = rgba(ringColor, a)
+      c.lineWidth = ring.width * (0.86 + 0.24 * front) * uiScale
+      c.beginPath()
+      c.moveTo(x0, y0)
+      c.lineTo(x1, y1)
+      c.stroke()
+    }
+  })
+
+  // 小行星：两颗球形受光体，分别贴外环/内环运行；背面由星球圆形投影遮挡
+  const satellites = [
+    {
+      theta: (time * Math.PI * 2) / 26 + 0.8,
+      ringRadius: ORBIT_RINGS[2].radius,
+      radius: 4.5 * uiScale,
+      body: mixRgb([232, 163, 61], [176, 105, 26], dayMix),
+      shade: mixRgb([98, 59, 16], [74, 45, 14], dayMix),
+      light: mixRgb([255, 225, 168], [238, 194, 122], dayMix),
+    },
+    {
+      theta: (-time * Math.PI * 2) / 38 + 2.4,
+      ringRadius: ORBIT_RINGS[0].radius,
+      radius: 3.3 * uiScale,
+      body: mixRgb([232, 230, 224], [122, 114, 102], dayMix),
+      shade: mixRgb([78, 73, 66], [54, 49, 43], dayMix),
+      light: mixRgb([255, 250, 238], [218, 207, 190], dayMix),
+    },
+  ]
+  satellites.forEach((sat) => {
+    const orbitR = sphereR * sat.ringRadius
+    const [x, y, z] = orbitPoint(sat.theta, orbitR, cx, cy)
+    const front = smooth01(-0.06 * orbitR, 0.06 * orbitR, z)
+    const dist = Math.hypot(x - cx, y - cy)
+    const visible = z >= 0 ? 1 : smooth01(sphereR * 0.93, sphereR * 1.04, dist)
+    if (visible <= 0.01) return
+    const rr = sat.radius * (0.86 + 0.22 * front)
+    const alpha = (0.48 + 0.52 * front) * visible
+
+    const halo = c.createRadialGradient(x, y, 0, x, y, rr * 3.2)
+    halo.addColorStop(0, rgba(sat.body, alpha * 0.14))
+    halo.addColorStop(0.48, rgba(sat.body, alpha * 0.05))
+    halo.addColorStop(1, rgba(sat.body, 0))
+    c.fillStyle = halo
+    c.beginPath()
+    c.arc(x, y, rr * 3.2, 0, Math.PI * 2)
+    c.fill()
+
+    // 光源来自星球高光侧：小行星保持圆形，只用品相/明暗表达体积，不再被轨道压扁
+    const body = c.createRadialGradient(x - rr * 0.38, y - rr * 0.42, rr * 0.08, x, y, rr)
+    body.addColorStop(0, rgba(sat.light, alpha))
+    body.addColorStop(0.52, rgba(sat.body, alpha))
+    body.addColorStop(1, rgba(sat.shade, alpha))
+    c.fillStyle = body
+    c.beginPath()
+    c.arc(x, y, rr, 0, Math.PI * 2)
+    c.fill()
+  })
+  c.restore()
+}
+
 /**
  * WebGL 星球层逐帧同步：跟随原版 .hero-planet 位置/尺寸（含视差），
- * 按压回弹 scale(dawn.press)，随后渲染着色器星球。
+ * 按压回弹 scale(dawn.press)，随后渲染着色器星球与轨道画布。
  * 尺寸写 style 仅在变化时；位移走 transform（GPU 合成）。
  */
 function syncPlanetOverlay() {
@@ -657,17 +843,35 @@ function syncPlanetOverlay() {
     box.style.height = `${h}px`
     // GL 画布边长 = 星球盒 ×1.8（= 3 × 球体直径，容下光晕）
     planetGL?.resize(w * 1.8, Math.min(window.devicePixelRatio || 1, 2))
+    // resize 会清空画布：强制下一帧重绘，避免夜间降帧窗口内出现空帧
+    lastPlanetRenderAt = Number.NEGATIVE_INFINITY
   }
+  resizeOrbitCanvas(w * 1.8)
   const s = dawn.press
   const ox = (w * (1 - s)) / 2
   const oy = (h * (1 - s)) / 2
   box.style.transform = `translate3d(${pr.left - hr.left + ox}px, ${pr.top - hr.top + oy}px, 0) scale(${s})`
   const pf = dawnLabFrame ?? dawn
-  planetGL?.render(
-    props.reducedMotion ? 0 : performance.now() / 1000,
-    pf.phase,
-    pf.bright,
-  )
+  const now = performance.now()
+  // P2 省电：夜间稳定态只有着色器颗粒随 uTime 微动，降至约 12fps；
+  // 过渡、白昼、调参台与 resize 后仍立即全帧率渲染，视觉与交互零影响
+  const stableNight =
+    !dawnLabActive &&
+    !dawn.active &&
+    dawn.theme === 'night' &&
+    pf.phase === 0 &&
+    pf.bright === 1
+  const shouldRender =
+    !stableNight ||
+    lastPlanetRenderAt === Number.NEGATIVE_INFINITY ||
+    now - lastPlanetRenderAt >= NIGHT_GL_FRAME_MS
+  if (shouldRender) {
+    planetRenderTime = props.reducedMotion ? 0 : now / 1000
+    planetGL?.render(planetRenderTime, pf.phase, pf.bright)
+    lastPlanetRenderAt = now
+  }
+  // 轨道画布独立全帧率：小行星运动不受 GL 夜间颗粒降帧影响
+  drawOrbitSystem(w)
 }
 
 /** 降级为静态星空（动画循环已停）时：主题切换仍能落一帧正确画面 */
@@ -757,8 +961,9 @@ function initPlanetGL() {
     planetGL = createPlanetGL(glCanvas)
     document.documentElement.dataset.planetGl = 'ready'
     glCanvas.addEventListener('webglcontextlost', onGlContextLost)
-    // 破晓调参台：仅 ?dawnlab=1 时挂载（内部自检 URL，无参数零注入）
-    installDawnLab(planetGL, {
+    // 破晓调参台：仅 ?dawnlab=1 时挂载（内部自检 URL，无参数零注入）；
+    // 调参台激活时禁用夜间降帧，保证重编译/预览即时可见
+    dawnLabActive = installDawnLab(planetGL, {
       setPreview: (f: { phase: number; bright: number } | null) => {
         dawnLabFrame = f
       },

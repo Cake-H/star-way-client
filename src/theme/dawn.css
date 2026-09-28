@@ -814,107 +814,24 @@ html[data-planet-gl='ready'] .hero-planet {
   );
 }
 
-/* 行星环复刻（与原版 HeroPlanet 同几何：三环同一扁椭圆，前亮后淡） */
-.gl-ring {
+/* P2.1 轨道画布：真实投影轨道与球形小行星由 HeroCanvas 每帧绘制。
+   与 GL 画布同几何（180% 盒尺寸、居中），z3 位于星球之上；
+   背面遮挡不由层级硬切，而在绘制时按星球投影半径精确消隐 */
+.orbit-canvas {
   position: absolute;
   left: 50%;
   top: 50%;
+  width: 180%;
+  height: 180%;
   margin: 0;
-  border-radius: 50%;
-  border-style: solid;
-  transform: translate(-50%, -50%) rotateX(74deg) rotateZ(-14deg);
-  pointer-events: none;
-}
-
-.gl-ring-back {
-  z-index: 1;
-  border-width: 1px;
-  border-color: rgba(232, 163, 61, calc(var(--ring-alpha, 0.4) * 0.3));
-}
-
-.gl-ring-front {
+  transform: translate(-50%, -50%);
   z-index: 3;
-  border-width: 1.5px;
-  border-color: rgba(232, 163, 61, var(--ring-alpha, 0.4));
-  clip-path: inset(52% 0 0 0);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
-}
-
-/* 环绕光点复刻（贴内/外环运行） */
-.gl-orbit {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  margin: 0;
-  border-radius: 50%;
-  transform: translate(-50%, -50%) rotateX(74deg) rotateZ(-14deg);
-  animation: dawn-orbit-spin 26s linear infinite;
   pointer-events: none;
-  z-index: 3;
+  transition: scale 0.5s ease;
 }
 
-/* v9.5 P0 白昼星环/光点换肤：球体已进入白昼，卫星系统同步转深金/暖棕
-   （夜金环 + 暖白光点在奶油天空下浮色/隐身）；随主题翻转 0.6s 平滑过渡 */
-html[data-theme='dawn'] .gl-ring-back {
-  border-color: rgba(176, 105, 26, calc(var(--ring-alpha, 0.4) * 0.35));
-}
-
-html[data-theme='dawn'] .gl-ring-front {
-  border-color: rgba(176, 105, 26, calc(var(--ring-alpha, 0.4) * 0.85));
-}
-
-html[data-theme='dawn'] .gl-sat-amber {
-  background: #b0691a;
-}
-
-html[data-theme='dawn'] .gl-sat-warm {
-  background: #7a7266;
-}
-
-.gl-ring,
-.gl-sat {
-  transition: border-color 0.6s ease, background-color 0.6s ease;
-}
-
-.gl-orbit-1 {
-  width: 122%;
-  height: 122%;
-}
-
-.gl-orbit-2 {
-  width: 86%;
-  height: 86%;
-  animation-duration: 38s;
-  animation-direction: reverse;
-}
-
-.gl-sat {
-  position: absolute;
-  top: -3px;
-  left: 50%;
-  border-radius: 50%;
-}
-
-.gl-sat-amber {
-  width: 7px;
-  height: 7px;
-  background: #e8a33d;
-}
-
-.gl-sat-warm {
-  width: 5px;
-  height: 5px;
-  background: #e8e6e0;
-}
-
-@keyframes dawn-orbit-spin {
-  from {
-    transform: translate(-50%, -50%) rotateX(74deg) rotateZ(-14deg) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%, -50%) rotateX(74deg) rotateZ(-14deg) rotate(360deg);
-  }
+.home-hero:has(.hero-visual.planet-hover) .orbit-canvas {
+  scale: 1.02;
 }
 
 /* WebGL 不可用的显式降级提示（禁止静默退回 2D 贴纸星球） */
