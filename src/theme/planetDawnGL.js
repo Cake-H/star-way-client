@@ -31,15 +31,51 @@ void main(){ gl_Position = vec4(aP, 0.0, 1.0); }
  * skyVis=0 → col=light·a³、alpha=a²；颗粒在统一尾部施加，与 a³ 为标量乘法可交换，
  * 结果与现版"先颗粒后 a³"完全相等。glow 的径向收尾 smoothstep(0.10,0.21,g) 属 v6 天空架构
  * （规则③保护项），夜间 g<0.10 处因子恒为 1、g≥0.10 处 a³ 抑制本已将贡献压至亚亮度级，实测无差。
+ *
+ * v8.2 光圈割裂修复（均为白昼分支，×uPhase 夜间为零不影响零回归）：
+ *   ① 临边金边 fres^3·0.9 → fres^RIM_POW(5)·RIM_DAY(0.45)：宽亮金圈收细为贴临边的一线金边；
+ *   ② 新增盘体整体暖化 DISC_WARM(0.55)：球心→临边连续暖金，白昼盘体不再洗白融入天空；
+ *   ③ v8.1 径向暖化 0.5→0.3（保留临边沉金，不再单独聚圈）；
+ *   ④ 内冕色相 (0.52,0.16)→(0.58,0.22)、glowLin 系数 1.8→1.55、CORONA_A1_DAY 0.8→0.65：
+ *     临边内外金色浓度差收敛，内冕不再聚成独立亮环。
+ *
+ * v9 日出恒星化（均为白昼分支，×uPhase 夜间逐位不变，软件渲染零回归已验证）：
+ *   ① 新增临边昏暗 limb darkening（LIMB_*）：真实恒星中心亮、临边沉为深金，
+ *     盘体保留体积感，不再"洗白成白盘"（实测锚值：球心 #FBF3C7 → 0.5R #F8E9AD → 临边 #EFC063）；
+ *   ② 临边亮环再收（RIM_DAY 0.45→0.08、色相偏深橙 (0.45,0.12)）：亮圈退出盘体，
+ *     临边亮度改由球外内冕承担（CORONA_A1_DAY 0.65→0.90），光环在球外、柔软；
+ *   ③ 自发光重塑：宽基底 0.30→0.16 且色温加深 (0.80,0.45)（饱和暖金不过曝）；
+ *     核心 0.85→0.60 并拆为光照分量 + 径向小核（EMIT_CORE_RAD 0.45，ndv^10 收拢过曝区），
+ *     白昼定格（无晨昏线）时仍有稳定的白炽小核；
+ *   ④ 白昼宽晕：新增第三层指数衰减 HALO_WIDE + 加性晕径向收尾随 uPhase 延展
+ *     （0.21R→0.85R，cosmos.network 式多层 halo），暖光化入奶油天空无断层。
  */
 
-/** 着色器内可调字面量（v7.3 规范第三节调参台参数；验收通过后锁定在此） */
+/** 着色器内可调字面量（v9 规范调参台参数；验收通过后锁定在此） */
 const DAWN_GLSL_DEFAULTS = {
-  EMIT_BASE: 0.3, // 宽基底系数（范围 0~0.8）
-  EMIT_CORE: 0.85, // 峰形核心系数（范围 0~2.0）
+  EMIT_BASE: 0.16, // v9 宽基底系数（范围 0~0.8；0.30→0.16 防洗白）
+  EMIT_CORE: 0.6, // v9 峰形核心系数（范围 0~2.0；0.85→0.60 收拢过曝）
   EMIT_CORE_POW: 3.0, // 核心收拢指数（范围 1~5）
-  CORONA_A1_DAY: 0.8, // 白昼内冕（范围 0.4~1.3）
-  CORONA_A2_DAY: 0.42, // 白昼中冕（范围 0.2~0.8）
+  EMIT_CORE_RAD: 0.45, // v9 核心径向分量占比（范围 0~1；定格时稳定白炽小核）
+  CORONA_A1_DAY: 0.9, // v9 白昼内冕（范围 0.4~1.3；0.65→0.90，临边亮环由球外大气承担）
+  CORONA_A2_DAY: 0.44, // 白昼中冕（范围 0.2~0.8）
+  RIM_DAY: 0.08, // v9 临边色边系数（范围 0~1.2；0.45→0.08，亮圈退出盘体）
+  RIM_POW: 4.0, // v9 色边收细指数（范围 3~8）
+  RIM_G: 0.45, // v9 色边色相 G（范围 0.2~0.8；深橙日出边）
+  RIM_B: 0.12, // v9 色边色相 B（范围 0~0.5）
+  DISC_WARM: 0.8, // v9 盘体整体暖化（范围 0~1；0.55→0.80 中球暖金更饱和）
+  WARM_G: 0.88, // v9 盘体暖化色相 G（范围 0.7~1）
+  WARM_B: 0.6, // v9 盘体暖化色相 B（范围 0.4~0.9）
+  LIMB_DARK: 1.0, // v9 临边昏暗强度（范围 0~1.5；真实恒星 limb darkening）
+  LIMB_POW: 2.2, // v9 昏暗收拢指数（范围 1~4，越大越贴临边）
+  LIMB_G: 0.55, // v9 临边昏暗色相 G（范围 0.3~0.8；深金非棕）
+  LIMB_B: 0.24, // v9 临边昏暗色相 B（范围 0.05~0.5）
+  BASE_G: 0.8, // v9 宽基底色相 G（范围 0.5~1）
+  BASE_B: 0.45, // v9 宽基底色相 B（范围 0.2~0.8）
+  CORE_G: 0.9, // v9 核心色相 G（范围 0.7~1）
+  CORE_B: 0.68, // v9 核心色相 B（范围 0.4~0.9）
+  HALO_WIDE: 0.1, // v9 白昼宽晕第三层强度（范围 0~0.3）
+  HALO_EXTEND: 1.0, // v9 白昼加性晕径向延展（范围 0~1.5；1 = 收尾 0.21R→0.85R）
 }
 
 /** 数值 → GLSL float 字面量（保证带小数点） */
@@ -54,8 +90,26 @@ function buildFragSrc(p) {
   const EMIT_BASE = glslFloat(p.EMIT_BASE)
   const EMIT_CORE = glslFloat(p.EMIT_CORE)
   const EMIT_CORE_POW = glslFloat(p.EMIT_CORE_POW)
+  const EMIT_CORE_RAD = glslFloat(p.EMIT_CORE_RAD)
   const CORONA_A1_DAY = glslFloat(p.CORONA_A1_DAY)
   const CORONA_A2_DAY = glslFloat(p.CORONA_A2_DAY)
+  const RIM_DAY = glslFloat(p.RIM_DAY)
+  const RIM_POW = glslFloat(p.RIM_POW)
+  const RIM_G = glslFloat(p.RIM_G)
+  const RIM_B = glslFloat(p.RIM_B)
+  const DISC_WARM = glslFloat(p.DISC_WARM)
+  const WARM_G = glslFloat(p.WARM_G)
+  const WARM_B = glslFloat(p.WARM_B)
+  const LIMB_DARK = glslFloat(p.LIMB_DARK)
+  const LIMB_POW = glslFloat(p.LIMB_POW)
+  const LIMB_G = glslFloat(p.LIMB_G)
+  const LIMB_B = glslFloat(p.LIMB_B)
+  const BASE_G = glslFloat(p.BASE_G)
+  const BASE_B = glslFloat(p.BASE_B)
+  const CORE_G = glslFloat(p.CORE_G)
+  const CORE_B = glslFloat(p.CORE_B)
+  const HALO_WIDE = glslFloat(p.HALO_WIDE)
+  const HALO_EXTEND = glslFloat(p.HALO_EXTEND)
   return `
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
@@ -108,9 +162,21 @@ void main(){
     sc *= uBright;
     float fres = pow(1.0 - max(dot(n,-rd), 0.0), 3.0);
     sc += vec3(1.0,0.72,0.34) * fres * (0.35 + 0.65*uPhase) * (1.0 - 0.75*uPhase) * (0.4 + 0.6*smoothstep(-0.5,0.6,dl)) * uBright;
-    // v7.3 自发光:宽基底 ×uPhase 线性升温(球体与光冕同步,消除甜甜圈);峰形核心 pow3 收拢(仅球心小核过曝)
-    sc += vec3(1.0, 0.94, 0.78) * uPhase * (0.45 + 0.75*max(dl, 0.0)) * ${EMIT_BASE} * uBright;
-    sc += vec3(1.0, 0.94, 0.78) * uPhase*uPhase * pow(max(dl, 0.0), ${EMIT_CORE_POW}) * ${EMIT_CORE} * uBright;
+    // v9 临边色边:仅留一线深橙日出边(0.45→0.08),亮环退出盘体、由球外内冕承担
+    float rim = pow(1.0 - max(dot(n, -rd), 0.0), ${RIM_POW});
+    sc += vec3(1.0, ${RIM_G}, ${RIM_B}) * rim * uPhase * ${RIM_DAY} * uBright;
+    // v9 临边昏暗(limb darkening):真实恒星中心亮、临边沉为深金,盘体保留体积感不洗白
+    sc *= mix(vec3(1.0), vec3(1.0, ${LIMB_G}, ${LIMB_B}), pow(1.0 - max(dot(n, -rd), 0.0), ${LIMB_POW}) * uPhase * ${LIMB_DARK});
+    // v9 盘体整体暖化(色相加深 (0.88,0.60)):中球暖金更饱和,不再是奶油白
+    sc *= mix(vec3(1.0), vec3(1.05, ${WARM_G}, ${WARM_B}), uPhase * ${DISC_WARM});
+    // v8.1 径向暖化保留但减弱(0.5→0.3):临边沉金仍在,只是不再单独聚成一圈
+    sc *= mix(vec3(1.0), vec3(1.07, 0.93, 0.70), fres * uPhase * 0.3);
+    // v9 自发光:宽基底 0.30→0.16 且色温加深(饱和暖金不过曝);
+    // 核心拆为光照分量 + 径向小核(EMIT_CORE_RAD,ndv^10 收拢)——定格无晨昏线时仍有稳定白炽小核
+    sc += vec3(1.0, ${BASE_G}, ${BASE_B}) * uPhase * (0.45 + 0.75*max(dl, 0.0)) * ${EMIT_BASE} * uBright;
+    float coreTerm = pow(max(dl, 0.0), ${EMIT_CORE_POW}) * (1.0 - ${EMIT_CORE_RAD})
+                   + pow(max(dot(n, -rd), 0.0), 10.0) * ${EMIT_CORE_RAD};
+    sc += vec3(1.0, ${CORE_G}, ${CORE_B}) * uPhase*uPhase * coreTerm * ${EMIT_CORE} * uBright;
     col = sc; alpha = 1.0;
   } else {
     float closest = sqrt(max(dot(ro,ro) - b*b, 0.0));
@@ -118,7 +184,10 @@ void main(){
     float a1 = mix(0.55, ${CORONA_A1_DAY}, uPhase);   // v7.3 规则④:光冕白昼系数(夜端 0.55/0.30 不变)
     float a2 = mix(0.30, ${CORONA_A2_DAY}, uPhase);
     float glow = (exp(-g*9.0)*a1 + exp(-g*3.2)*a2 + exp(-g*2.0)*0.11*uPhase) * sunAmt * uBright * (1.0+0.65*uPhase);
-    glow *= 1.0 - smoothstep(0.10, 0.21, g);            // 径向收尾(v6 天空架构,规则③),任何方向到不了画布边缘
+    // v9 白昼宽晕:第三层指数衰减(cosmos 式多层 halo)+加性晕径向收尾随 uPhase 延展
+    // (0.21R→0.85R;uPhase=0 时收尾边界逐位等于 0.10/0.21,夜间零回归)
+    glow += exp(-g*1.5) * ${HALO_WIDE} * uPhase * sunAmt * uBright;
+    glow *= 1.0 - smoothstep(mix(0.10, 0.18, uPhase * ${HALO_EXTEND}), mix(0.21, 0.85, uPhase * ${HALO_EXTEND}), g);
     // 夜间光晕:线上现版逐字保留(规则①;临边抑制 light·a³ / alpha a²(1-uPhase),验收⑤零回归基准)
     vec3 light = vec3(1.0, 0.66, 0.30) * glow;
     light = 1.0 - exp(-light*1.6);
@@ -126,12 +195,25 @@ void main(){
     float a = clamp(glow*1.25, 0.0, 0.98);
     vec3 nightCol = light * a * a * a;
     float nightAlpha = a * a * (1.0 - uPhase);
-    // 白昼天空:v6 架构不动(规则③;线性空间,远端精确落回 #F7F3EC;以球心为源径向暖辐照)
-    vec3 glowLin = vec3(1.0, 0.66, 0.30) * glow * 0.45;
+    // 白昼天空:v6 架构不动(线性空间,远端精确落回 #F7F3EC;以球心为源径向辐照)
+    // v8 启明色彩(用户取样卡):光冕色相按半径渐变(临边炽金 #E8A33D 方向 → 外缘奶油 #F1D9BC),
+    // 取代单一加白;临边金带用乘法压蓝成形(日出地平线),避免"白圈无过渡"
+    // v8.1:近冕色相加深 (0.60,0.22)→(0.52,0.16)(海面日出 #F6BC71 的线性近似),
+    // 加性系数 2.4→1.8(乘法金带主承担色彩,加法只提亮,杜绝洗白);金带加宽加深
+    // v8.2:内冕色相微回 (0.52,0.16)→(0.58,0.22)、系数 1.8→1.55——
+    // 配合盘体暖化,临边内外的金色浓度差收敛,光圈不再与盘体割裂
+    vec3 glowHue = mix(vec3(1.0, 0.58, 0.22), vec3(1.0, 0.84, 0.58), smoothstep(0.02, 0.16, g));
+    vec3 glowLin = glowHue * glow * 0.55;
     vec3 skyLin = vec3(2.11, 1.86, 1.57);
-    skyLin *= mix(vec3(1.0), vec3(1.22, 1.04, 0.80), uPhase * exp(-g*2.0));
-    float skyVis = smoothstep(0.88, 1.00, uPhase);      // 白昼天空随相位后段浮现,与揭示层遮盖同步
-    col = mix(nightCol, tone(skyLin + glowLin*2.4), skyVis);
+    skyLin *= mix(vec3(1.0), vec3(1.26, 1.02, 0.70), uPhase * exp(-g*2.0));   // 金色光池(暖加深、蓝下压)
+    float band = exp(-g*5.5) * uPhase * (0.65 + 0.35*uBright);                 // 临边金带:绽放时同步加深
+    skyLin *= mix(vec3(1.0), vec3(1.12, 0.84, 0.36), band);
+    // v8.1 日出方向性:天光朝光源方位(右上)微暖,模拟"天未全亮、日已升起"的方向感;随 g 衰减,远端无缝
+    vec2 sunDir2 = normalize(vec2(0.62, 0.45));
+    float dirW = 0.5 + 0.5 * dot(normalize(uv + vec2(1e-4, 1e-4)), sunDir2);
+    skyLin *= mix(vec3(1.0), vec3(1.09, 0.99, 0.84), uPhase * exp(-g*1.5) * 0.4 * dirW);
+    float skyVis = smoothstep(0.88, 1.00, uPhase);
+    col = mix(nightCol, tone(skyLin + glowLin*1.55), skyVis);
     alpha = mix(nightAlpha, 1.0, skyVis);
     doTone = 0.0;
   }
@@ -263,11 +345,19 @@ export function createPlanetGL(canvas) {
  * BRIGHT_REST/BRIGHT_PEAK 作用于预览帧（锁定后由人同步进时间线字面量）。
  * ———————————————————————————————————————————————————————————— */
 const DAWN_LAB_PARAMS = [
-  { key: 'EMIT_BASE', label: 'EMIT_BASE 宽基底', min: 0, max: 0.8, step: 0.01, def: 0.3, shader: true },
-  { key: 'EMIT_CORE', label: 'EMIT_CORE 峰形核心', min: 0, max: 2.0, step: 0.01, def: 0.85, shader: true },
+  { key: 'EMIT_BASE', label: 'EMIT_BASE 宽基底', min: 0, max: 0.8, step: 0.01, def: 0.16, shader: true },
+  { key: 'EMIT_CORE', label: 'EMIT_CORE 峰形核心', min: 0, max: 2.0, step: 0.01, def: 0.6, shader: true },
   { key: 'EMIT_CORE_POW', label: 'EMIT_CORE_POW 核心指数', min: 1, max: 5, step: 0.1, def: 3.0, shader: true },
-  { key: 'CORONA_A1_DAY', label: 'CORONA_A1_DAY 白昼内冕', min: 0.4, max: 1.3, step: 0.01, def: 0.8, shader: true },
-  { key: 'CORONA_A2_DAY', label: 'CORONA_A2_DAY 白昼中冕', min: 0.2, max: 0.8, step: 0.01, def: 0.42, shader: true },
+  { key: 'EMIT_CORE_RAD', label: 'EMIT_CORE_RAD 径向核占比', min: 0, max: 1, step: 0.01, def: 0.45, shader: true },
+  { key: 'CORONA_A1_DAY', label: 'CORONA_A1_DAY 白昼内冕', min: 0.4, max: 1.3, step: 0.01, def: 0.9, shader: true },
+  { key: 'CORONA_A2_DAY', label: 'CORONA_A2_DAY 白昼中冕', min: 0.2, max: 0.8, step: 0.01, def: 0.44, shader: true },
+  { key: 'RIM_DAY', label: 'RIM_DAY 临边色边', min: 0, max: 1.2, step: 0.01, def: 0.08, shader: true },
+  { key: 'RIM_POW', label: 'RIM_POW 色边收细', min: 3, max: 8, step: 0.1, def: 4.0, shader: true },
+  { key: 'DISC_WARM', label: 'DISC_WARM 盘体暖化', min: 0, max: 1, step: 0.01, def: 0.8, shader: true },
+  { key: 'LIMB_DARK', label: 'LIMB_DARK 临边昏暗', min: 0, max: 1.5, step: 0.01, def: 1.0, shader: true },
+  { key: 'LIMB_POW', label: 'LIMB_POW 昏暗收拢', min: 1, max: 4, step: 0.1, def: 2.2, shader: true },
+  { key: 'HALO_WIDE', label: 'HALO_WIDE 白昼宽晕', min: 0, max: 0.3, step: 0.005, def: 0.1, shader: true },
+  { key: 'HALO_EXTEND', label: 'HALO_EXTEND 晕径向延展', min: 0, max: 1.5, step: 0.01, def: 1.0, shader: true },
   { key: 'BRIGHT_REST', label: 'BRIGHT_REST 定格亮度', min: 0.9, max: 1.6, step: 0.01, def: 1.25, shader: false },
   { key: 'BRIGHT_PEAK', label: 'BRIGHT_PEAK 绽放峰值', min: 1.1, max: 2.0, step: 0.01, def: 1.5, shader: false },
 ]
@@ -313,7 +403,7 @@ export function installDawnLab(renderer, hooks) {
     'box-shadow:0 8px 28px rgba(0,0,0,0.45);pointer-events:auto;user-select:none;'
 
   const title = document.createElement('div')
-  title.textContent = '破晓调参台 v7.3（仅 ?dawnlab=1 可见）'
+  title.textContent = '破晓调参台 v9（仅 ?dawnlab=1 可见）'
   title.style.cssText = 'font-weight:700;color:#e8a33d;margin-bottom:8px;'
   root.appendChild(title)
 
