@@ -331,39 +331,107 @@ function goCta() {
   will-change: transform;
 }
 
-/* —— 移动端：上下堆叠，CTA 全宽，星球退为背景 —— */
+/* —— 移动端：星球背景化 + 文案下半屏叠加，首屏完整露出 CTA —— */
 @media (max-width: 768px) {
   .home {
     gap: 40px;
   }
 
   .home-hero {
-    padding: 40px 24px;
-    min-height: auto;
+    /* 扣除顶部导航与移动端底部 Tab Bar，让 Hero 尽量落在首屏可视区内 */
+    min-height: min(720px, calc(100svh - 148px));
+    padding: 20px 20px 24px;
+    align-items: stretch;
   }
 
   .hero-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
+    position: relative;
+    z-index: 70; /* 高于 GL 星球层（z60）与脉冲层（z65），低于导航（z100） */
+    display: block;
+    flex: 1;
+    min-height: 100%;
+    /* 容器本身不拦截点击，星球仍可点；按钮在 .hero-actions 单独恢复 */
+    pointer-events: none;
+  }
+
+  /* 文案底板不是卡片：从星球背景自然过渡到底部，保证文字可读 */
+  .hero-grid::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    right: -20px;
+    bottom: -24px;
+    height: 58%;
+    background: linear-gradient(
+      to bottom,
+      rgba(6, 6, 8, 0) 0%,
+      rgba(6, 6, 8, 0.48) 42%,
+      rgba(6, 6, 8, 0.84) 100%
+    );
+    pointer-events: none;
+  }
+
+  .hero-copy {
+    position: relative;
+    z-index: 1;
+    min-height: 100%;
+    justify-content: flex-end;
+    gap: 12px;
+    /* 文案层不拦截星球点击；按钮单独恢复可点 */
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-size: 12px;
   }
 
   .hero-title {
-    font-size: clamp(28px, 8vw, 32px);
+    font-size: clamp(29px, 8.2vw, 34px);
+    line-height: 1.16;
+    max-width: 11em;
+  }
+
+  .hero-desc {
+    font-size: 14px;
+    line-height: 1.58;
+    max-width: 34em;
   }
 
   .hero-visual {
-    order: -1;
-    min-height: 200px;
-    opacity: 0.8;
+    position: absolute;
+    top: clamp(4px, 2svh, 18px);
+    left: 50%;
+    translate: -50% 0;
+    width: min(116vw, 440px);
+    aspect-ratio: 1;
+    min-height: 0;
+    opacity: 1;
+    /* pointer-events 会继承：父层穿透后，星球容器必须显式恢复可点 */
+    pointer-events: auto;
   }
 
   .hero-actions {
     flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+    pointer-events: auto;
   }
 
   .hero-primary-cta,
   .hero-secondary-cta {
     width: 100%;
+    min-height: 44px;
+    font-size: 15px;
+  }
+
+  .hero-stats-block {
+    margin-top: 2px;
+  }
+
+  .hero-stats-block :deep(.hero-stats) {
+    gap: 28px;
+    justify-content: flex-start;
+    padding-top: 14px;
   }
 }
 

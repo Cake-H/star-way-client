@@ -548,6 +548,16 @@ html[data-theme='dawn'] .home-hero {
   border-color: var(--border);
 }
 
+/* 移动端文案渐隐底板：白昼必须是奶油白，不得沿用夜间深灰（组件内 :global 组合选择器会误编译） */
+html[data-theme='dawn'] .home-hero .hero-grid::before {
+  background: linear-gradient(
+    to bottom,
+    rgba(247, 243, 236, 0) 0%,
+    rgba(247, 243, 236, 0.58) 42%,
+    rgba(247, 243, 236, 0.92) 100%
+  );
+}
+
 html[data-theme='dawn'] .home-hero .hero-primary-cta {
   background: var(--accent) !important;
   color: #fcfaf6 !important;
