@@ -375,31 +375,40 @@ function goCta() {
     position: relative;
     z-index: 1;
     min-height: 100%;
-    justify-content: flex-end;
-    gap: 12px;
+    /* 文案与星球作为一组上移：顶部空档直接砍掉；按钮仍由下方 margin 托住，不一并飘走 */
+    justify-content: flex-start;
+    padding-top: clamp(64px, 12svh, 120px);
+    gap: 10px;
     /* 文案层不拦截星球点击；按钮单独恢复可点 */
     pointer-events: none;
   }
 
   .hero-eyebrow {
-    font-size: 12px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
   }
 
   .hero-title {
-    font-size: clamp(29px, 8.2vw, 34px);
-    line-height: 1.16;
-    max-width: 11em;
+    font-size: clamp(28px, 8.4vw, 36px);
+    line-height: 1.12;
+    max-width: 10em;
   }
 
   .hero-desc {
-    font-size: 14px;
-    line-height: 1.58;
-    max-width: 34em;
+    font-size: 13px;
+    line-height: 1.55;
+    max-width: 31em;
+    /* 移动端只保留两行导语，避免把星球主体与 CTA 一起挤出首屏 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .hero-visual {
     position: absolute;
-    top: clamp(4px, 2svh, 18px);
+    /* 星球同步上移：负 top 把 GL 画布内过多的透明上空裁掉，disk 更靠近标题 */
+    top: clamp(-64px, -8svh, -28px);
     left: 50%;
     translate: -50% 0;
     width: min(116vw, 440px);
@@ -410,18 +419,24 @@ function goCta() {
     pointer-events: auto;
   }
 
+  /* CTA 一行双键：主键占较大份，次键收短；margin-top 拉大与导语的呼吸感，抵消文案上移后按钮跟跑 */
   .hero-actions {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
     gap: 10px;
-    margin-top: 4px;
+    margin-top: clamp(22px, 9svh, 58px);
     pointer-events: auto;
   }
 
   .hero-primary-cta,
   .hero-secondary-cta {
-    width: 100%;
-    min-height: 44px;
-    font-size: 15px;
+    width: auto;
+    min-width: 0;
+    min-height: 46px;
+    padding: 0 12px;
+    border-radius: 10px !important;
+    font-size: 14px;
+    white-space: nowrap;
   }
 
   .hero-stats-block {
@@ -432,6 +447,21 @@ function goCta() {
     gap: 28px;
     justify-content: flex-start;
     padding-top: 14px;
+  }
+}
+
+/* 超窄屏（≤360px）：仍保持一行双键，但进一步压缩内边距与字号，避免换行/溢出 */
+@media (max-width: 360px) {
+  .home-hero .hero-actions {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.95fr);
+    gap: 8px;
+  }
+
+  .home-hero .hero-primary-cta,
+  .home-hero .hero-secondary-cta {
+    min-height: 44px;
+    padding: 0 8px;
+    font-size: 13px;
   }
 }
 
