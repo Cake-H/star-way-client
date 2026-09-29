@@ -338,9 +338,9 @@ function goCta() {
   }
 
   .home-hero {
-    /* 扣除顶部导航与移动端底部 Tab Bar，让 Hero 尽量落在首屏可视区内 */
-    min-height: min(720px, calc(100svh - 148px));
-    padding: 20px 20px 24px;
+    /* 真机版式：不再强行撑满一屏；高度随内容走，底部不再留一大块黑 */
+    min-height: 0;
+    padding: 18px 18px 22px;
     align-items: stretch;
   }
 
@@ -349,7 +349,7 @@ function goCta() {
     z-index: 70; /* 高于 GL 星球层（z60）与脉冲层（z65），低于导航（z100） */
     display: block;
     flex: 1;
-    min-height: 100%;
+    min-height: 0;
     /* 容器本身不拦截点击，星球仍可点；按钮在 .hero-actions 单独恢复 */
     pointer-events: none;
   }
@@ -358,10 +358,10 @@ function goCta() {
   .hero-grid::before {
     content: '';
     position: absolute;
-    left: -20px;
-    right: -20px;
-    bottom: -24px;
-    height: 58%;
+    left: -18px;
+    right: -18px;
+    bottom: -22px;
+    height: 64%;
     background: linear-gradient(
       to bottom,
       rgba(6, 6, 8, 0) 0%,
@@ -374,10 +374,10 @@ function goCta() {
   .hero-copy {
     position: relative;
     z-index: 1;
-    min-height: 100%;
-    /* 文案与星球作为一组上移：顶部空档直接砍掉；按钮仍由下方 margin 托住，不一并飘走 */
+    min-height: 0;
+    /* 与星球直径同用 vw 标尺：同宽设备上标题相对星球的位置一致，不再随浏览器高矮漂移 */
     justify-content: flex-start;
-    padding-top: clamp(64px, 12svh, 120px);
+    padding-top: clamp(86px, 27vw, 150px);
     gap: 10px;
     /* 文案层不拦截星球点击；按钮单独恢复可点 */
     pointer-events: none;
@@ -407,11 +407,11 @@ function goCta() {
 
   .hero-visual {
     position: absolute;
-    /* 星球同步上移：负 top 把 GL 画布内过多的透明上空裁掉，disk 更靠近标题 */
-    top: clamp(-64px, -8svh, -28px);
+    /* 星球随宽度定位：轻负 top 收敛画布透明上空，但不裁掉轨道 */
+    top: clamp(-30px, -5vw, -10px);
     left: 50%;
     translate: -50% 0;
-    width: min(116vw, 440px);
+    width: min(112vw, 430px);
     aspect-ratio: 1;
     min-height: 0;
     opacity: 1;
@@ -419,12 +419,12 @@ function goCta() {
     pointer-events: auto;
   }
 
-  /* CTA 一行双键：主键占较大份，次键收短；margin-top 拉大与导语的呼吸感，抵消文案上移后按钮跟跑 */
+  /* CTA 一行双键：主键占较大份，次键收短；与导语间距同样用 vw 标尺，跨高度设备一致 */
   .hero-actions {
     display: grid;
     grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
     gap: 10px;
-    margin-top: clamp(22px, 9svh, 58px);
+    margin-top: clamp(18px, 6vw, 30px);
     pointer-events: auto;
   }
 
@@ -440,7 +440,7 @@ function goCta() {
   }
 
   .hero-stats-block {
-    margin-top: 2px;
+    margin-top: clamp(18px, 7vw, 34px);
   }
 
   .hero-stats-block :deep(.hero-stats) {
