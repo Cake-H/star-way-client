@@ -183,12 +183,22 @@ function meteorInterval() {
 
 const scaleFactor = computed(() => Math.min(1, canvasWidth / 768))
 
+/*
+ * 移动端 dpr 上限 1.5（桌面仍 2）：手机转场每帧全屏重绘 2D 画布 + WebGL 星球噪声着色器，
+ * dpr 2→1.5 让像素填充量减少约 44%，是手机转场掉帧的主要减负项；
+ * 星点/光晕在小屏上的观感差异不可察觉
+ */
+function dprCap(w: number = canvasWidth) {
+  return Math.min(window.devicePixelRatio || 1, w < 768 ? 1.5 : 2)
+}
+
 function resizeCanvas() {
   const canvas = canvasRef.value
   if (!canvas || !canvas.parentElement) return
 
   const rect = canvas.parentElement.getBoundingClientRect()
-  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  // 注意必须传实测宽度：canvasWidth 此时尚未赋值，首次调用恒为 0（会误判为移动端）
+  const dpr = dprCap(rect.width)
   canvas.width = Math.floor(rect.width * dpr)
   canvas.height = Math.floor(rect.height * dpr)
   canvas.style.width = `${rect.width}px`
@@ -282,6 +292,10 @@ function drawBackground() {
   gradient.addColorStop(1, '#060608')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+
+  // 转场期间跳过两团静态星云（α≤0.05 的氛围色，2.4s 内不可察觉）：
+  // 每帧少两次全屏径向渐变填充，手机填充率压力显著下降
+  if (dawn.active) return
 
   // 微弱暖调纵深（克制，不大面积铺色）
   ctx.globalCompositeOperation = 'screen'
@@ -697,7 +711,7 @@ function resizeOrbitCanvas(sizeCss: number) {
   if (!canvas || sizeCss <= 0) return
   const size = Math.max(2, Math.round(sizeCss))
   if (size === orbitCanvasSize && orbitCtx) return
-  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  const dpr = dprCap()
   orbitCanvasSize = size
   canvas.width = Math.round(size * dpr)
   canvas.height = Math.round(size * dpr)
@@ -845,7 +859,7 @@ function syncPlanetOverlay() {
     box.style.width = `${w}px`
     box.style.height = `${h}px`
     // GL 画布边长 = 星球盒 ×1.8（= 3 × 球体直径，容下光晕）
-    planetGL?.resize(w * 1.8, Math.min(window.devicePixelRatio || 1, 2))
+    planetGL?.resize(w * 1.8, dprCap())
     // resize 会清空画布：强制下一帧重绘，避免夜间降帧窗口内出现空帧
     lastPlanetRenderAt = Number.NEGATIVE_INFINITY
   }
