@@ -35,7 +35,7 @@ export interface DawnFrame {
   ringOpacity: number
   /** 夜空环带变暖 #060608 → #221B14 */
   skyWarm: number
-  /** 星球按压回弹 0.96 → 1.0（全片唯一回弹） */
+  /** 星球按压回弹 0.96 → 1.0：点击当刻的触感反馈（pressKick 独立驱动，不在时间线内） */
   press: number
   /** 揭示层透明度：铺满后淡出 */
   revealAlpha: number
@@ -63,6 +63,14 @@ export function setDawnFlipRadiusK(k: number) {
 const NAV_TIMESCALE = 2
 /** 星球点击完整仪式 2.4s（v9.2：总时长恢复，重新分配编舞——光锋面铺满与星辉点亮过程拉长） */
 const PLANET_TIMESCALE = 1
+/*
+ * 回夜倒放起点（v10）：正放 2.2s 之后只剩"脉冲独占窗口"（其他标量都停在终点），
+ * 从终点倒放会造成"点击后世界先愣住、只有光环在动"。回夜改为从 2.2s 起倒放——
+ * 星辉回转 / 光界回退 / 天空变暗从点击当帧就与脉冲同步启动；
+ * 2.2s 处脉冲标量 ≈0.28，收缩光环由渲染侧以点击为零位即时回放（HeroCanvas reverseStartP）；
+ * 2.2s 处揭示层透明度 0.5 / 天空暖度 0.25 的跳变量与页面同色系，视觉上不可察觉
+ */
+const REVERSE_START_TIME = 2.2
 
 gsap.registerPlugin(CustomEase)
 // 光先快后慢：cubic-bezier(0.16, 1, 0.3, 1)
@@ -161,9 +169,19 @@ const tl = gsap.timeline({
   onReverseComplete: sync,
 })
 
-// 触发反馈 0–0.15s：星球 0.96→1.0 回弹（极小幅度，全片唯一回弹）；星星冻结由订阅者按 active 处理
-tl.to(state, { press: 0.96, duration: 0.05, ease: 'power2.out' }, 0)
-tl.to(state, { press: 1, duration: 0.1, ease: 'back.out(1.4)' }, 0.05)
+/*
+ * 星球按压回弹（0.96→1.0，全片唯一回弹）不在时间线内——
+ * 它是"点击当刻"的触感反馈，由 toggleDawn 经 pressKick 独立触发（正反向点击都有）；
+ * 若在时间线 0–0.15s 段内，倒放会把它排到转场末尾，back.out 过冲表现为
+ * "回夜结束时星球震一下"（v10.1 修复）
+ */
+function pressKick() {
+  gsap.fromTo(
+    state,
+    { press: 0.96 },
+    { press: 1, duration: 0.4, ease: 'back.out(1.4)', overwrite: 'auto', onUpdate: sync },
+  )
+}
 
 // 自转 + 点亮全程同步：相位 0.05→2.2s 不停顿（慢启动-中段快-缓落定）；
 // 亮度前段随自转平滑爬升（无平台），世界铺满后绽放一次再安定（v6 规范第三节：
@@ -222,6 +240,8 @@ export function toggleDawn(source: 'planet' | 'nav' = 'nav') {
     fadeSwitch()
     return
   }
+  // 按压回弹：每次点击（含中途反向）当刻触发，独立于时间线方向
+  pressKick()
   if (tl.isActive()) {
     // 中途再点：保持当前速率幅值，仅换向（GSAP 3.15 中 reversed 即负 timeScale）
     tl.reversed(!tl.reversed())
@@ -239,8 +259,14 @@ export function toggleDawn(source: 'planet' | 'nav' = 'nav') {
     tl.reversed(false)
     tl.play()
   } else {
+    // 回夜：从 2.2s 起倒放，跳过终点后的"脉冲独占窗口"——点击当帧，
+    // 星辉回转 / 光界回退 / 天空变暗就与脉冲收缩同步启动（v10）
+    tl.time(REVERSE_START_TIME)
     tl.reverse()
   }
+  // 点击当帧即发布 active 快照：回夜方向第一帧就让脉冲以小半径可见态出现，
+  // 不等 GSAP 下一 tick，避免用户以为没点上而二次点击把转场又反回去
+  sync()
 }
 
 /** reduced-motion：跳过全部动效，仅 0.3s 透明度淡切 */

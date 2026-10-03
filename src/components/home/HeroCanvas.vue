@@ -107,6 +107,9 @@ let frozenTime = 0
 let freezeCx = 0
 let freezeCy = 0
 let maxDist = 1
+/* 本次回夜的脉冲零位（脉冲标量 p 在起播瞬间的值）：回夜从 2.2s 跳转起播时 p≈0.28，
+   收缩进度 q 以此为 0 重新起算，点击当帧即进入"触发即亮"段 */
+let reverseStartP = 1
 /* planetBox 尺寸缓存：仅在尺寸变化时写 style（避免每帧触发样式重算） */
 let planetBoxW = 0
 let planetBoxH = 0
@@ -904,6 +907,7 @@ function drawStaticOnce() {
  */
 function onDawnFrame(f: DawnFrame) {
   const wasActive = dawn.active
+  const prevPulse = dawn.pulse
   dawn = f
   if (f.active && !wasActive) {
     captureFreeze()
@@ -938,11 +942,36 @@ function onDawnFrame(f: DawnFrame) {
   }
   const pulseEl = pulseRef.value
   if (pulseEl) {
-    if (f.active && f.pulse > 0.001 && f.pulse < 0.999) {
+    const p = Math.min(1, Math.max(0, f.pulse))
+    // 回夜起播（含 2.2s 跳转起播，此时 p≈0.28）：记录本次倒放的脉冲零位，
+    // 收缩进度 q 以此为 0 重新起算——点击当帧就进入"触发即亮"段
+    if (f.active && !wasActive && p > 0.05) {
+      reverseStartP = p
+    }
+    // 回夜识别：脉冲标量随倒放往 0 走；起播/跳转的起点帧（标量静止且主题仍是 dawn）也按回夜处理，
+    // 让点击当帧就进入脉冲的"触发"段，而不是等倒放走出可见 opacity
+    const reversing =
+      f.active && (p < prevPulse - 0.0001 || (Math.abs(p - prevPulse) <= 0.0001 && f.theme === 'dawn' && p > 0.001))
+    // 中途反向（正播途中被点回夜）时零位可能落后于当前 p，向前追齐，保证 q 从 0 起算
+    if (reversing && p > reverseStartP) {
+      reverseStartP = p
+    }
+    // 统一脉冲进度 q：0 = 脉冲刚触发（入昼铺满瞬间 / 回夜点击瞬间），1 = 余晖散尽。
+    // 两个方向共用"触发即亮"的包络——前 10% 快速攻到峰值再缓释散去，
+    // 杜绝"点击后只有一圈越来越暗的环"造成的无响应错觉；
+    // 半径方向相反：入昼是光从球心荡开（0.2R→1.3R），回夜是光被星球收回（0.85R→0.15R，
+    // 起点留在画面内、点击当帧即可见）；
+    // 回夜从 2.2s 跳转起播（useDawnTransition REVERSE_START_TIME）——脉冲收缩与
+    // 星辉回转 / 光界回退 / 天空变暗从点击当帧同步进行，无先后
+    const q = reversing ? Math.min(1, Math.max(0, (reverseStartP - p) / reverseStartP)) : p
+    const attack = Math.min(1, q / 0.1)
+    const decayT = Math.min(1, Math.max(0, (q - 0.1) / 0.9))
+    const opacity = attack * Math.pow(1 - decayT, 1.6) * 0.85
+    if (f.active && opacity > 0.004) {
       pulseEl.style.display = 'block'
-      // v9.9：1.6s 匀速慢脉冲——从 0.3R 荡到 1.3R，衰减进一步驻留（(1-t)^1.6），暖金、有效峰值≈0.3
-      pulseEl.style.opacity = (Math.pow(1 - f.pulse, 1.6) * 0.55).toFixed(3)
-      const kp = ((0.3 + 1.0 * f.pulse) * maxDist) / 1000
+      pulseEl.style.opacity = opacity.toFixed(3)
+      const radiusKq = reversing ? 0.85 - 0.7 * q : 0.2 + 1.1 * q
+      const kp = (radiusKq * maxDist) / 1000
       pulseEl.style.transform = `translate3d(${freezeCx - 1200}px, ${freezeCy - 1200}px, 0) scale(${kp.toFixed(4)})`
     } else if (pulseEl.style.display !== 'none') {
       pulseEl.style.display = 'none'
