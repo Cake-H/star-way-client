@@ -119,6 +119,13 @@ export const router = createRouter({
           component: () => import('@/views/ApplySiteListView.vue'),
           meta: { requiresAuth: true },
         },
+        // --- 投递记录 ---
+        {
+          path: 'applications',
+          name: 'job-application-list',
+          component: () => import('@/views/JobApplicationListView.vue'),
+          meta: { requiresAuth: true },
+        },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },

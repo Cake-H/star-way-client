@@ -47,6 +47,7 @@
         <nav v-if="!isMobile" class="nav" aria-label="主导航">
           <router-link class="nav-link" to="/" :class="{ active: isHome }">首页</router-link>
           <router-link class="nav-link" to="/resume" :class="{ active: isResumeSection }">我的简历</router-link>
+          <router-link class="nav-link" to="/applications" :class="{ active: isApplicationSection }">投递记录</router-link>
           <router-link class="nav-link" to="/mock-interview" :class="{ active: isMockInterviewSection }">模拟面试</router-link>
           <router-link class="nav-link" to="/interview" :class="{ active: isInterviewSection }">面试复盘</router-link>
         </nav>
@@ -164,6 +165,7 @@ import {
   House,
   MagicStick,
   Moon,
+  Notebook,
   Setting,
   Share,
   Sunny,
@@ -222,6 +224,7 @@ watch(
 const tabs = computed(() => [
   { label: '首页', to: '/', icon: House, active: isHome },
   { label: '简历', to: '/resume', icon: Document, active: isResumeSection },
+  { label: '投递', to: '/applications', icon: Notebook, active: isApplicationSection },
   { label: '面试', to: '/mock-interview', icon: MagicStick, active: isMockInterviewSection },
   { label: '复盘', to: '/interview', icon: ChatLineSquare, active: isInterviewSection },
 ])
@@ -238,6 +241,7 @@ const showInstallPrompt = computed(() => isInstallable.value && !isStandalone.va
 const hideStarry = computed(() => !!(route.meta.hideStarry as boolean | undefined))
 const isHome = computed(() => route.name === 'home')
 const isResumeSection = computed(() => typeof route.path === 'string' && route.path.startsWith('/resume'))
+const isApplicationSection = computed(() => typeof route.path === 'string' && route.path.startsWith('/applications'))
 const isInterviewSection = computed(() => typeof route.path === 'string' && route.path.startsWith('/interview'))
 const isMockInterviewSection = computed(() => typeof route.path === 'string' && route.path.startsWith('/mock-interview'))
 
