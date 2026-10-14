@@ -127,13 +127,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
 import { UploadFilled } from '@element-plus/icons-vue'
 import type { UploadRequestOptions } from 'element-plus'
 import type { ResumeParseDraftDto, ResumeParseResultVO } from '@/api/resumeTypes'
-import { saveResumeDraft, updateResume, uploadAndParseResumeData } from '@/api/resume'
+import {
+  ResumeParseFailedError,
+  ResumeParseTimeoutError,
+  pollResumeParseTask,
+  saveResumeDraft,
+  submitResumeParseTask,
+  updateResume,
+} from '@/api/resume'
 import { buildDraftFromParseResult, emptyDraft } from '@/utils/resumeDraft'
 import { getResumeSaveValidationErrors } from '@/utils/resumeValidation'
 import ResumeDraftForm from '@/components/resume/ResumeDraftForm.vue'
@@ -143,8 +150,12 @@ import MeteorLine from '@/components/MeteorLine.vue'
 import StarWaitingModule from '@/components/StarWaitingModule.vue'
 import { ElMessage } from 'element-plus'
 
-const maxMb = 20
+/** 与服务端业务上限对齐（HTTP 硬上限 30MB 由网关拦截，按网络/413 兜底） */
+const maxMb = 15
 const maxBytes = maxMb * 1024 * 1024
+
+/** 未完成的解析任务，页面刷新后可凭 taskId 继续轮询（服务端保留 30 分钟） */
+const PENDING_TASK_KEY = 'resume-parse-pending-task'
 
 /* 移动端：stepper 纵向、上传区无拖拽场景 */
 const isMobile = useMediaQuery('(max-width: 767px)')
@@ -270,25 +281,96 @@ async function onCustomUpload(opt: UploadRequestOptions) {
   parsing.value = true
   parseCompleted.value = false
   try {
-    const res = await uploadAndParseResumeData(file)
-    parseResult.value = res
-    applyDraftFromResult(res)
-    suggestListTitle()
-    if (!res.draft) {
-      ElMessage.warning('未返回草稿结构，可手动填写下方表单')
-    } else {
-      ElMessage.success('解析完成，请核对下方草稿')
-    }
+    const taskId = await submitResumeParseTask(file)
+    savePendingTask(taskId, file.name)
+    await runParsePolling(taskId)
   } catch (e: unknown) {
     parseResult.value = null
     parsing.value = false
-    if (e instanceof Error && e.message === '解析结果为空') {
-      ElMessage.warning(e.message)
-    }
+    clearPendingTask()
+    handleParseError(e)
   } finally {
     parseCompleted.value = true
   }
 }
+
+/** 轮询直至终态并应用结果；返回 null（组件已卸载）时不做状态变更 */
+async function runParsePolling(taskId: string) {
+  const res = await pollResumeParseTask(taskId, { shouldContinue: () => !pollCancelled })
+  if (pollCancelled || res == null) return
+  clearPendingTask()
+  parseResult.value = res
+  applyDraftFromResult(res)
+  suggestListTitle()
+  if (!res.draft) {
+    ElMessage.warning('未返回草稿结构，可手动填写下方表单')
+  } else {
+    ElMessage.success('解析完成，请核对下方草稿')
+  }
+}
+
+function handleParseError(e: unknown) {
+  if (e instanceof ResumeParseFailedError) {
+    // 服务端返回的最终用户文案，直接展示，不包装不替换
+    ElMessage.error(e.message)
+  } else if (e instanceof ResumeParseTimeoutError) {
+    ElMessage.warning('解析时间较长，请稍后重试或重新上传')
+  } else if (e instanceof Error && e.message === '解析结果为空') {
+    ElMessage.warning(e.message)
+  }
+  // 其余错误（任务过期 30100 / 网络异常 / 额度不足）由拦截器统一 toast，此处仅复位状态
+}
+
+/* ---- 未完成任务持久化：刷新后可继续轮询 ---- */
+
+let pollCancelled = false
+
+function savePendingTask(taskId: string, fileName: string) {
+  sessionStorage.setItem(PENDING_TASK_KEY, JSON.stringify({ taskId, fileName }))
+}
+
+function clearPendingTask() {
+  sessionStorage.removeItem(PENDING_TASK_KEY)
+}
+
+function readPendingTask(): { taskId: string; fileName: string } | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_TASK_KEY)
+    if (!raw) return null
+    const v = JSON.parse(raw) as { taskId?: unknown; fileName?: unknown }
+    return typeof v.taskId === 'string' && v.taskId
+      ? { taskId: v.taskId, fileName: typeof v.fileName === 'string' ? v.fileName : '' }
+      : null
+  } catch {
+    return null
+  }
+}
+
+onMounted(() => {
+  const pending = readPendingTask()
+  if (!pending) return
+  lastFileName.value = pending.fileName
+  savedResumeId.value = null
+  parsing.value = true
+  parseCompleted.value = false
+  ElMessage.info('检测到未完成的解析任务，正在继续等待结果')
+  void (async () => {
+    try {
+      await runParsePolling(pending.taskId)
+    } catch (e: unknown) {
+      parseResult.value = null
+      parsing.value = false
+      clearPendingTask()
+      handleParseError(e)
+    } finally {
+      parseCompleted.value = true
+    }
+  })()
+})
+
+onUnmounted(() => {
+  pollCancelled = true
+})
 
 function resetAll() {
   parseResult.value = null

@@ -16,6 +16,20 @@ export interface ResumeParseResultVO {
   draft: ResumeParseDraftDto | null
 }
 
+/** 异步解析任务状态（GET /resume/upload-parse/tasks/{taskId}） */
+export type ResumeParseTaskStatus = 'RUNNING' | 'SUCCESS' | 'FAILED'
+
+export interface ResumeParseTaskVO {
+  taskId: string
+  status: ResumeParseTaskStatus
+  createdAt: number
+  updatedAt: number
+  /** 仅 SUCCESS 时有值，结构与旧同步接口 data 完全一致 */
+  result: ResumeParseResultVO | null
+  /** 仅 FAILED 时有值，用户友好文案，可直接 toast 展示 */
+  errorMessage: string | null
+}
+
 export interface ResumeParseDraftDto {
   title?: string
   fullName?: string
