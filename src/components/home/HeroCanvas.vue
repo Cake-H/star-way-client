@@ -1173,14 +1173,16 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', resizeCanvas)
   document.removeEventListener('visibilitychange', onVisibilityChange)
   resizeObserver?.disconnect()
-  // 破晓：退订 + 销毁 GL 上下文 + 还原星球层标注
+  // 破晓：退订 + 销毁 GL 上下文。
+  // 注意：不得删除 dataset.planetGl——"ready"是"本会话 WebGL 可用"的事实，离开首页不改变它；
+  // 若卸载即删除，回到首页的首帧绘制时标记缺失，原版 DOM 星球会闪出一下
+  // （GL 初始化在 nextTick，着色器编译在手机上可达几百毫秒），即"切换界面旧样式闪现"
   unsubscribeDawn?.()
   unsubscribeDawn = null
   glCanvasRef.value?.removeEventListener('webglcontextlost', onGlContextLost)
   planetGL?.destroy()
   planetGL = null
   planetElCache = undefined
-  delete document.documentElement.dataset.planetGl
 })
 
 watch(() => [props.parallaxX, props.parallaxY], () => {
