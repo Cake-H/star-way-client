@@ -411,8 +411,7 @@ async function onSaveAndNextVoice() {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 8px 16px;
+  gap: 4px 16px;
 }
 
 .card-title {
@@ -435,8 +434,11 @@ async function onSaveAndNextVoice() {
   vertical-align: middle;
 }
 
+/* 说明小字独占一行，不再顶到卡片右缘 */
 .card-sub {
+  flex-basis: 100%;
   font-size: 13px;
+  line-height: 1.5;
   color: var(--xt-text-muted);
 }
 
@@ -491,6 +493,15 @@ async function onSaveAndNextVoice() {
   border: 1px solid var(--xt-border);
   overflow: hidden;
   background: var(--xt-surface);
+}
+
+/* 折叠面板自带 0 内边距，补齐左右留白避免文字/表单贴边 */
+.meta-collapse :deep(.el-collapse-item__header) {
+  padding: 0 18px;
+}
+
+.meta-collapse :deep(.el-collapse-item__content) {
+  padding: 4px 18px 18px;
 }
 
 .meta-collapse-title {

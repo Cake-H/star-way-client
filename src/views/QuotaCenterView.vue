@@ -294,6 +294,7 @@ function maskRedeemCode(text: string) {
 
 .overview-grid {
   margin: 0 !important;
+  row-gap: 20px;
 }
 
 .overview-card {

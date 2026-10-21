@@ -10,9 +10,6 @@
 
     <template v-else-if="question">
       <div class="toolbar">
-        <div class="toolbar-orbit">
-          <OrbitProgress :steps="2" :active="practiceMode ? 1 : 0" size="sm" />
-        </div>
         <el-switch
           v-model="practiceMode"
           inline-prompt
@@ -145,7 +142,6 @@ import {
   updateInterviewQuestion,
 } from '@/services/interviewService'
 import ConstellationReveal from '@/components/ConstellationReveal.vue'
-import OrbitProgress from '@/components/OrbitProgress.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -291,16 +287,6 @@ async function onDelete() {
   border-radius: var(--xt-radius-md);
   background: var(--xt-surface);
   border: 1px solid var(--xt-border);
-}
-
-.toolbar-orbit {
-  display: flex;
-  align-items: center;
-  padding: 4px;
-  border-radius: 50%;
-  background: var(--xt-surface-solid);
-  border: 1px solid var(--xt-border);
-  box-shadow: var(--xt-shadow-sm);
 }
 
 .toolbar-hint {

@@ -152,6 +152,9 @@
     />
     <QuotaInsufficientDialog v-model="quotaPromptVisible" />
     <AccountDeleteDialog v-model="accountDeleteVisible" />
+
+    <!-- 舰载导航浮球：全局快捷帮助栏，所有界面可见 -->
+    <ShipNavFab />
   </div>
 </template>
 
@@ -178,6 +181,7 @@ import StarryBackground from '@/components/StarryBackground.vue'
 import LoginRequiredDialog from '@/components/LoginRequiredDialog.vue'
 import QuotaInsufficientDialog from '@/components/QuotaInsufficientDialog.vue'
 import AccountDeleteDialog from '@/components/AccountDeleteDialog.vue'
+import ShipNavFab from '@/components/ShipNavFab.vue'
 import { dawnTheme, toggleDawn } from '@/theme/useDawnTransition'
 import { usePWA } from '@/composables/usePWA'
 import { usePWAInstall } from '@/composables/usePWAInstall'

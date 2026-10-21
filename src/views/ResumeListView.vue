@@ -261,6 +261,7 @@ async function onDelete(row: ResumeListItemVO) {
 
 .grid {
   margin: 0 !important;
+  row-gap: 20px;
 }
 
 .resume-card {

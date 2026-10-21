@@ -75,8 +75,6 @@
     />
 
     <HomeFooter />
-
-    <ShipNavFab />
   </div>
 </template>
 
@@ -96,7 +94,6 @@ import StarJourneyTimeline from '@/components/home/StarJourneyTimeline.vue'
 import StarMapDashboard from '@/components/home/StarMapDashboard.vue'
 import RecentActivityFeed from '@/components/home/RecentActivityFeed.vue'
 import HomeFooter from '@/components/home/HomeFooter.vue'
-import ShipNavFab from '@/components/home/ShipNavFab.vue'
 import { useHomeJourney } from '@/composables/useHomeJourney'
 import { useStarParallax } from '@/composables/useStarParallax'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'

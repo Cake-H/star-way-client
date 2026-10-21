@@ -156,6 +156,7 @@ async function onDelete(row: MockInterviewListItemVO) {
 
 .grid {
   margin: 0 !important;
+  row-gap: 20px;
 }
 
 .session-card {

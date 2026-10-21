@@ -218,10 +218,21 @@ function selectStable() {
   channel.value = 'stable'
 }
 
-function downloadBeta() {
+async function downloadBeta() {
   if (!zipUrl) return
+  // 文件缺失时 SPA 兜底会返回 200 + text/html（表现为整页跳回首页），
+  // 所以点击前先 HEAD 探测，content-type 必须是 zip/octet-stream 才算存在
+  try {
+    const res = await fetch(zipUrl, { method: 'HEAD', cache: 'no-store' })
+    const type = res.headers.get('content-type') || ''
+    if (!res.ok || /text\/html/i.test(type)) throw new Error('not found')
+  } catch {
+    ElMessage.warning('测试包暂未上传或下载地址未配置，请稍后再试')
+    return
+  }
   const a = document.createElement('a')
   a.href = zipUrl
+  a.download = '' // 同源时强制下载，避免整页跳转
   a.rel = 'noopener'
   document.body.appendChild(a)
   a.click()

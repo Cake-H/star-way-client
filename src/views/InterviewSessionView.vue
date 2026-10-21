@@ -21,9 +21,6 @@
             <p class="meta muted">共 {{ session.questions.length }} 题 · 更新于 {{ formatDateTime(session.updatedAt) }}</p>
           </div>
           <div class="head-actions">
-            <div class="practice-orbit">
-              <OrbitProgress :steps="2" :active="practiceMode ? 1 : 0" size="sm" />
-            </div>
             <div class="practice-toggle">
               <span class="toggle-lbl">练习模式</span>
               <el-switch
@@ -96,7 +93,6 @@ import {
   getInterviewSessionDetail,
 } from '@/services/interviewService'
 import { formatDateTime } from '@/utils/format'
-import OrbitProgress from '@/components/OrbitProgress.vue'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
 
 const route = useRoute()
@@ -224,16 +220,6 @@ async function onDeleteSession() {
   margin-right: 4px;
 }
 
-.practice-orbit {
-  display: flex;
-  align-items: center;
-  padding: 4px;
-  border-radius: 50%;
-  background: var(--xt-surface-solid);
-  border: 1px solid var(--xt-border);
-  box-shadow: var(--xt-shadow-sm);
-}
-
 .practice-toggle {
   display: flex;
   align-items: center;
@@ -257,6 +243,6 @@ async function onDeleteSession() {
 .q-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 </style>

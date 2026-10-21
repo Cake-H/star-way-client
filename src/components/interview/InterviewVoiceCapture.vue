@@ -10,21 +10,26 @@
         aria-valuemax="100"
         :aria-label="isRecording ? '当前录入音量' : '点击开始口述'"
       >
-        <span
-          v-for="i in 3"
-          :key="`ring-${i}`"
-          class="sonic-ring"
+        <svg
+          class="sonic-wave"
+          viewBox="0 0 200 200"
           aria-hidden="true"
-          :style="sonicRingStyle(i - 1)"
-        />
-        <div v-show="isRecording" class="sonic-spokes" aria-hidden="true">
-          <span
-            v-for="(h, idx) in levelBars"
-            :key="idx"
-            class="sonic-spoke"
-            :style="sonicSpokeStyle(idx, h)"
+          :style="sonicWaveStyle"
+        >
+          <defs>
+            <linearGradient :id="waveGradId" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f0bc66" />
+              <stop offset="100%" stop-color="#e8a33d" />
+            </linearGradient>
+          </defs>
+          <path class="sonic-wave-outer" :d="wavePathOuter" fill="none" />
+          <path
+            class="sonic-wave-main"
+            :d="wavePathMain"
+            fill="none"
+            :stroke="`url(#${waveGradId})`"
           />
-        </div>
+        </svg>
         <button
           type="button"
           class="voice-main-btn"
@@ -34,7 +39,6 @@
           :aria-label="isRecording ? '停止口述并分析' : '开始口述'"
           @click="toggleRecording"
         >
-          <span class="btn-ring" aria-hidden="true" />
           <span
             v-if="isRecording"
             class="btn-level-glow"
@@ -187,19 +191,47 @@ const micBtnStyle = computed(() => {
   }
 })
 
-function sonicRingStyle(index: number) {
-  const base = 1 + index * 0.12
-  const scale = base + level.value * (0.1 + index * 0.05)
-  const opacity = isRecording.value
-    ? Math.min(0.7, 0.28 + level.value * 0.4 - index * 0.07)
-    : 0.16
-  return { transform: `scale(${scale})`, opacity, animationDelay: `${index * 0.35}s` }
+/**
+ * 环形声波：频谱镜像映射到圆周（左右对称，避免人声低频集中导致的歪扭），
+ * 余弦插值平滑成闭合波浪线；整体半径随音量微微胀缩，模拟声波向外扩散。
+ */
+const waveGradId = `sonic-wave-grad-${Math.random().toString(36).slice(2, 8)}`
+const WAVE_SAMPLES = 96
+
+function buildWavePath(baseRadius: number, amplitude: number, phase: number): string {
+  const bands = levelBars.value
+  const n = bands.length || 1
+  const pulse = level.value * (amplitude * 0.28)
+  const parts: string[] = []
+  for (let i = 0; i <= WAVE_SAMPLES; i++) {
+    const t = i / WAVE_SAMPLES
+    const angle = t * Math.PI * 2 - Math.PI / 2
+    // 镜像：半圆铺一遍频谱，另外半圆折返，画面永远左右对称
+    const mirrorT = t <= 0.5 ? t * 2 : (1 - t) * 2
+    const pos = mirrorT * (n - 1)
+    const i0 = Math.floor(pos)
+    const i1 = Math.min(n - 1, i0 + 1)
+    const frac = pos - i0
+    const smooth = (1 - Math.cos(frac * Math.PI)) / 2
+    const band = bands[i0] * (1 - smooth) + bands[i1] * smooth
+    const idleWobble = Math.sin(angle * 3 + phase) * 0.7
+    const r = baseRadius + pulse + band * amplitude + idleWobble
+    const x = 100 + r * Math.cos(angle)
+    const y = 100 + r * Math.sin(angle)
+    parts.push(`${i === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`)
+  }
+  return `${parts.join(' ')} Z`
 }
 
-function sonicSpokeStyle(index: number, height: number) {
-  const count = levelBars.value.length || 36
-  return { transform: `rotate(${(360 / count) * index}deg) scaleY(${height})` }
-}
+const wavePathMain = computed(() => buildWavePath(80, 8, 0))
+const wavePathOuter = computed(() => buildWavePath(91, 4.5, Math.PI / 3))
+
+const sonicWaveStyle = computed(() => {
+  const glow = 3 + level.value * 9
+  return {
+    filter: `drop-shadow(0 0 ${glow.toFixed(1)}px rgba(232, 163, 61, ${(0.22 + level.value * 0.4).toFixed(2)}))`,
+  }
+})
 
 function formatDuration(sec: number) {
   const m = Math.floor(sec / 60)
@@ -464,53 +496,43 @@ onBeforeUnmount(() => {
   margin: 0 auto;
 }
 
-/* 外圈脉冲环：琥珀 2s 呼吸（录音中加速为 1s，颜色不变） */
-.sonic-ring {
-  position: absolute;
-  width: 132px;
-  height: 132px;
-  border-radius: 50%;
-  border: 2px solid rgba(232, 163, 61, 0.2);
-  pointer-events: none;
-  animation: sonic-breathe 2s ease-in-out infinite;
-  transition: transform 0.09s ease-out, opacity 0.1s ease;
-}
-
-.mic-orb.recording .sonic-ring {
-  border-color: rgba(232, 163, 61, 0.45);
-  animation: sonic-breathe 1s ease-in-out infinite;
-}
-
-.sonic-spokes {
+/* 环形声波：两条闭合波浪线环绕按钮，随音量向四周起伏 */
+.sonic-wave {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+  overflow: visible;
+  opacity: 0.75;
+  transform-origin: 50% 50%;
+  animation: sonic-wave-breathe 3.4s ease-in-out infinite;
 }
 
-.sonic-spoke {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 3px;
-  height: 20px;
-  margin-left: -1.5px;
-  margin-top: -78px;
-  transform-origin: 50% 100%;
-  border-radius: 3px;
-  background: linear-gradient(to top, rgba(232, 163, 61, 0.95), rgba(240, 188, 102, 0.7));
-  box-shadow: 0 0 8px rgba(232, 163, 61, 0.4);
-  transition: transform 0.06s ease-out;
+.mic-orb.recording .sonic-wave {
+  opacity: 1;
+  animation-duration: 1.8s;
 }
 
-@keyframes sonic-breathe {
+.sonic-wave-main {
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.sonic-wave-outer {
+  stroke: rgba(232, 163, 61, 0.32);
+  stroke-width: 1.3;
+  stroke-linejoin: round;
+}
+
+@keyframes sonic-wave-breathe {
   0%,
   100% {
-    opacity: 0.6;
-    filter: blur(0);
+    transform: scale(1);
   }
   50% {
-    opacity: 1;
-    filter: blur(0.5px);
+    transform: scale(1.03);
   }
 }
 
@@ -542,7 +564,7 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 
-/* 录音中：颜色不变，仅脉冲加速（见 .sonic-ring） */
+/* 录音中：按钮配色不变，声波起伏与呼吸节奏加速（见 .sonic-wave） */
 .voice-main-btn.recording {
   background: linear-gradient(145deg, var(--xt-primary-light) 0%, var(--xt-primary-dark) 100%);
 }
@@ -554,18 +576,6 @@ onBeforeUnmount(() => {
   background: radial-gradient(circle, rgba(240, 188, 102, 0.85) 0%, transparent 70%);
   pointer-events: none;
   transition: opacity 0.08s ease, transform 0.08s ease;
-}
-
-.btn-ring {
-  position: absolute;
-  inset: -8px;
-  border-radius: 50%;
-  border: 2px solid rgba(232, 163, 61, 0.22);
-  pointer-events: none;
-}
-
-.voice-main-btn.recording .btn-ring {
-  border-color: rgba(232, 163, 61, 0.45);
 }
 
 .btn-icon {
@@ -583,6 +593,8 @@ onBeforeUnmount(() => {
 .hero-hint {
   margin: 16px 0 0;
   max-width: 340px;
+  padding: 0 10px;
+  box-sizing: border-box;
   font-size: 14px;
   line-height: 1.55;
   color: var(--xt-text-secondary);
@@ -632,6 +644,15 @@ onBeforeUnmount(() => {
   background: var(--xt-card-bg);
 }
 
+/* 折叠面板自带 0 内边距，补齐左右留白避免文字贴边 */
+.text-supplement :deep(.el-collapse-item__header) {
+  padding: 0 16px;
+}
+
+.text-supplement :deep(.el-collapse-item__content) {
+  padding: 0 16px 14px;
+}
+
 .text-supplement-title {
   font-weight: 600;
   font-size: 14px;
@@ -657,9 +678,14 @@ onBeforeUnmount(() => {
   border-radius: var(--xt-radius-md);
 }
 
+@media (max-width: 640px) {
+  .voice-hero {
+    padding: 20px 14px 18px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .sonic-spoke,
-  .sonic-ring,
+  .sonic-wave,
   .btn-level-glow,
   .voice-main-btn {
     transition: none;

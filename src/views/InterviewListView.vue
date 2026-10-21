@@ -143,6 +143,7 @@ async function onDelete(row: InterviewSessionListItemVO) {
 
 .grid {
   margin: 0 !important;
+  row-gap: 20px;
 }
 
 .session-card {

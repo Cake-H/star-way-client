@@ -1,4 +1,4 @@
-import axios, { type AxiosError, type AxiosResponse } from 'axios'
+import axios, { type AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus'
 import { API_BASE_URL, AUTH_TOKEN_KEY } from '@/config'
 import { clearSession } from '@/auth/session'
@@ -91,6 +91,20 @@ http.interceptors.response.use(
       handleUnauthorized(hadToken)
       return Promise.reject(err)
     }
+    // 未收到任何响应的网络层错误（ERR_CONNECTION_RESET / 断网 / CORS 拦截等）：
+    // 多为 keep-alive 竞争——浏览器复用了服务端刚关闭的空闲连接，幂等 GET 静默重试一次即可恢复
+    if (!err.response) {
+      const cfg = err.config as (InternalAxiosRequestConfig & { [NET_RETRY_FLAG]?: boolean }) | undefined
+      const isGet = (cfg?.method ?? 'get').toLowerCase() === 'get'
+      if (cfg && isGet && !cfg[NET_RETRY_FLAG]) {
+        cfg[NET_RETRY_FLAG] = true
+        return new Promise((resolve, reject) => {
+          setTimeout(() => http(cfg).then(resolve, reject), NET_RETRY_DELAY_MS)
+        })
+      }
+      toastNetworkError()
+      return Promise.reject(err)
+    }
     const data = err.response?.data
     let msg = err.message || '网络异常'
     if (data && typeof data === 'object') {
@@ -104,6 +118,19 @@ http.interceptors.response.use(
     return Promise.reject(err)
   },
 )
+
+/** 网络错误重试标记（挂在请求配置上，防重复重试） */
+const NET_RETRY_FLAG = '__netRetried'
+const NET_RETRY_DELAY_MS = 400
+
+/** 同一时刻多个并行请求一起被重置时，只弹一条提示，3 秒内去重 */
+let lastNetToastAt = 0
+function toastNetworkError() {
+  const now = Date.now()
+  if (now - lastNetToastAt < 3_000) return
+  lastNetToastAt = now
+  ElMessage.error('网络连接异常，请稍后重试')
+}
 
 /** 取出业务 data；成功时由拦截器保证 code/ok 合法 */
 export function unwrapData<T>(res: AxiosResponse<ApiEnvelope<T>>): T | undefined {

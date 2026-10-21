@@ -23,7 +23,7 @@
         <el-button @click="goBlank">空白简历</el-button>
       </el-empty>
 
-      <el-row v-else :gutter="16">
+      <el-row v-else :gutter="16" class="resume-grid">
         <el-col v-for="r in resumes" :key="r.resumeId" :xs="24" :sm="12" :lg="8">
           <OrbitalCard
             class="resume-card"
@@ -158,9 +158,13 @@ function onGenerationDone() {
   min-height: 160px;
 }
 
+.resume-grid {
+  margin: 0 !important;
+  row-gap: 16px;
+}
+
 .resume-card {
   height: 100%;
-  margin-bottom: 16px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
