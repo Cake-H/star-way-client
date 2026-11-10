@@ -112,6 +112,20 @@ export interface InterviewSessionCreateResultVO {
   sessionId: string
 }
 
+/** 异步语音总结任务状态（GET /interview/sessions/{sid}/voice-summarize/tasks/{taskId}） */
+export type InterviewVoiceSummarizeTaskStatus = 'RUNNING' | 'SUCCESS' | 'FAILED'
+
+export interface InterviewVoiceSummarizeTaskVO {
+  taskId: string
+  status: InterviewVoiceSummarizeTaskStatus
+  createdAt: number
+  updatedAt: number
+  /** 仅 SUCCESS 时有值，结构与旧同步接口 voice-summarize 的 data 完全一致 */
+  result: InterviewVoiceSummarizeResultVO | null
+  /** 仅 FAILED 时有值，用户友好文案，可直接展示 */
+  errorMessage: string | null
+}
+
 export interface InterviewQuestionCreateResultVO {
   questionId: string
 }

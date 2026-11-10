@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       injectRegister: 'script-defer',
       manifest: {
         name: '星途 · 智能简历投递助手',
@@ -48,7 +48,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,webmanifest}'],
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/api/],
+        // SPA 回退只服务于 App 前端路由；后台页面（/console）与后端接口（/api、/admin）一律放行走网络
+        navigateFallbackDenylist: [/^\/api/, /^\/console/, /^\/admin/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

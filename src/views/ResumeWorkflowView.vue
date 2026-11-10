@@ -7,14 +7,21 @@
       </template>
     </el-page-header>
 
-    <div class="head">
+    <div v-show="!(isMobile && parseResult)" class="head">
       <h1 class="title">简历原件与智能填写</h1>
       <p class="desc">
         上传 PDF / Word 简历，系统将自动抽取文本并由大模型生成结构化草稿。请在上传后仔细核对各字段，模型结果仅供参考。
       </p>
     </div>
 
-    <el-steps :active="step" :direction="isMobile ? 'vertical' : 'horizontal'" align-center finish-status="success" class="steps">
+    <el-steps
+      v-show="!(isMobile && parseResult)"
+      :active="step"
+      :direction="isMobile ? 'vertical' : 'horizontal'"
+      align-center
+      finish-status="success"
+      class="steps"
+    >
       <el-step title="上传简历" description="仅支持 .pdf / .docx" />
       <el-step title="智能解析" description="上传文件并由 AI 抽取简历信息" />
       <el-step title="核对并保存" description="核对草稿后可保存，支持后续更新" />
@@ -50,6 +57,7 @@
 
         <div class="upload-body">
           <el-upload
+            v-show="!(isMobile && parseResult)"
             class="uploader"
             drag
             :show-file-list="false"
@@ -551,5 +559,22 @@ function resetAll() {
 }
 .el-overlay:has(.waiting-dialog) {
   background-color: rgba(6, 6, 8, 0.4) !important;
+}
+</style>
+
+<style scoped>
+/* —— 移动端：解析完成后进入「核对模式」，节奏收紧 —— */
+@media (max-width: 991px) {
+  .workflow {
+    gap: 12px;
+  }
+
+  .card :deep(.el-card__body) {
+    padding: 14px;
+  }
+
+  .form-card :deep(.el-card__header) {
+    display: none;
+  }
 }
 </style>

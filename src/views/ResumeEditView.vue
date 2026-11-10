@@ -184,4 +184,29 @@ onMounted(async () => {
   flex: 1;
   min-width: 200px;
 }
+
+/* —— 移动端：危险区沉底（内容优先），间距收紧 —— */
+@media (max-width: 991px) {
+  .edit-page {
+    gap: 12px;
+  }
+
+  .danger-zone {
+    order: 3;
+    padding: 10px 12px;
+  }
+
+  .danger-hint {
+    min-width: 0;
+    font-size: 12px;
+  }
+
+  .form-card :deep(.el-card__header) {
+    display: none;
+  }
+
+  .form-card :deep(.el-card__body) {
+    padding: 12px;
+  }
+}
 </style>

@@ -10,26 +10,11 @@
         aria-valuemax="100"
         :aria-label="isRecording ? '当前录入音量' : '点击开始口述'"
       >
-        <svg
-          class="sonic-wave"
-          viewBox="0 0 200 200"
-          aria-hidden="true"
-          :style="sonicWaveStyle"
-        >
-          <defs>
-            <linearGradient :id="waveGradId" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#f0bc66" />
-              <stop offset="100%" stop-color="#e8a33d" />
-            </linearGradient>
-          </defs>
-          <path class="sonic-wave-outer" :d="wavePathOuter" fill="none" />
-          <path
-            class="sonic-wave-main"
-            :d="wavePathMain"
-            fill="none"
-            :stroke="`url(#${waveGradId})`"
-          />
-        </svg>
+        <div class="sonic-ripples" aria-hidden="true" :style="ripplesStyle">
+          <span class="ripple r1" />
+          <span class="ripple r2" />
+          <span class="ripple r3" />
+        </div>
         <button
           type="button"
           class="voice-main-btn"
@@ -56,7 +41,7 @@
         <span v-if="isSilent" class="silent-tip">未检测到声音，请靠近麦克风</span>
         <span v-else-if="level > 0.12" class="heard-tip">已检测到声音</span>
       </p>
-      <p v-if="summarizing" class="hero-live summarizing">听写与 AI 整理中，约需数十秒，请勿重复提交…</p>
+      <p v-if="summarizing" class="hero-live summarizing">听写与 AI 整理中，录音越长耗时越久，请勿重复提交…</p>
       <p v-if="durationSec > 0 && !summarizing" class="hero-time">{{ formatDuration(durationSec) }}</p>
 
       <el-button
@@ -113,15 +98,20 @@
 
 <script setup lang="ts">
 /**
- * 语音复盘：POST voice-summarize（阿里云听写 + DeepSeek 结构化，一次完成，无独立转写接口）。
+ * 语音复盘：异步 voice-summarize/tasks（提交 taskId + 轮询）。
  * 停止录音后自动总结；可选文字 ≥10 字跳过服务端听写。
+ * 结果不入库，用户确认后由父页面调 questions 接口保存。
  */
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { Microphone } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { InterviewVoiceSummarizeResultVO } from '@/api/interviewTypes'
+import { InterviewSummarizeFailedError, InterviewSummarizeTimeoutError } from '@/api/interview'
 import { useMicLevel } from '@/composables/useMicLevel'
-import { summarizeInterviewVoice } from '@/services/interviewService'
+import {
+  pollInterviewVoiceSummarizeTask,
+  submitInterviewVoiceSummarizeTask,
+} from '@/services/interviewService'
 import {
   blobToWav16kMono,
   pickMediaRecorderMimeType,
@@ -143,7 +133,7 @@ const emit = defineEmits<{
   summarized: [result: InterviewVoiceSummarizeResultVO]
 }>()
 
-const { level, bars: levelBars, isSilent, start: startMicLevel, stop: stopMicLevel } = useMicLevel()
+const { level, isSilent, start: startMicLevel, stop: stopMicLevel } = useMicLevel()
 
 const transcript = ref('')
 const textPanelOpen = ref<string[]>([])
@@ -192,46 +182,12 @@ const micBtnStyle = computed(() => {
 })
 
 /**
- * 环形声波：频谱镜像映射到圆周（左右对称，避免人声低频集中导致的歪扭），
- * 余弦插值平滑成闭合波浪线；整体半径随音量微微胀缩，模拟声波向外扩散。
+ * 涟漪声波：三圈圆环从按钮边缘向外扩散、渐远渐淡，错相循环。
+ * 音量驱动涟漪浓淡（level 经惯性平滑，透明度变化连续），纯 CSS transform/opacity 动画。
  */
-const waveGradId = `sonic-wave-grad-${Math.random().toString(36).slice(2, 8)}`
-const WAVE_SAMPLES = 96
-
-function buildWavePath(baseRadius: number, amplitude: number, phase: number): string {
-  const bands = levelBars.value
-  const n = bands.length || 1
-  const pulse = level.value * (amplitude * 0.28)
-  const parts: string[] = []
-  for (let i = 0; i <= WAVE_SAMPLES; i++) {
-    const t = i / WAVE_SAMPLES
-    const angle = t * Math.PI * 2 - Math.PI / 2
-    // 镜像：半圆铺一遍频谱，另外半圆折返，画面永远左右对称
-    const mirrorT = t <= 0.5 ? t * 2 : (1 - t) * 2
-    const pos = mirrorT * (n - 1)
-    const i0 = Math.floor(pos)
-    const i1 = Math.min(n - 1, i0 + 1)
-    const frac = pos - i0
-    const smooth = (1 - Math.cos(frac * Math.PI)) / 2
-    const band = bands[i0] * (1 - smooth) + bands[i1] * smooth
-    const idleWobble = Math.sin(angle * 3 + phase) * 0.7
-    const r = baseRadius + pulse + band * amplitude + idleWobble
-    const x = 100 + r * Math.cos(angle)
-    const y = 100 + r * Math.sin(angle)
-    parts.push(`${i === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`)
-  }
-  return `${parts.join(' ')} Z`
-}
-
-const wavePathMain = computed(() => buildWavePath(80, 8, 0))
-const wavePathOuter = computed(() => buildWavePath(91, 4.5, Math.PI / 3))
-
-const sonicWaveStyle = computed(() => {
-  const glow = 3 + level.value * 9
-  return {
-    filter: `drop-shadow(0 0 ${glow.toFixed(1)}px rgba(232, 163, 61, ${(0.22 + level.value * 0.4).toFixed(2)}))`,
-  }
-})
+const ripplesStyle = computed(() => ({
+  '--ripple-peak': (0.3 + level.value * 0.5).toFixed(2),
+}))
 
 function formatDuration(sec: number) {
   const m = Math.floor(sec / 60)
@@ -291,7 +247,12 @@ function waitForRecorderStop(): Promise<Blob | null> {
       resolve(buildRawRecordBlob())
       return
     }
-    rec.onstop = () => resolve(buildRawRecordBlob())
+    // 链式保留原 onstop（停麦克风轨道 + 重置音量波形），直接赋值覆盖会导致资源泄漏与波形定格
+    const prevOnStop = rec.onstop
+    rec.onstop = (ev) => {
+      prevOnStop?.call(rec, ev)
+      resolve(buildRawRecordBlob())
+    }
     try {
       rec.stop()
     } catch {
@@ -310,6 +271,40 @@ async function resolveSessionId(): Promise<string> {
   if (props.sessionId != null) return props.sessionId
   if (props.beforeSummarize) return props.beforeSummarize()
   throw new Error('复盘场次未就绪，请稍后重试')
+}
+
+/** 服务端听写按音频时长回放：录音场景轮询超时 = 音频时长 + 90s；纯文本 90s */
+function summarizeTimeoutMs(audioSeconds: number): number {
+  return audioSeconds > 0 ? audioSeconds * 1000 + 90_000 : 90_000
+}
+
+function applySummarizeResult(result: InterviewVoiceSummarizeResultVO) {
+  const plain = plainTranscriptFromSummarize(result)
+  if (plain && !transcript.value.trim()) transcript.value = plain
+  emit('summarized', result)
+  const drafts = result.questions?.length ?? (result.question ? 1 : 0)
+  if (drafts > 0) {
+    ElMessage.success('分析完成，请在下方核对后保存')
+  } else {
+    ElMessage.warning(result.hint?.trim() || '未能拆出题干，请补充口述或手动填写')
+  }
+}
+
+function handleSummarizeError(e: unknown) {
+  if (e instanceof InterviewSummarizeFailedError) {
+    // 服务端返回的最终用户文案，直接展示，不包装不替换
+    statusMessage.value = e.message
+    statusType.value = 'error'
+    ElMessage.error(e.message)
+  } else if (e instanceof InterviewSummarizeTimeoutError) {
+    statusMessage.value = e.message
+    statusType.value = 'error'
+    ElMessage.error(e.message)
+  } else if (e instanceof Error) {
+    statusMessage.value = e.message
+    statusType.value = 'error'
+    ElMessage.error(e.message)
+  }
 }
 
 async function runVoiceSummarize() {
@@ -332,31 +327,94 @@ async function runVoiceSummarize() {
     const sid = await resolveSessionId()
     preparing.value = false
     const uploadFile = audioBlobWav ? await prepareInterviewAudioFile(audioBlobWav) : undefined
-    const result = await summarizeInterviewVoice(sid, {
+    const audioSeconds = uploadFile ? durationSec.value : 0
+    const taskId = await submitInterviewVoiceSummarizeTask(sid, {
       rawTranscript: attachText ? text : undefined,
       audioFile: uploadFile,
     })
-    const plain = plainTranscriptFromSummarize(result)
-    if (plain && !transcript.value.trim()) transcript.value = plain
-    emit('summarized', result)
-    const drafts = result.questions?.length ?? (result.question ? 1 : 0)
-    if (drafts > 0) {
-      ElMessage.success('分析完成，请在下方核对后保存')
-    } else {
-      ElMessage.warning(result.hint?.trim() || '未能拆出题干，请补充口述或手动填写')
-    }
+    savePendingTask(sid, taskId, audioSeconds)
+    const result = await pollInterviewVoiceSummarizeTask(sid, taskId, {
+      timeoutMs: summarizeTimeoutMs(audioSeconds),
+      shouldContinue: () => !pollCancelled,
+    })
+    if (pollCancelled || result == null) return
+    clearPendingTask()
+    applySummarizeResult(result)
   } catch (e: unknown) {
     preparing.value = false
-    if (e instanceof Error) {
-      statusMessage.value = e.message
-      statusType.value = 'error'
-      ElMessage.error(e.message)
-    }
+    clearPendingTask()
+    handleSummarizeError(e)
   } finally {
     summarizing.value = false
     preparing.value = false
   }
 }
+
+/* —— 未完成任务持久化：页面刷新后可凭 taskId + sessionId 继续轮询（服务端保留 30 分钟）—— */
+const PENDING_TASK_KEY = 'interview-voice-summarize-pending'
+let pollCancelled = false
+
+function savePendingTask(sessionId: string, taskId: string, audioSeconds: number) {
+  sessionStorage.setItem(PENDING_TASK_KEY, JSON.stringify({ sessionId, taskId, audioSeconds }))
+}
+
+function clearPendingTask() {
+  sessionStorage.removeItem(PENDING_TASK_KEY)
+}
+
+function readPendingTask(): { sessionId: string; taskId: string; audioSeconds: number } | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_TASK_KEY)
+    if (!raw) return null
+    const v = JSON.parse(raw) as Record<string, unknown>
+    if (typeof v.sessionId !== 'string' || typeof v.taskId !== 'string' || !v.taskId) return null
+    return {
+      sessionId: v.sessionId,
+      taskId: v.taskId,
+      audioSeconds: typeof v.audioSeconds === 'number' ? v.audioSeconds : 0,
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 仅当 pending 任务属于当前场次时才恢复轮询（任务 URL 与场次强绑定，不能串场次）。
+ * 新建页刷新会创建新场次，旧 pending 自动丢弃；追加问题页（URL 带 sessionId）刷新可续跑。
+ */
+let resumeChecked = false
+watch(
+  () => props.sessionId,
+  (sid) => {
+    if (resumeChecked || sid == null) return
+    resumeChecked = true
+    const pending = readPendingTask()
+    if (!pending) return
+    if (pending.sessionId !== sid) {
+      clearPendingTask()
+      return
+    }
+    summarizing.value = true
+    statusMessage.value = ''
+    void (async () => {
+      try {
+        const result = await pollInterviewVoiceSummarizeTask(sid, pending.taskId, {
+          timeoutMs: summarizeTimeoutMs(pending.audioSeconds),
+          shouldContinue: () => !pollCancelled,
+        })
+        if (pollCancelled || result == null) return
+        clearPendingTask()
+        applySummarizeResult(result)
+      } catch (e: unknown) {
+        clearPendingTask()
+        handleSummarizeError(e)
+      } finally {
+        summarizing.value = false
+      }
+    })()
+  },
+  { immediate: true },
+)
 
 async function startRecording() {
   if (!mediaSupported) {
@@ -445,6 +503,7 @@ function resetForNext() {
 defineExpose({ resetForNext, runVoiceSummarize })
 
 onBeforeUnmount(() => {
+  pollCancelled = true
   clearDurationTimer()
   if (mediaRecorder && mediaRecorder.state !== 'inactive') {
     try {
@@ -496,43 +555,52 @@ onBeforeUnmount(() => {
   margin: 0 auto;
 }
 
-/* 环形声波：两条闭合波浪线环绕按钮，随音量向四周起伏 */
-.sonic-wave {
+/* 涟漪声波：三圈圆环错相向外扩散；待机慢速淡涟漪（可点击暗示），录音快速浓涟漪 */
+.sonic-ripples {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
   pointer-events: none;
-  overflow: visible;
-  opacity: 0.75;
-  transform-origin: 50% 50%;
-  animation: sonic-wave-breathe 3.4s ease-in-out infinite;
+  opacity: 0.55;
+  transition: opacity 0.5s ease;
 }
 
-.mic-orb.recording .sonic-wave {
+.mic-orb.recording .sonic-ripples {
   opacity: 1;
-  animation-duration: 1.8s;
 }
 
-.sonic-wave-main {
-  stroke-width: 2.4;
-  stroke-linejoin: round;
-  stroke-linecap: round;
+.ripple {
+  position: absolute;
+  inset: 24px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(232, 163, 61, 0.9);
+  opacity: 0;
+  transform: scale(0.9);
+  animation: ripple-out 4.6s cubic-bezier(0.15, 0.45, 0.35, 1) infinite;
 }
 
-.sonic-wave-outer {
-  stroke: rgba(232, 163, 61, 0.32);
-  stroke-width: 1.3;
-  stroke-linejoin: round;
+.mic-orb.recording .ripple {
+  animation-duration: 2.8s;
 }
 
-@keyframes sonic-wave-breathe {
-  0%,
-  100% {
-    transform: scale(1);
+.ripple.r2 {
+  animation-delay: 0.95s;
+}
+
+.ripple.r3 {
+  animation-delay: 1.9s;
+}
+
+@keyframes ripple-out {
+  0% {
+    transform: scale(0.9);
+    opacity: var(--ripple-peak, 0.45);
   }
-  50% {
-    transform: scale(1.03);
+  70% {
+    opacity: calc(var(--ripple-peak, 0.45) * 0.35);
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
   }
 }
 
@@ -564,7 +632,7 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 
-/* 录音中：按钮配色不变，声波起伏与呼吸节奏加速（见 .sonic-wave） */
+/* 录音中：按钮配色不变，涟漪开始扩散（见 .sonic-ripples） */
 .voice-main-btn.recording {
   background: linear-gradient(145deg, var(--xt-primary-light) 0%, var(--xt-primary-dark) 100%);
 }
@@ -685,7 +753,7 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sonic-wave,
+  .ripple,
   .btn-level-glow,
   .voice-main-btn {
     transition: none;

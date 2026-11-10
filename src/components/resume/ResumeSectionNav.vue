@@ -17,14 +17,24 @@
         <span class="nav-dot" aria-hidden="true" />
         <span class="nav-label">{{ s.title }}</span>
       </button>
+      <!-- 移动端：收起标题行后，「全部展开」收进 chips 末尾 -->
+      <button type="button" class="nav-item nav-expand-all" @click="nav.expandAll">全部展开</button>
     </nav>
   </aside>
 </template>
 
 <script setup lang="ts">
+import { nextTick, watch } from 'vue'
 import { useResumeSectionNav } from '@/composables/useResumeSectionNav'
 
 const nav = useResumeSectionNav()
+
+/** 滚动联动高亮时，让当前 chip 自动滑进可视区（仅横向、就近对齐） */
+watch(nav.activeKey, async () => {
+  await nextTick()
+  const active = document.querySelector<HTMLElement>('.resume-section-nav .nav-item.active')
+  active?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' })
+})
 </script>
 
 <style scoped>
@@ -117,16 +127,35 @@ const nav = useResumeSectionNav()
   text-overflow: ellipsis;
 }
 
-/* 窄屏：改为顶部横向滚动 chips 条（scroll-snap，当前项琥珀） */
+/* 桌面端不显示（在 nav-head 里已有入口），移动端 chips 末尾出现 */
+.nav-expand-all {
+  display: none;
+  color: var(--xt-text-muted);
+  border-style: dashed !important;
+}
+
+/* 窄屏：收起标题行，瘦身为单行胶囊吸顶条（scroll-snap，当前项琥珀） */
 @media (max-width: 991px) {
   .resume-section-nav {
-    position: relative;
-    left: auto;
-    top: auto;
+    position: sticky;
+    /* 让开全局吸顶导航栏（mobile 高约 60px），留 6px 悬浮缝 */
+    top: 66px;
+    align-self: stretch;
+    flex-shrink: 0;
     width: 100%;
     max-height: none;
-    padding: 10px;
-    border-radius: var(--xt-radius-md);
+    padding: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--xt-surface) 82%, transparent);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  .nav-head {
+    display: none;
+  }
+
+  .nav-expand-all {
+    display: inline-flex;
   }
 
   .nav-list {
@@ -136,6 +165,12 @@ const nav = useResumeSectionNav()
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     padding-bottom: 2px;
+    /* 隐藏原生横向滚动条，避免胶囊条下多一根「假进度条」 */
+    scrollbar-width: none;
+  }
+
+  .nav-list::-webkit-scrollbar {
+    display: none;
   }
 
   .nav-item {

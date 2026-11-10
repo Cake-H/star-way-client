@@ -712,3 +712,26 @@ html.dark .el-skeleton {
   --el-skeleton-color: rgba(232, 230, 224, 0.06);
   --el-skeleton-to-color: rgba(232, 230, 224, 0.12);
 }
+
+/* —— 移动端：内页 hero 头瘦身（首页不走该类，不受影响） —— */
+@media (max-width: 640px) {
+  .xt-section-head {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .xt-eyebrow {
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+
+  .xt-section-title {
+    margin-bottom: 4px;
+    font-size: 20px;
+  }
+
+  .xt-section-desc {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}

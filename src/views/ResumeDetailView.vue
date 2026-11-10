@@ -223,4 +223,45 @@ onMounted(async () => {
 .full-card :deep(.resume-draft) {
   gap: 16px;
 }
+
+/* —— 移动端：前置信息瘦身，让正文尽快进入首屏 —— */
+@media (max-width: 991px) {
+  .detail-page {
+    gap: 12px;
+  }
+
+  .head-card :deep(.el-card__body) {
+    padding: 14px;
+  }
+
+  .resume-title {
+    margin-bottom: 6px;
+    font-size: 18px;
+  }
+
+  /* 操作区 2×2 等宽排布，消除按钮各自换行的零散感 */
+  .head-row {
+    gap: 12px;
+  }
+
+  .head-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .head-btns :deep(.el-button) {
+    margin: 0;
+  }
+
+  /* 卡片头与下方提示语义重复，移动端只留提示条 */
+  .full-card :deep(.el-card__header) {
+    display: none;
+  }
+
+  .full-card :deep(.el-card__body) {
+    padding: 12px;
+  }
+}
 </style>

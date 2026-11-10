@@ -22,6 +22,7 @@
         placeholder="投递公司"
         clearable
         :prefix-icon="Search"
+        :size="isMobile ? 'small' : undefined"
       />
       <el-input
         v-model="filters.position"
@@ -29,12 +30,14 @@
         placeholder="投递岗位"
         clearable
         :prefix-icon="Search"
+        :size="isMobile ? 'small' : undefined"
       />
       <el-select
         v-model="filters.progress"
         class="filter-item filter-select"
         placeholder="全部进度"
         clearable
+        :size="isMobile ? 'small' : undefined"
       >
         <el-option v-for="o in progressOptions" :key="o.code" :label="o.label" :value="o.code" />
       </el-select>
@@ -47,8 +50,9 @@
         start-placeholder="投递开始"
         end-placeholder="投递结束"
         clearable
+        :size="isMobile ? 'small' : undefined"
       />
-      <el-button class="filter-reset" plain @click="resetFilters">
+      <el-button class="filter-reset" plain :size="isMobile ? 'small' : undefined" @click="resetFilters">
         <el-icon class="btn-ico"><RefreshLeft /></el-icon>
         重置
       </el-button>
@@ -601,7 +605,9 @@ onMounted(async () => {
   width: 150px;
 }
 
-.filter-dates {
+/* el-date-picker 为 fragment 根组件，scoped scopeId 无法落在其根元素上，
+   须经 :deep() 从带 scopeId 的原生 .filter-bar 穿透命中 */
+.filter-bar :deep(.filter-dates) {
   width: 270px;
 }
 
@@ -675,7 +681,8 @@ onMounted(async () => {
 
 /* 编辑态控件字号随正文放大 */
 .cell-editor,
-.cell-editor-wrap {
+.cell-editor-wrap,
+.table-wrap :deep(.cell-date-picker) {
   --el-font-size-base: 15px;
 }
 
@@ -683,7 +690,8 @@ onMounted(async () => {
   width: 100%;
 }
 
-.cell-date-picker {
+/* el-date-picker 为 fragment 根组件，scoped scopeId 落不上其根元素，须经 :deep 穿透 */
+.table-wrap :deep(.cell-date-picker) {
   width: 100%;
 }
 
@@ -875,20 +883,47 @@ onMounted(async () => {
   gap: 3px;
 }
 
-.edit-date,
+/* .edit-progress 为 el-select（单根，scoped 可命中）；.edit-date 为 el-date-picker（fragment 根，须 :deep） */
 .edit-progress {
   width: 100%;
 }
 
+.edit-field :deep(.edit-date) {
+  width: 100%;
+}
+
 @media (max-width: 767px) {
-  .filter-input,
-  .filter-select,
-  .filter-dates {
-    width: 100%;
+  /* 移动端紧凑筛选：公司/岗位一行，进度+日期一行，重置+计数一行 */
+  .filter-bar {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .filter-input {
+    flex: none;
+    width: calc(50% - 4px);
+  }
+
+  .filter-select {
+    flex: none;
+    width: 30%;
+  }
+
+  /* EP 默认 .el-date-editor.el-input__wrapper { width: 100% }；:deep 穿透后锚定 .filter-bar 稳压。
+     min-width 保证假想主尺寸足以把重置按钮挤到下一行，又不至于在极窄屏溢出 */
+  .filter-bar :deep(.filter-dates) {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 180px;
+  }
+
+  .filter-reset {
+    margin-left: 0;
   }
 
   .filter-count {
-    margin-left: 0;
+    margin-left: auto;
+    font-size: 12px;
   }
 }
 </style>

@@ -76,6 +76,7 @@
           </button>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item command="feedback">意见反馈</el-dropdown-item>
               <el-dropdown-item command="delete-account">账号注销</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -113,6 +114,10 @@
         <button type="button" class="avatar-menu-item" role="menuitem" @click="goQuotaFromMenu">
           <el-icon :size="16"><Wallet /></el-icon>
           星能补给站
+        </button>
+        <button type="button" class="avatar-menu-item" role="menuitem" @click="onFeedbackFromMenu">
+          <el-icon :size="16"><ChatDotRound /></el-icon>
+          意见反馈
         </button>
         <button type="button" class="avatar-menu-item" role="menuitem" @click="openDeleteAccount">
           <el-icon :size="16"><Setting /></el-icon>
@@ -152,6 +157,7 @@
     />
     <QuotaInsufficientDialog v-model="quotaPromptVisible" />
     <AccountDeleteDialog v-model="accountDeleteVisible" />
+    <FeedbackDialog v-model="feedbackVisible" :initial-tab="feedbackInitialTab" />
 
     <!-- 舰载导航浮球：全局快捷帮助栏，所有界面可见 -->
     <ShipNavFab />
@@ -163,6 +169,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
+  ChatDotRound,
   ChatLineSquare,
   Document,
   House,
@@ -182,11 +189,13 @@ import LoginRequiredDialog from '@/components/LoginRequiredDialog.vue'
 import QuotaInsufficientDialog from '@/components/QuotaInsufficientDialog.vue'
 import AccountDeleteDialog from '@/components/AccountDeleteDialog.vue'
 import ShipNavFab from '@/components/ShipNavFab.vue'
+import FeedbackDialog from '@/components/FeedbackDialog.vue'
 import { dawnTheme, toggleDawn } from '@/theme/useDawnTransition'
 import { usePWA } from '@/composables/usePWA'
 import { usePWAInstall } from '@/composables/usePWAInstall'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'
 import { useQuotaPrompt } from '@/composables/useQuotaPrompt'
+import { useFeedbackDialog } from '@/composables/useFeedbackDialog'
 import { logout as logoutApi } from '@/api/auth'
 import { authToken, clearSession } from '@/auth/session'
 
@@ -196,6 +205,7 @@ const { needRefresh, acceptUpdate, dismissUpdate } = usePWA()
 const { isInstallable, isIOS, install: installPWA, dismiss: dismissInstall } = usePWAInstall()
 const { loginPromptVisible, loginPromptRedirect } = useLoginPrompt()
 const { quotaPromptVisible } = useQuotaPrompt()
+const { feedbackVisible, feedbackInitialTab, openFeedback } = useFeedbackDialog()
 
 const isLoggedIn = computed(() => !!authToken.value)
 
@@ -278,6 +288,11 @@ function goQuotaFromMenu() {
   goQuota()
 }
 
+function onFeedbackFromMenu() {
+  avatarMenuOpen.value = false
+  openFeedback()
+}
+
 async function onLogoutFromMenu() {
   avatarMenuOpen.value = false
   await onLogout()
@@ -293,6 +308,7 @@ function openDeleteAccount() {
 
 function onSettingsCommand(command: string) {
   if (command === 'delete-account') accountDeleteVisible.value = true
+  if (command === 'feedback') openFeedback()
 }
 </script>
 

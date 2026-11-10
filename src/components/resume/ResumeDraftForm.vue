@@ -7,7 +7,11 @@
       show-icon
       :closable="false"
       title="智能解析仅为草稿，可能与原件存在偏差"
-      description="标有「建议核对」的字段请务必人工检查；带下拉选项的字段优先选择，减少手输错误。正式投递前请再次确认联系方式与经历时间线。保存到云端前还须填写：顶部「简历名称」、本表中的姓名、手机号、邮箱。"
+      :description="
+        isMobile
+          ? '带「建议核对」的字段请务必人工检查。保存前须填：简历名称、姓名、手机号、邮箱。'
+          : '标有「建议核对」的字段请务必人工检查；带下拉选项的字段优先选择，减少手输错误。正式投递前请再次确认联系方式与经历时间线。保存到云端前还须填写：顶部「简历名称」、本表中的姓名、手机号、邮箱。'
+      "
     />
     <el-alert
       v-else
@@ -16,7 +20,11 @@
       show-icon
       :closable="false"
       title="只读浏览"
-      description="以下为已保存的完整结构化简历内容，仅供查看。如需修改请使用页面上方「编辑」按钮。"
+      :description="
+        isMobile
+          ? '仅供查看，修改请点上方「编辑」。'
+          : '以下为已保存的完整结构化简历内容，仅供查看。如需修改请使用页面上方「编辑」按钮。'
+      "
     />
 
     <el-form
@@ -47,7 +55,7 @@
                     <el-input v-model="draft.fullName" placeholder="与证件一致" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="性别">
                     <el-select v-model="draft.gender" clearable placeholder="请选择" style="width: 100%">
                       <el-option
@@ -59,7 +67,7 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="出生日期">
                     <el-date-picker
                       v-model="draft.birthDate"
@@ -70,14 +78,14 @@
                     />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="民族">
                     <el-select v-model="draft.ethnicity" filterable allow-create placeholder="选择或填写" style="width: 100%">
                       <el-option v-for="o in ETHNICITY_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="证件类型">
                     <el-select v-model="draft.idDocType" placeholder="请选择" style="width: 100%">
                       <el-option v-for="o in ID_DOC_TYPE_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
@@ -112,27 +120,27 @@
                     <el-input v-model="draft.email" placeholder="用于通知与投递" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="QQ">
                     <el-input v-model="draft.qq" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="微信">
                     <el-input v-model="draft.wechat" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="紧急联系人">
                     <el-input v-model="draft.emergencyContactName" placeholder="姓名" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="紧急联系电话">
                     <el-input v-model="draft.emergencyContactPhone" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="与本人关系">
                     <el-input v-model="draft.emergencyContactRelation" placeholder="如：父母/配偶" clearable />
                   </el-form-item>
@@ -148,17 +156,17 @@
               data-section="addr"
             >
               <el-row :gutter="20">
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="国家/地区">
                     <el-input v-model="draft.countryRegion" placeholder="如：中国" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="籍贯">
                     <el-input v-model="draft.nativePlace" placeholder="省市区或简要填写" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="政治面貌">
                     <el-select v-model="draft.politicalStatus" placeholder="请选择" style="width: 100%">
                       <el-option
@@ -170,29 +178,29 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="户口性质">
                     <el-select v-model="draft.hukouType" placeholder="请选择" style="width: 100%">
                       <el-option v-for="o in HUKOU_TYPE_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="省">
                     <el-input v-model="draft.province" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="8">
+                <el-col :xs="12" :md="8">
                   <el-form-item label="市">
                     <el-input v-model="draft.city" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="区/县">
                     <el-input v-model="draft.district" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="现居城市">
                     <el-input v-model="draft.currentCity" placeholder="工作/生活城市" clearable />
                   </el-form-item>
@@ -202,7 +210,7 @@
                     <el-input v-model="draft.detailAddress" type="textarea" :rows="2" placeholder="街道门牌等" />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="通讯地址同现居">
                     <el-select v-model="draft.mailingSameAsCurrent" clearable placeholder="请选择" style="width: 100%">
                       <el-option
@@ -230,7 +238,7 @@
               data-section="job"
             >
               <el-row :gutter="20">
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="求职状态">
                     <el-select v-model="draft.jobSeekingStatus" clearable placeholder="请选择" style="width: 100%">
                       <el-option
@@ -242,7 +250,7 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="是否应届">
                     <el-select v-model="draft.isFreshGraduate" clearable placeholder="请选择" style="width: 100%">
                       <el-option
@@ -254,12 +262,12 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="工作年限（文本）">
                     <el-input v-model="draft.workYears" placeholder="如：3 年 / 应届" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="可到岗时间">
                     <el-input v-model="draft.availability" placeholder="如：随时 / 一个月内" clearable />
                   </el-form-item>
@@ -279,12 +287,12 @@
                     <el-input v-model="draft.expectedIndustries" type="textarea" :rows="2" />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="薪资期望">
                     <el-input v-model="draft.salaryExpectation" placeholder="如：20-30K·月" clearable />
                   </el-form-item>
                 </el-col>
-                <el-col :xs="24" :md="12">
+                <el-col :xs="12" :md="12">
                   <el-form-item label="是否接受调动">
                     <el-select v-model="draft.acceptTransfer" clearable placeholder="请选择" style="width: 100%">
                       <el-option
@@ -339,31 +347,31 @@
                       <el-input v-model="row.schoolName" placeholder="学校全称" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="学院">
                       <el-input v-model="row.collegeName" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="专业">
                       <el-input v-model="row.major" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="6">
+                  <el-col :xs="12" :md="6">
                     <el-form-item label="学历">
                       <el-select v-model="row.degree" placeholder="请选择" style="width: 100%">
                         <el-option v-for="o in DEGREE_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
                       </el-select>
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="6">
+                  <el-col :xs="12" :md="6">
                     <el-form-item label="学位">
                       <el-select v-model="row.academicDegree" placeholder="请选择" style="width: 100%">
                         <el-option v-for="o in ACADEMIC_DEGREE_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
                       </el-select>
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="是否全日制">
                       <el-select v-model="row.isFullTime" clearable placeholder="请选择" style="width: 100%">
                         <el-option
@@ -375,27 +383,27 @@
                       </el-select>
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="入学">
                       <el-date-picker v-model="row.enrollDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="毕业">
                       <el-date-picker v-model="row.graduateDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="国家/地区">
                       <el-input v-model="row.countryRegion" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="GPA">
                       <el-input v-model="row.gpa" placeholder="如：3.6/4.0" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="排名/荣誉简述">
                       <el-input v-model="row.rankingDesc" />
                     </el-form-item>
@@ -405,12 +413,12 @@
                       <el-input v-model="row.majorCourses" type="textarea" :rows="2" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="校内职务">
                       <el-input v-model="row.studentPosition" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="在校荣誉">
                       <el-input v-model="row.honors" />
                     </el-form-item>
@@ -444,39 +452,39 @@
                       <el-input v-model="row.companyName" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="部门">
                       <el-input v-model="row.department" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="职位">
                       <el-input v-model="row.jobTitle" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="工作城市">
                       <el-input v-model="row.workCity" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="行业">
                       <el-input v-model="row.companyIndustry" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="用工性质">
                       <el-select v-model="row.employmentNature" placeholder="请选择" style="width: 100%">
                         <el-option v-for="o in EMPLOYMENT_NATURE_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
                       </el-select>
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="开始">
                       <el-date-picker v-model="row.startDate" type="month" value-format="YYYY-MM" style="width: 100%" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="结束">
                       <el-date-picker v-model="row.endDate" type="month" value-format="YYYY-MM" style="width: 100%" />
                     </el-form-item>
@@ -514,27 +522,27 @@
                       <el-input v-model="row.projectName" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="角色">
                       <el-input v-model="row.roleName" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="组织/公司">
                       <el-input v-model="row.companyOrOrg" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="链接">
                       <el-input v-model="row.projectUrl" placeholder="Demo / GitHub" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="开始">
                       <el-date-picker v-model="row.startDate" type="month" value-format="YYYY-MM" style="width: 100%" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="结束">
                       <el-date-picker v-model="row.endDate" type="month" value-format="YYYY-MM" style="width: 100%" />
                     </el-form-item>
@@ -582,17 +590,17 @@
                       <el-input v-model="row.organizationName" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="职务">
                       <el-input v-model="row.roleTitle" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="开始">
                       <el-date-picker v-model="row.startDate" type="month" value-format="YYYY-MM" style="width: 100%" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="结束">
                       <el-date-picker v-model="row.endDate" type="month" value-format="YYYY-MM" style="width: 100%" />
                     </el-form-item>
@@ -620,24 +628,30 @@
                   <el-button v-if="!viewOnly" link type="danger" @click="removeLine(draft.skills, i)">删除</el-button>
                 </div>
                 <el-row :gutter="18">
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="类别">
                       <el-input v-model="row.skillCategory" placeholder="如：前端 / 语言" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="技能名">
                       <el-input v-model="row.skillName" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="熟练度">
                       <el-input v-model="row.proficiency" placeholder="如：熟练 / 精通" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="使用时长（月）">
-                      <el-input-number v-model="row.monthsOfUse" :min="0" :max="600" controls-position="right" style="width: 100%" />
+                      <el-input-number
+                        v-model="row.monthsOfUse"
+                        :min="0"
+                        :max="600"
+                        :controls-position="isMobile ? undefined : 'right'"
+                        style="width: 100%"
+                      />
                     </el-form-item>
                   </el-col>
                 </el-row>
@@ -658,43 +672,43 @@
                   <el-button v-if="!viewOnly" link type="danger" @click="removeLine(draft.languages, i)">删除</el-button>
                 </div>
                 <el-row :gutter="18">
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="语言">
                       <el-input v-model="row.languageName" placeholder="如：英语 / 日语" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="证书/考试">
                       <el-input v-model="row.certName" placeholder="如：CET-6" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="分数/等级">
                       <el-input v-model="row.certScore" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="听力">
                       <el-select v-model="row.listenLevel" placeholder="请选择" style="width: 100%">
                         <el-option v-for="o in LANGUAGE_LEVEL_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
                       </el-select>
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="口语">
                       <el-select v-model="row.speakLevel" placeholder="请选择" style="width: 100%">
                         <el-option v-for="o in LANGUAGE_LEVEL_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
                       </el-select>
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="阅读">
                       <el-select v-model="row.readLevel" placeholder="请选择" style="width: 100%">
                         <el-option v-for="o in LANGUAGE_LEVEL_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
                       </el-select>
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="写作">
                       <el-select v-model="row.writeLevel" placeholder="请选择" style="width: 100%">
                         <el-option v-for="o in LANGUAGE_LEVEL_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
@@ -729,12 +743,12 @@
                       <el-input v-model="row.issuer" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="取得日期">
                       <el-date-picker v-model="row.obtainDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="编号">
                       <el-input v-model="row.certNo" />
                     </el-form-item>
@@ -762,7 +776,7 @@
                       <el-input v-model="row.awardName" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="级别">
                       <el-input v-model="row.awardLevel" placeholder="如：国家级 / 校级" />
                     </el-form-item>
@@ -772,7 +786,7 @@
                       <el-input v-model="row.issuer" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="日期">
                       <el-date-picker v-model="row.awardDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
                     </el-form-item>
@@ -800,7 +814,7 @@
                   <el-button v-if="!viewOnly" link type="danger" @click="removeLine(draft.publications, i)">删除</el-button>
                 </div>
                 <el-row :gutter="18">
-                  <el-col :xs="24" :md="8">
+                  <el-col :xs="12" :md="8">
                     <el-form-item label="类型">
                       <el-select v-model="row.pubType" placeholder="请选择" style="width: 100%">
                         <el-option v-for="o in PUBLICATION_TYPE_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
@@ -812,7 +826,7 @@
                       <el-input v-model="row.title" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="作者角色">
                       <el-input v-model="row.role" placeholder="一作/通讯等" />
                     </el-form-item>
@@ -822,7 +836,7 @@
                       <el-input v-model="row.venue" />
                     </el-form-item>
                   </el-col>
-                  <el-col :xs="24" :md="12">
+                  <el-col :xs="12" :md="12">
                     <el-form-item label="日期">
                       <el-date-picker v-model="row.publishDate" type="month" value-format="YYYY-MM" style="width: 100%" />
                     </el-form-item>
@@ -871,6 +885,9 @@ import {
 } from '@/utils/resumeDraft'
 import { ElCollapseItem } from 'element-plus'
 import { PANEL_KEYS, useResumeSectionNav } from '@/composables/useResumeSectionNav'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 const props = withDefaults(
   defineProps<{
@@ -957,6 +974,13 @@ onUnmounted(() => {
   background: var(--el-bg-color);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   scroll-margin-top: 90px;
+}
+
+/* 移动端：胶囊导航条吸顶（约 66 + 44px），跳转目标避开双层吸顶栏 */
+@media (max-width: 991px) {
+  .section-collapse :deep(.el-collapse-item) {
+    scroll-margin-top: 120px;
+  }
 }
 
 .section-collapse :deep(.el-collapse-item__header) {
@@ -1051,6 +1075,45 @@ onUnmounted(() => {
 .resume-draft-form :deep(.el-select),
 .resume-draft-form :deep(.el-date-editor) {
   width: 100%;
+}
+
+/* —— 移动端密度：短字段已半宽，纵向节奏同步收紧 —— */
+@media (max-width: 991px) {
+  .resume-draft {
+    gap: 14px;
+  }
+
+  .section-collapse {
+    gap: 14px;
+  }
+
+  .section-collapse :deep(.el-collapse-item__content) {
+    padding: 14px 14px 6px;
+  }
+
+  .block {
+    padding: 12px 12px 4px;
+    margin-bottom: 12px;
+  }
+
+  .block-head {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+
+  .resume-draft-form :deep(.el-form-item) {
+    margin-bottom: 14px;
+  }
+
+  .section-hint {
+    margin-bottom: 10px;
+  }
+
+  /* 半宽列 gutter 收紧（el-row gutter 是内联 padding，需覆盖） */
+  .section-collapse :deep(.el-row [class*='el-col']) {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
 }
 
 </style>

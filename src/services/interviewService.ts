@@ -81,6 +81,10 @@ export async function deleteInterviewQuestion(sessionId: string, questionId: str
   interviewLocalStore.deleteQuestion(sessionId, questionId)
 }
 
+/**
+ * 语音 AI 总结（旧同步链路）
+ * @deprecated 请用 submitInterviewVoiceSummarizeTask + pollInterviewVoiceSummarizeTask
+ */
 export async function summarizeInterviewVoice(
   sessionId: string,
   opts: { rawTranscript?: string; audioFile?: File },
@@ -88,6 +92,32 @@ export async function summarizeInterviewVoice(
   if (useApi) return interviewApi.summarizeInterviewVoice(sessionId, opts)
   await new Promise((r) => setTimeout(r, 800))
   return mockVoiceSummarize(opts.rawTranscript ?? '')
+}
+
+/* —— 异步语音总结 —— */
+
+/** mock 模式下暂存口述文本，供轮询时生成假结果 */
+let mockLastTranscript = ''
+
+/** 提交异步语音总结任务，返回 taskId */
+export async function submitInterviewVoiceSummarizeTask(
+  sessionId: string,
+  opts: { rawTranscript?: string; audioFile?: File },
+): Promise<string> {
+  if (useApi) return interviewApi.submitInterviewVoiceSummarizeTask(sessionId, opts)
+  mockLastTranscript = opts.rawTranscript ?? ''
+  return 'mock-task'
+}
+
+/** 轮询任务直至终态；取消时返回 null */
+export async function pollInterviewVoiceSummarizeTask(
+  sessionId: string,
+  taskId: string,
+  opts?: interviewApi.PollInterviewVoiceSummarizeOptions,
+): Promise<InterviewVoiceSummarizeResultVO | null> {
+  if (useApi) return interviewApi.pollInterviewVoiceSummarizeTask(sessionId, taskId, opts)
+  await new Promise((r) => setTimeout(r, 800))
+  return mockVoiceSummarize(mockLastTranscript)
 }
 
 export function emptyQuestionForm(): InterviewQuestionCreateRequest {

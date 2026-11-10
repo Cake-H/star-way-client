@@ -71,6 +71,12 @@
           </div>
         </div>
 
+        <button type="button" class="feedback-entry" @click="onFeedback">
+          <el-icon :size="16"><ChatDotRound /></el-icon>
+          <span class="feedback-entry-text">意见反馈 · 告诉我们你的想法</span>
+          <el-icon :size="13" class="feedback-entry-arrow"><ArrowRight /></el-icon>
+        </button>
+
         <p class="panel-foot">AI 对话能力即将上线，敬请期待</p>
       </div>
     </transition>
@@ -83,6 +89,7 @@ import { useRouter } from 'vue-router'
 import {
   ArrowDown,
   ArrowRight,
+  ChatDotRound,
   ChatLineSquare,
   ChromeFilled,
   Close,
@@ -91,6 +98,7 @@ import {
   FolderOpened,
   MagicStick,
 } from '@element-plus/icons-vue'
+import { useFeedbackDialog } from '@/composables/useFeedbackDialog'
 
 /**
  * 舰载导航：导航与帮助中枢（非 AI 对话）。
@@ -146,6 +154,13 @@ function go(routeName: string) {
   router.push({ name: routeName })
 }
 
+const { openFeedback } = useFeedbackDialog()
+
+function onFeedback() {
+  close()
+  openFeedback()
+}
+
 function onKeydown(e: KeyboardEvent) {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
     e.preventDefault()
@@ -187,12 +202,12 @@ onBeforeUnmount(() => {
   height: 56px;
   border-radius: 50%;
   border: 1px solid rgba(232, 163, 61, 0.45);
-  background: #101014;
-  color: #e8a33d;
+  background: var(--xt-card-bg);
+  color: var(--xt-primary);
   display: grid;
   place-items: center;
   cursor: pointer;
-  box-shadow: inset 0 0 10px rgba(232, 163, 61, 0.12);
+  box-shadow: inset 0 0 10px rgba(232, 163, 61, 0.12), var(--xt-shadow-sm);
   animation: orb-breathe 3s ease-in-out infinite;
   transition: transform 0.2s ease;
 }
@@ -203,7 +218,7 @@ onBeforeUnmount(() => {
 
 .nav-orb.open {
   animation: none;
-  background: #0d0d12;
+  background: var(--xt-surface-muted);
 }
 
 @keyframes orb-breathe {
@@ -229,9 +244,9 @@ onBeforeUnmount(() => {
   overflow-y: auto;
   padding: 18px;
   border-radius: var(--xt-radius-lg);
-  background: #101014;
+  background: var(--xt-card-bg);
   border: 1px solid var(--xt-card-border);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 var(--xt-card-highlight);
+  box-shadow: var(--xt-shadow-md), inset 0 1px 0 var(--xt-card-highlight);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -252,7 +267,7 @@ onBeforeUnmount(() => {
 .panel-kbd {
   font-size: 11px;
   color: var(--xt-text-on-dark-muted);
-  border: 1px solid rgba(232, 230, 224, 0.16);
+  border: 1px solid var(--xt-border);
   border-radius: 6px;
   padding: 2px 8px;
 }
@@ -262,7 +277,7 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.1em;
-  color: #e8a33d;
+  color: var(--xt-primary);
 }
 
 .quick-grid {
@@ -279,7 +294,7 @@ onBeforeUnmount(() => {
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--xt-card-border);
-  background: rgba(232, 230, 224, 0.03);
+  background: var(--xt-surface-muted);
   color: var(--xt-text-on-dark);
   font-size: 13px;
   cursor: pointer;
@@ -288,7 +303,7 @@ onBeforeUnmount(() => {
 
 .quick-item:hover {
   border-color: rgba(232, 163, 61, 0.45);
-  color: #e8a33d;
+  color: var(--xt-primary);
 }
 
 .guide-list {
@@ -309,7 +324,7 @@ onBeforeUnmount(() => {
   padding: 8px 10px;
   border-radius: var(--xt-radius-sm);
   border: 1px solid transparent;
-  background: rgba(232, 230, 224, 0.03);
+  background: var(--xt-surface-muted);
   color: var(--xt-text-on-dark);
   font-size: 13px;
   text-align: left;
@@ -318,7 +333,7 @@ onBeforeUnmount(() => {
 }
 
 .guide-item:hover {
-  background: rgba(232, 230, 224, 0.08);
+  background: var(--xt-accent-soft);
 }
 
 .guide-no {
@@ -329,7 +344,7 @@ onBeforeUnmount(() => {
   place-items: center;
   font-size: 12px;
   font-weight: 700;
-  color: #e8a33d;
+  color: var(--xt-primary);
   border: 1px solid rgba(232, 163, 61, 0.4);
   flex-shrink: 0;
 }
@@ -343,7 +358,7 @@ onBeforeUnmount(() => {
 }
 
 .faq-item {
-  border-bottom: 1px solid rgba(232, 230, 224, 0.08);
+  border-bottom: 1px solid var(--xt-border);
 }
 
 .faq-item:last-child {
@@ -384,12 +399,44 @@ onBeforeUnmount(() => {
   color: var(--xt-text-on-dark-muted);
 }
 
+/* 意见反馈入口：琥珀描边通栏，与上方信息组拉开层级 */
+.feedback-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border-radius: var(--xt-radius-sm);
+  border: 1px solid rgba(232, 163, 61, 0.4);
+  background: rgba(232, 163, 61, 0.07);
+  color: var(--xt-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.feedback-entry:hover {
+  background: rgba(232, 163, 61, 0.14);
+  border-color: rgba(232, 163, 61, 0.6);
+}
+
+.feedback-entry-text {
+  flex: 1;
+}
+
+.feedback-entry-arrow {
+  color: var(--xt-text-on-dark-muted);
+}
+
 .panel-foot {
   margin: 0;
   text-align: center;
   font-size: 12px;
   color: var(--xt-text-muted);
-  border-top: 1px dashed rgba(232, 230, 224, 0.14);
+  border-top: 1px dashed var(--xt-border);
   padding-top: 12px;
 }
 
