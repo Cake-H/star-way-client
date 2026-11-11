@@ -1,6 +1,7 @@
 @import './styles/xingtu-theme.css';
 /* 破晓亮主题：全部为新增规则（令牌/换肤/动效层），不改动本文件与主题文件任何既有规则 */
 @import './theme/dawn.css';
+@import './styles/interaction-feedback.css';
 
 *,
 *::before,

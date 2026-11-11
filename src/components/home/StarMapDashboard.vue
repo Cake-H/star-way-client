@@ -271,9 +271,69 @@ function go(routeName: string) {
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 
-.dash-card:hover {
-  border-color: var(--xt-card-border-hover);
-  background: #131318;
+.dash-card,
+.guest-panel {
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease,
+    translate 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dash-card:is(:hover, :focus-within),
+.guest-panel:is(:hover, :focus-within) {
+  border-color: color-mix(in srgb, var(--xt-primary) 65%, transparent);
+  background-image: linear-gradient(135deg, color-mix(in srgb, var(--xt-primary) 9%, transparent), transparent 65%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--xt-primary) 22%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--xt-primary) 12%, transparent),
+    0 12px 30px color-mix(in srgb, var(--xt-primary) 12%, transparent);
+}
+
+.guest-icon,
+.spark-empty-icon,
+.ring-wrap,
+.stat-num {
+  transition: transform 0.28s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.dash-card:is(:hover, :focus-within) .stat-num {
+  color: var(--xt-primary);
+}
+
+.guest-panel:is(:hover, :focus-within) .guest-icon,
+.dash-card:is(:hover, :focus-within) .spark-empty-icon {
+  border-color: var(--xt-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--xt-primary) 10%, transparent);
+}
+
+@keyframes spark-highlight {
+  0%, 100% { opacity: 1; }
+  40% { opacity: 0.45; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dash-card:is(:hover, :focus-within),
+  .guest-panel:is(:hover, :focus-within) {
+    translate: 0 -3px;
+  }
+
+  .guest-panel:is(:hover, :focus-within) .guest-icon,
+  .dash-card:is(:hover, :focus-within) .spark-empty-icon {
+    transform: translateY(-2px) scale(1.06);
+  }
+
+  .dash-card:is(:hover, :focus-within) .ring-wrap {
+    transform: scale(1.025);
+  }
+
+  .dash-card:is(:hover, :focus-within) .spark-line {
+    animation: spark-highlight 0.8s ease 1;
+  }
+}
+
+@media (hover: none) {
+  .dash-card:active,
+  .guest-panel:active {
+    translate: 0 1px;
+    border-color: var(--xt-primary);
+  }
 }
 
 /* —— 星能环形图 —— */
@@ -565,6 +625,21 @@ function go(routeName: string) {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .dash-card,
+  .guest-panel,
+  .guest-icon,
+  .spark-empty-icon,
+  .ring-wrap,
+  .stat-num {
+    transition: none;
+    transform: none !important;
+    translate: none !important;
+  }
+
+  .spark-line {
+    animation: none !important;
+  }
+
   .ring-value,
   .mini-bar-fill {
     transition: none;

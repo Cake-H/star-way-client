@@ -12,7 +12,7 @@
       <div class="hero-grid">
         <div class="hero-copy constellation-reveal">
           <p class="hero-eyebrow">星途 · 从简历到 Offer，每一步都有帮手</p>
-          <h1 class="hero-title">穿越星海，抵达你的新星</h1>
+          <h1 class="hero-title"><span class="hero-title-phrase">穿越星海，</span><wbr /><span class="hero-title-phrase">抵达你的新星</span></h1>
           <p class="hero-desc">
             从简历解析、网申投递，到模拟面试与面试复盘，星途把求职的每一步连成一条可进化的星轨。
           </p>
@@ -265,6 +265,40 @@ function goCta() {
   line-height: 1.18;
   letter-spacing: -0.03em;
   color: var(--xt-text-on-dark);
+}
+
+.hero-title-phrase {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* 首页内局部调整，不改变模块结构、星球定位及网申列表区域。 */
+.home :deep(.journey-section .future:not(:hover):not(:focus-visible) .jnode-label),
+.home :deep(.journey-section .future .jnode-desc) {
+  opacity: 1;
+  color: var(--xt-text-on-dark-muted);
+}
+
+.home :deep(.journey-section .future:not(:hover):not(:focus-visible) .jnode-dot) {
+  opacity: 1;
+  color: var(--xt-text-on-dark-muted);
+}
+
+.home :deep(.guest-panel),
+.home :deep(.activity-empty) {
+  padding: 28px 24px;
+}
+
+.home :deep(.guest-icon),
+.home :deep(.empty-icon) {
+  width: 48px;
+  height: 48px;
+}
+
+.home :deep(.guest-text),
+.home :deep(.empty-text) {
+  line-height: 1.8;
+  text-wrap: pretty;
 }
 
 .hero-desc {

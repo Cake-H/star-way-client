@@ -1,16 +1,15 @@
 <template>
   <div class="mock-interview-list">
-    <div class="xt-section-head hero">
-      <div>
-        <p class="xt-eyebrow list-eyebrow">星途 · 模拟面试</p>
-        <h1 class="xt-section-title">模拟面试题</h1>
-        <p class="xt-section-desc">基于简历由 AI 生成面试题，练习模式逐题自测，随时查看参考答案。</p>
-      </div>
+    <SectionPageHeader
+      title="模拟面试题"
+      eyebrow="星途 · 模拟面试"
+      description="基于简历由 AI 生成面试题，练习模式逐题自测，随时查看参考答案。"
+    >
       <StarLaunchButton type="primary" size="large" @click="goNew">
         <el-icon class="btn-ico"><MagicStick /></el-icon>
         新建模拟面试
       </StarLaunchButton>
-    </div>
+    </SectionPageHeader>
 
     <el-skeleton v-if="loading" :rows="5" animated />
 
@@ -61,6 +60,7 @@ import { deleteMockInterview, listMockInterviews } from '@/services/mockIntervie
 import { formatDateTime } from '@/utils/format'
 import OrbitalCard from '@/components/OrbitalCard.vue'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
+import SectionPageHeader from '@/components/SectionPageHeader.vue'
 
 const router = useRouter()
 const loading = ref(true)
@@ -135,19 +135,6 @@ async function onDelete(row: MockInterviewListItemVO) {
   display: flex;
   flex-direction: column;
   gap: 24px;
-}
-
-.list-eyebrow {
-  color: var(--xt-accent);
-  margin-bottom: 6px;
-}
-
-.hero {
-  position: relative;
-}
-
-.hero :deep(.el-button) {
-  cursor: pointer;
 }
 
 .btn-ico {

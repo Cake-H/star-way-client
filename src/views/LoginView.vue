@@ -2,11 +2,29 @@
   <div class="page">
     <StarryBackground variant="dark" />
     <div class="shell">
+      <div class="login-topbar">
+        <el-button class="back-link" link @click="router.push('/')">
+          <el-icon><ArrowLeft /></el-icon>
+          返回首页
+        </el-button>
+        <span>星途 · 智能求职助手</span>
+      </div>
+      <div class="login-layout">
+        <section class="brand-intro" aria-label="星途品牌介绍">
+          <img :src="dawnTheme === 'dawn' ? logoBDawn : logoB" class="intro-logo" width="72" height="72" alt="星途·智能求职助手" />
+          <p class="intro-eyebrow">星途 · 从简历到 Offer</p>
+          <h2>每一步投递，<br>都向理想更近一程。</h2>
+          <ul class="intro-features">
+            <li><el-icon><Document /></el-icon><span>简历解析与管理</span></li>
+            <li><el-icon><Position /></el-icon><span>投递进度追踪</span></li>
+            <li><el-icon><ChatLineSquare /></el-icon><span>面试练习与复盘</span></li>
+          </ul>
+        </section>
       <el-card class="card xt-glass-dark" shadow="never">
         <div class="brand">
-          <StarLogo size="lg" class="logo-mark" />
-          <h1 class="title">星途</h1>
-          <p class="tagline">智能简历投递助手</p>
+          <img :src="dawnTheme === 'dawn' ? logoBDawn : logoB" class="mobile-logo" width="48" height="48" alt="星途·智能求职助手" />
+          <p class="tagline">从这里，继续你的求职旅程</p>
+          <h1 class="title">登录，开启星途</h1>
           <p class="subtitle">使用短信验证码登录，未注册将自动创建账号</p>
         </div>
 
@@ -50,6 +68,15 @@
             </div>
           </el-form-item>
 
+          <el-checkbox v-model="agreed" class="agreement-check">
+            <span class="agreement-text">
+              我已阅读并同意
+              <a class="agreement-link" @click.prevent="openAgreement('terms')">《用户协议》</a>
+              和
+              <a class="agreement-link" @click.prevent="openAgreement('privacy')">《隐私政策》</a>
+            </span>
+          </el-checkbox>
+
           <el-button
             class="submit"
             type="primary"
@@ -60,17 +87,9 @@
           >
             开启星途
           </el-button>
-
-          <el-checkbox v-model="agreed" class="agreement-check">
-            <span class="agreement-text">
-              我已阅读并同意
-              <a class="agreement-link" @click.prevent="openAgreement('terms')">《用户协议》</a>
-              和
-              <a class="agreement-link" @click.prevent="openAgreement('privacy')">《隐私政策》</a>
-            </span>
-          </el-checkbox>
         </el-form>
       </el-card>
+      </div>
       <p class="footer-note">每一步投递，都是向理想更近一程</p>
     </div>
 
@@ -83,7 +102,10 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import StarLogo from '@/components/StarLogo.vue'
+import { ArrowLeft, ChatLineSquare, Document, Position } from '@element-plus/icons-vue'
+import logoB from '@/assets/xingtu-logo-b.svg'
+import logoBDawn from '@/assets/xingtu-logo-b-dawn.svg'
+import { dawnTheme } from '@/theme/useDawnTransition'
 import StarryBackground from '@/components/StarryBackground.vue'
 import AgreementDialog from '@/components/AgreementDialog.vue'
 import { loginBySmsAndUnwrap, sendLoginSmsCode } from '@/api/auth'
@@ -192,44 +214,116 @@ async function onLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 32px 24px;
 }
 
 .shell {
   position: relative;
   z-index: 1;
-  width: min(440px, 100%);
+  width: min(1040px, 100%);
+}
+
+.login-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 36px;
+  color: var(--xt-text-on-dark-muted);
+  font-size: 12px;
+}
+
+.back-link {
+  color: var(--xt-primary);
+  gap: 6px;
+}
+
+.login-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  align-items: center;
+  gap: clamp(32px, 6vw, 80px);
+}
+
+.brand-intro {
+  min-width: 0;
+}
+
+.intro-logo {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 26px;
+}
+
+.intro-eyebrow {
+  margin: 0 0 16px;
+  color: var(--xt-primary);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.brand-intro h2 {
+  margin: 0;
+  font-family: var(--xt-font-title);
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 700;
+  line-height: 1.65;
+  color: var(--xt-text-on-dark);
+}
+
+.intro-features {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 34px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.intro-features li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--xt-text-on-dark-muted);
+}
+
+.intro-features .el-icon {
+  color: var(--xt-primary);
+  font-size: 18px;
+}
+
+.card {
+  min-width: 0;
 }
 
 .card :deep(.el-card__body) {
-  padding: 28px 26px 30px;
+  padding: 32px;
 }
 
 .brand {
-  text-align: center;
-  margin-bottom: 22px;
+  text-align: left;
+  margin-bottom: 28px;
 }
 
-.logo-mark {
-  margin: 0 auto 12px;
+.mobile-logo {
+  display: none;
 }
 
 .title {
-  margin: 0 0 4px;
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  background: linear-gradient(135deg, #fff8ec 0%, #f0bc66 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  margin: 0 0 12px;
+  font-family: var(--xt-font-title);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--xt-text-on-dark);
 }
 
 .tagline {
   margin: 0 0 10px;
   font-size: 13px;
   font-weight: 500;
-  color: rgba(251, 191, 36, 0.9);
+  color: var(--xt-primary);
   letter-spacing: 0.06em;
 }
 
@@ -248,17 +342,18 @@ async function onLogin() {
 
 .code-row :deep(.el-input) {
   flex: 1;
+  min-width: 0;
 }
 
 .send-btn {
   flex-shrink: 0;
-  min-width: 120px;
+  min-width: 112px;
   cursor: pointer;
 }
 
 .submit {
   width: 100%;
-  margin-top: 6px;
+  margin-top: 20px;
   height: 44px;
   font-size: 16px;
   font-weight: 600;
@@ -267,7 +362,9 @@ async function onLogin() {
 }
 
 .agreement-check {
-  margin-top: 14px;
+  margin-top: 0;
+  margin-right: 0;
+  width: 100%;
   height: auto;
   align-items: center;
 }
@@ -283,7 +380,9 @@ async function onLogin() {
 }
 
 .agreement-link {
-  color: var(--el-color-primary);
+  color: var(--xt-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
 }
 
@@ -291,7 +390,70 @@ async function onLogin() {
   margin: 18px 0 0;
   text-align: center;
   font-size: 12px;
-  color: rgba(232, 236, 255, 0.45);
+  color: var(--xt-text-on-dark-muted);
   letter-spacing: 0.04em;
+}
+
+@media (min-width: 681px) and (max-width: 900px) {
+  .login-layout {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 28px;
+  }
+}
+
+@media (max-width: 680px) {
+  .page {
+    align-items: flex-start;
+    padding: 24px 16px;
+  }
+
+  .shell {
+    max-width: 440px;
+  }
+
+  .login-topbar {
+    margin-bottom: 24px;
+    font-size: 11px;
+  }
+
+  .login-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .brand-intro {
+    display: none;
+  }
+
+  .card :deep(.el-card__body) {
+    padding: 26px 22px;
+  }
+
+  .brand {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .mobile-logo {
+    display: block;
+    margin: 0 auto 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .code-row {
+    gap: 8px;
+  }
+
+  .send-btn {
+    min-width: 100px;
+    padding-inline: 12px;
+  }
+
+  .form :deep(.el-input__inner) {
+    font-size: 16px;
+  }
 }
 </style>

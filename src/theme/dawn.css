@@ -1131,10 +1131,6 @@ html[data-theme='dawn'] .quota-center .transaction-item {
   border-bottom-color: rgba(60, 50, 35, 0.1);
 }
 
-html[data-theme='dawn'] .quota-center .transaction-item:hover {
-  background: rgba(60, 50, 35, 0.04);
-}
-
 /* —— 简历：分区导航 / 草稿折叠卡 —— */
 html[data-theme='dawn'] .resume-section-nav .nav-item:hover {
   background: rgba(60, 50, 35, 0.05);

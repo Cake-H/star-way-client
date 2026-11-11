@@ -79,7 +79,7 @@
         <div v-if="item.key === 'mock'" class="mini-preview" aria-hidden="true">
           <p class="mini-preview-note">第 3 题 · 自我介绍</p>
           <div class="mini-dots">
-            <span v-for="i in 10" :key="i" class="mini-dot" :class="{ on: i <= 3 }" />
+            <span v-for="i in 5" :key="i" class="mini-dot" :class="{ on: i === 1 }" :style="{ '--motion-delay': `${(i - 1) * 80}ms` }" />
           </div>
         </div>
 
@@ -91,7 +91,7 @@
               :key="i"
               class="mini-wave-bar"
               :class="{ amber: i % 3 === 0 }"
-              :style="{ height: `${h}px` }"
+              :style="{ height: `${h}px`, '--motion-delay': `${i * 35}ms` }"
             />
           </div>
           <p class="mini-preview-note">已整理为结构化复盘 · 3 个待改进点</p>
@@ -99,7 +99,7 @@
 
         <span class="card-entry">
           进入
-          <el-icon :size="14"><ArrowRight /></el-icon>
+          <el-icon :size="16"><Right /></el-icon>
         </span>
       </article>
     </div>
@@ -109,15 +109,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowRight } from '@element-plus/icons-vue'
+import { Right } from '@element-plus/icons-vue'
 import { featureCards } from '@/composables/useHomeJourney'
 import { getApplySiteCategories, getApplySites, type ApplySiteVO } from '@/api/applySite'
 
 const router = useRouter()
 const items = featureCards
 
-/** 迷你录音波形：高度 6–22px 伪随机但固定，琥珀:暖灰 = 1:2 */
-const waveBars = [8, 14, 20, 11, 17, 22, 9, 13, 19, 7, 16, 21, 10, 15]
+/** 静态录音示意，与参考样式保持疏密节奏。 */
+const waveBars = [16, 26, 34, 13, 22, 32, 15, 24, 36, 27, 18, 12]
 
 /* —— 网申大卡：真实分类 + 站点预览（接口 5 分钟缓存，失败回退装饰态） —— */
 const ALL = '全部'
@@ -192,7 +192,7 @@ function go(routeName: string) {
 .bento-card:nth-of-type(3) { grid-area: mock; }
 .bento-card:nth-of-type(4) { grid-area: interview; }
 
-/* 哑光实底卡：1px 描边 + 顶部 1px 内高光，无玻璃无发光 */
+/* 位移使用独立 translate，避免与首页滚动入场的 transform 冲突。 */
 .bento-card {
   position: relative;
   display: flex;
@@ -205,13 +205,21 @@ function go(routeName: string) {
   background: var(--xt-card-bg);
   border: 1px solid var(--xt-card-border);
   box-shadow: inset 0 1px 0 var(--xt-card-highlight);
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease, translate 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .bento-card:hover,
 .bento-card:focus-visible {
-  border-color: var(--xt-card-border-hover);
-  background: #131318;
+  border-color: color-mix(in srgb, var(--xt-primary) 65%, transparent);
+  background-image: linear-gradient(135deg, color-mix(in srgb, var(--xt-primary) 9%, transparent), transparent 65%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--xt-primary) 18%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--xt-primary) 12%, transparent),
+    0 8px 24px color-mix(in srgb, var(--xt-primary) 8%, transparent);
+}
+
+.bento-card:focus-visible {
+  outline: 2px solid var(--xt-primary);
+  outline-offset: 3px;
 }
 
 /* 图标：细线感单色，无底托方块，hover 琥珀 */
@@ -219,23 +227,24 @@ function go(routeName: string) {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 26px;
 }
 
 .card-icon {
-  color: var(--xt-text-on-dark);
-  transition: color 0.2s ease;
+  color: var(--xt-primary);
+  transition: color 0.2s ease, transform 0.28s ease;
 }
 
 .bento-card:hover .card-icon,
 .bento-card:focus-visible .card-icon {
-  color: #e8a33d;
+  color: var(--xt-primary);
 }
 
 .card-metaphor {
   margin: 0;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.1em;
   color: var(--xt-text-on-dark-muted);
 }
 
@@ -260,7 +269,7 @@ function go(routeName: string) {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #e8a33d;
+  background: var(--xt-primary);
   flex-shrink: 0;
 }
 
@@ -272,11 +281,26 @@ function go(routeName: string) {
 }
 
 .mini-field-line {
+  position: relative;
   flex: 1;
+  min-width: 0;
   height: 5px;
   border-radius: 3px;
   background: rgba(232, 230, 224, 0.08);
 }
+
+.mini-field-line::after {
+  content: '';
+  position: absolute;
+  inset: 0 var(--field-tail, 12%) 0 0;
+  border-radius: inherit;
+  background: var(--xt-text-on-dark-muted);
+  opacity: 0.18;
+}
+
+.mini-field:nth-child(2) { --field-tail: 25%; }
+.mini-field:nth-child(3) { --field-tail: 38%; }
+.mini-field:nth-child(4) { --field-tail: 18%; }
 
 .mini-chips {
   display: flex;
@@ -321,6 +345,12 @@ function go(routeName: string) {
   cursor: pointer;
   font-family: inherit;
   transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.mini-chip-btn:focus-visible,
+.mini-site:focus-visible {
+  outline: 2px solid var(--xt-primary);
+  outline-offset: -2px;
 }
 
 .mini-chip-btn:hover {
@@ -412,58 +442,66 @@ function go(routeName: string) {
   color: var(--xt-text-on-dark-muted);
 }
 
-/* —— 小卡迷你预览（哑光细边包裹） —— */
+/* —— 小卡迷你预览：开放留白，不额外嵌套边框 —— */
 .mini-preview {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 11px 12px;
-  border-radius: var(--xt-radius-sm);
-  border: 1px solid rgba(232, 230, 224, 0.06);
+  padding: 0;
+  min-height: 72px;
+  justify-content: flex-start;
+  border: 0;
+  background: transparent;
+}
+
+/* 保持破晓模式下同样无底框的预览。 */
+:global(html[data-theme='dawn'] .features-section .mini-preview) {
+  background: transparent;
 }
 
 .mini-preview-note {
   margin: 0;
   font-size: 12px;
+  line-height: 1.6;
   color: var(--xt-text-on-dark-muted);
 }
 
-/* 迷你题卡：前 3 题琥珀实心，其余空心 */
+/* 迷你题卡：与参考图一致的五段静态进度示意 */
 .mini-dots {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .mini-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  border: 1px solid #2a2a30;
+  width: 20px;
+  height: 3px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--xt-text-on-dark-muted) 22%, transparent);
 }
 
 .mini-dot.on {
-  background: #e8a33d;
-  border-color: #e8a33d;
+  background: var(--xt-primary);
 }
 
 /* 迷你录音波形 */
 .mini-wave {
   display: flex;
   align-items: center;
-  gap: 4px;
-  height: 22px;
+  gap: 5px;
+  height: 38px;
 }
 
 .mini-wave-bar {
   width: 3px;
   border-radius: 2px;
   background: var(--xt-text-on-dark-muted);
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .mini-wave-bar.amber {
-  background: #e8a33d;
+  background: var(--xt-primary);
+  opacity: 1;
 }
 
 .card-text {
@@ -473,10 +511,18 @@ function go(routeName: string) {
   margin-top: auto;
 }
 
+.size-small .card-text {
+  margin-top: 6px;
+}
+
+.size-small .mini-preview {
+  margin-top: auto;
+}
+
 .card-title {
   margin: 0;
   font-family: var(--xt-font-title);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--xt-text-on-dark);
@@ -489,23 +535,77 @@ function go(routeName: string) {
 .card-desc {
   margin: 0;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.75;
+  text-wrap: pretty;
   color: var(--xt-text-on-dark-muted);
 }
 
 .card-entry {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--xt-card-border);
   font-size: 13px;
-  font-weight: 600;
-  color: var(--xt-text-on-dark-muted);
+  font-weight: 500;
+  color: var(--xt-primary);
   transition: color 0.2s ease;
 }
 
 .bento-card:hover .card-entry,
 .bento-card:focus-visible .card-entry {
-  color: #e8a33d;
+  color: var(--xt-primary);
+}
+
+.card-entry .el-icon {
+  transition: transform 0.2s ease;
+}
+
+.bento-card:hover .card-entry .el-icon,
+.bento-card:focus-visible .card-entry .el-icon {
+  transform: translateX(3px);
+}
+
+@keyframes preview-progress {
+  0%, 100% { background: color-mix(in srgb, var(--xt-text-on-dark-muted) 22%, transparent); }
+  35%, 65% { background: var(--xt-primary); }
+}
+
+@keyframes preview-wave {
+  0%, 100% { transform: scaleY(1); }
+  30% { transform: scaleY(0.55); }
+  65% { transform: scaleY(1.08); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bento-card:hover,
+  .bento-card:focus-visible {
+    translate: 0 -3px;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--xt-primary) 22%, transparent),
+      0 12px 30px color-mix(in srgb, var(--xt-primary) 12%, transparent);
+  }
+
+  .bento-card:hover .card-icon,
+  .bento-card:focus-visible .card-icon {
+    transform: scale(1.08);
+  }
+
+  .bento-card:is(:hover, :focus-visible) .mini-dot:not(.on) {
+    animation: preview-progress 0.48s ease var(--motion-delay) 1;
+  }
+
+  .bento-card:is(:hover, :focus-visible) .mini-wave-bar {
+    animation: preview-wave 0.65s ease-in-out var(--motion-delay) 1;
+  }
+}
+
+@media (hover: none) {
+  .bento-card:active {
+    translate: 0 1px;
+    border-color: var(--xt-primary);
+    background: color-mix(in srgb, var(--xt-primary) 8%, var(--xt-card-bg));
+  }
 }
 
 /* —— 平板：两列 —— */
@@ -549,8 +649,28 @@ function go(routeName: string) {
 @media (prefers-reduced-motion: reduce) {
   .bento-card,
   .card-icon,
-  .card-entry {
+  .card-entry,
+  .card-entry .el-icon,
+  .mini-preview {
     transition: none;
+  }
+
+  .bento-card:hover .card-entry .el-icon,
+  .bento-card:focus-visible .card-entry .el-icon {
+    transform: none;
+  }
+
+  .bento-card {
+    translate: none !important;
+  }
+
+  .card-icon {
+    transform: none !important;
+  }
+
+  .mini-dot,
+  .mini-wave-bar {
+    animation: none !important;
   }
 }
 </style>

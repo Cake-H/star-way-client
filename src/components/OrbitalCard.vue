@@ -3,6 +3,10 @@
     class="orbital-card xt-orbit-ring"
     :class="{ 'glow-accent': glowAccent, clickable: clickable }"
     :shadow="shadow"
+    :tabindex="clickable ? 0 : undefined"
+    :role="clickable ? 'button' : undefined"
+    @keydown.enter.self="activateFromKeyboard"
+    @keydown.space.self="activateFromKeyboard"
   >
     <template v-if="$slots.header" #header>
       <slot name="header" />
@@ -14,11 +18,17 @@
 <script setup lang="ts">
 defineOptions({ name: 'OrbitalCard' })
 
-defineProps<{
+const props = defineProps<{
   shadow?: string
   glowAccent?: boolean
   clickable?: boolean
 }>()
+
+function activateFromKeyboard(event: KeyboardEvent) {
+  if (!props.clickable) return
+  event.preventDefault()
+  ;(event.currentTarget as HTMLElement).click()
+}
 </script>
 
 <style scoped>

@@ -6,15 +6,8 @@
  */
 import { computed, onMounted, ref, watch } from 'vue'
 import type { Component } from 'vue'
-import {
-  ChatLineSquare,
-  ChromeFilled,
-  Coin,
-  FolderOpened,
-  MagicStick,
-  Microphone,
-  Upload,
-} from '@element-plus/icons-vue'
+import { Upload } from '@element-plus/icons-vue'
+import { HomeArchiveIcon, HomeEnergyIcon, HomeApplyIcon, HomeMockIcon, HomeReviewIcon } from '@/components/home/homeIcons'
 import { listMyResumes } from '@/api/resume'
 import { getQuotaBalance, getQuotaTransactions, type QuotaBalanceVO, type QuotaTransactionVO } from '@/api/quota'
 import { listInterviewSessions } from '@/services/interviewService'
@@ -175,21 +168,21 @@ export function useHomeJourney() {
       case 'resume':
         return {
           label: '继续完善简历',
-          icon: FolderOpened,
+          icon: HomeArchiveIcon,
           routeName: latest.routeName,
           routeParams: latest.routeParams,
         }
       case 'mock':
         return {
           label: latest.status === 'COMPLETED' ? '查看模拟面试' : '继续模拟面试',
-          icon: MagicStick,
+          icon: HomeMockIcon,
           routeName: latest.routeName,
           routeParams: latest.routeParams,
         }
       case 'interview':
         return {
           label: '继续复盘',
-          icon: ChatLineSquare,
+          icon: HomeReviewIcon,
           routeName: latest.routeName,
           routeParams: latest.routeParams,
         }
@@ -231,7 +224,7 @@ export const featureCards: FeatureCard[] = [
     title: '简历管理',
     metaphor: '星舰档案',
     desc: '上传简历文件，自动解析为结构化档案，多份档案随时切换。',
-    icon: FolderOpened,
+    icon: HomeArchiveIcon,
     routeName: 'resume-list',
     size: 'large',
   },
@@ -240,7 +233,7 @@ export const featureCards: FeatureCard[] = [
     title: '网申投递',
     metaphor: '星港导航',
     desc: '目的地站点目录 + 浏览器插件光速填表，网申不再重复劳动。',
-    icon: ChromeFilled,
+    icon: HomeApplyIcon,
     routeName: 'apply-site-list',
     size: 'large',
   },
@@ -249,7 +242,7 @@ export const featureCards: FeatureCard[] = [
     title: '模拟面试',
     metaphor: '跃迁试炼',
     desc: '按你的简历出题，逐题试炼、断点续练。',
-    icon: MagicStick,
+    icon: HomeMockIcon,
     routeName: 'mock-interview-list',
     size: 'small',
   },
@@ -258,7 +251,7 @@ export const featureCards: FeatureCard[] = [
     title: '面试复盘',
     metaphor: '航行日志',
     desc: '录音一句话，整理成结构化复盘。',
-    icon: ChatLineSquare,
+    icon: HomeReviewIcon,
     routeName: 'interview-list',
     size: 'small',
   },
@@ -274,9 +267,9 @@ export interface JourneyStep {
 }
 
 export const journeySteps: JourneyStep[] = [
-  { key: 'archive', label: '星舰建档', desc: '上传简历，自动解析为结构化档案', routeName: 'resume-upload', icon: Upload },
-  { key: 'quota', label: '星能补给', desc: '每日首次使用，自动领取 10 点星能', routeName: 'quota-center', icon: Coin },
-  { key: 'apply', label: '星港投递', desc: '选择目的地星港，插件光速填表', routeName: 'apply-site-list', icon: ChromeFilled },
-  { key: 'mock', label: '跃迁试炼', desc: '按简历出题，逐题试炼', routeName: 'mock-interview-list', icon: MagicStick },
-  { key: 'review', label: '航行复盘', desc: '复盘真实面试，抵达新星', routeName: 'interview-list', icon: Microphone },
+  { key: 'archive', label: '星舰建档', desc: '上传简历，自动解析为结构化档案', routeName: 'resume-upload', icon: HomeArchiveIcon },
+  { key: 'quota', label: '星能补给', desc: '每日首次使用，自动领取 10 点星能', routeName: 'quota-center', icon: HomeEnergyIcon },
+  { key: 'apply', label: '星港投递', desc: '选择目的地星港，插件光速填表', routeName: 'apply-site-list', icon: HomeApplyIcon },
+  { key: 'mock', label: '跃迁试炼', desc: '按简历出题，逐题试炼', routeName: 'mock-interview-list', icon: HomeMockIcon },
+  { key: 'review', label: '航行复盘', desc: '复盘真实面试，抵达新星', routeName: 'interview-list', icon: HomeReviewIcon },
 ]

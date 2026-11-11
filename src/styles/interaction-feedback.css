@@ -1,0 +1,139 @@
+/* 内页统一交互反馈：首页已有独立动效，此处不覆盖首页。 */
+.xt-main-content:not(.content--wide) {
+  --xt-feedback-border: color-mix(in srgb, var(--xt-primary) 65%, transparent);
+  --xt-feedback-wash: color-mix(in srgb, var(--xt-primary) 9%, transparent);
+  --xt-feedback-shadow: 0 0 0 1px color-mix(in srgb, var(--xt-primary) 12%, transparent),
+    0 12px 30px color-mix(in srgb, var(--xt-primary) 12%, transparent);
+}
+
+html .xt-main-content:not(.content--wide) :is(.orbital-card.clickable, .plugin-banner, .q-card, .overview-card, .el-empty) {
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease,
+    translate 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html .xt-main-content:not(.content--wide) :is(.orbital-card.clickable, .plugin-banner, .q-card, .overview-card, .el-empty):is(:hover, :focus-visible, :focus-within) {
+  border-color: var(--xt-feedback-border);
+  background-image: linear-gradient(135deg, var(--xt-feedback-wash), transparent 65%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--xt-primary) 22%, transparent), var(--xt-feedback-shadow);
+}
+
+/* 取代旧 transform 位移，用独立 translate 与已有入场动效兼容。 */
+html .xt-main-content:not(.content--wide) :is(.orbital-card.clickable, .plugin-banner, .q-card):is(:hover, :focus-visible, :focus-within) {
+  transform: none;
+}
+
+html .xt-main-content:not(.content--wide) :is(.orbital-card.clickable, .q-card):focus-visible {
+  outline: 2px solid var(--xt-primary);
+  outline-offset: 3px;
+}
+
+.xt-main-content:not(.content--wide) :is(.site-logo, .site-arrow, .q-foot .arrow, .plugin-banner-title .el-icon, .el-empty__image) {
+  transition: transform 0.28s ease, color 0.25s ease;
+}
+
+/* 分类、目录和链接保持紧凑，以底色与细环回应，不改变控件大小。 */
+html .xt-main-content:not(.content--wide) :is(.category-tab, .resume-section-nav .nav-item, .store-link) {
+  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+html .xt-main-content:not(.content--wide) :is(.category-tab, .resume-section-nav .nav-item, .store-link):is(:hover, :focus-visible) {
+  color: var(--xt-primary);
+  border-color: var(--xt-feedback-border);
+  background: var(--xt-feedback-wash);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--xt-primary) 40%, transparent);
+}
+
+html .xt-main-content:not(.content--wide) .resume-section-nav .nav-item.active:is(:hover, :focus-visible) {
+  box-shadow: inset 2px 0 0 var(--xt-primary), inset 0 0 0 1px color-mix(in srgb, var(--xt-primary) 30%, transparent);
+}
+
+/* 表格和编辑中的卡片不位移，维持阅读与输入位置。只读流水和模拟题内容不参与交互反馈。 */
+html .xt-main-content:not(.content--wide) .app-card {
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+html .xt-main-content:not(.content--wide) .app-card:is(:hover, :focus-within) {
+  border-color: var(--xt-feedback-border);
+  background-image: linear-gradient(110deg, var(--xt-feedback-wash), transparent 80%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--xt-primary) 24%, transparent);
+}
+
+html .xt-main-content:not(.content--wide) .el-table {
+  --el-table-row-hover-bg-color: color-mix(in srgb, var(--xt-primary) 9%, var(--xt-card-bg));
+}
+
+html .xt-main-content:not(.content--wide) .el-table__body tr:hover > td.el-table__cell,
+html .xt-main-content:not(.content--wide) .el-table__body tr:focus-within > td.el-table__cell {
+  background-color: var(--el-table-row-hover-bg-color);
+}
+
+html .xt-main-content:not(.content--wide) .el-table__body tr:is(:hover, :focus-within) > td.el-table__cell:first-child {
+  box-shadow: inset 2px 0 0 var(--xt-primary);
+}
+
+/* 按钮保留语义配色；禁用、加载和链接按钮不参与浮起。 */
+.xt-main-content:not(.content--wide) .el-button:not(.is-disabled):not(.is-loading):not(.is-link):not(.is-text) {
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.25s ease, translate 0.25s ease;
+}
+
+.xt-main-content:not(.content--wide) .el-button:not(.is-disabled):not(.is-loading):not(.is-link):not(.is-text):is(:hover, :focus-visible) {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--el-button-hover-border-color, var(--xt-primary)) 16%, transparent);
+}
+
+/* 快捷导航与登录页按钮使用同样的细环反馈，不移动弹层和表单。 */
+.ship-nav :is(.quick-item, .guide-item),
+.login-layout .el-button:not(.is-disabled):not(.is-loading) {
+  transition: border-color 0.25s ease, color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+html .ship-nav :is(.quick-item, .guide-item):is(:hover, :focus-visible),
+.login-layout .el-button:not(.is-disabled):not(.is-loading):is(:hover, :focus-visible) {
+  border-color: color-mix(in srgb, var(--xt-primary) 65%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--xt-primary) 12%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html .xt-main-content:not(.content--wide) :is(.orbital-card.clickable, .plugin-banner, .q-card, .overview-card, .el-empty):is(:hover, :focus-visible, :focus-within) {
+    translate: 0 -3px;
+  }
+
+  .xt-main-content:not(.content--wide) .site-card:is(:hover, :focus-visible) .site-logo,
+  .xt-main-content:not(.content--wide) .plugin-banner:is(:hover, :focus-visible) .plugin-banner-title .el-icon,
+  .xt-main-content:not(.content--wide) .el-empty:is(:hover, :focus-within) .el-empty__image {
+    transform: translateY(-2px) scale(1.04);
+  }
+
+  html .xt-main-content:not(.content--wide) .site-card:is(:hover, :focus-visible) .site-arrow,
+  .xt-main-content:not(.content--wide) .q-card:is(:hover, :focus-visible) .q-foot .arrow {
+    transform: translateX(3px);
+    color: var(--xt-primary);
+  }
+
+  .xt-main-content:not(.content--wide) .el-button:not(.is-disabled):not(.is-loading):not(.is-link):not(.is-text):is(:hover, :focus-visible) {
+    translate: 0 -1px;
+  }
+}
+
+@media (hover: none) {
+  html .xt-main-content:not(.content--wide) :is(.orbital-card.clickable, .plugin-banner, .q-card):active {
+    translate: 0 1px;
+    border-color: var(--xt-primary);
+    background-image: linear-gradient(135deg, var(--xt-feedback-wash), transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ship-nav :is(.quick-item, .guide-item),
+  .login-layout .el-button {
+    transition: none;
+  }
+  html .xt-main-content:not(.content--wide) :is(.orbital-card.clickable, .plugin-banner, .q-card, .overview-card, .el-empty, .site-logo, .site-arrow, .q-foot .arrow, .plugin-banner-title .el-icon, .el-empty__image, .category-tab, .resume-section-nav .nav-item, .store-link, .app-card, .el-button) {
+    transition: none;
+    translate: none !important;
+  }
+
+  html .xt-main-content:not(.content--wide) :is(.orbital-card.clickable, .plugin-banner, .q-card, .site-logo, .site-arrow, .q-foot .arrow, .plugin-banner-title .el-icon, .el-empty__image):is(:hover, :focus-visible, :focus-within) {
+    transform: none;
+  }
+}

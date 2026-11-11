@@ -48,7 +48,9 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { ChatLineSquare, FolderOpened, MagicStick, Promotion, Upload } from '@element-plus/icons-vue'
+import { Promotion, Upload } from '@element-plus/icons-vue'
+import type { Component } from 'vue'
+import { HomeArchiveIcon, HomeMockIcon, HomeReviewIcon } from './homeIcons'
 import type { ActivityItem, ActivityType } from '@/composables/useHomeJourney'
 import { formatDateTime } from '@/utils/format'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
@@ -64,10 +66,10 @@ const props = withDefaults(defineProps<{
 const router = useRouter()
 
 function iconFor(type: ActivityType) {
-  const map: Record<ActivityType, typeof Upload> = {
-    resume: FolderOpened,
-    interview: ChatLineSquare,
-    mock: MagicStick,
+  const map: Record<ActivityType, Component> = {
+    resume: HomeArchiveIcon,
+    interview: HomeReviewIcon,
+    mock: HomeMockIcon,
   }
   return map[type]
 }
@@ -168,7 +170,7 @@ function goUpload() {
   padding: 14px 18px;
   border-radius: var(--xt-radius-md);
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.25s ease, box-shadow 0.25s ease, translate 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   animation: row-enter 0.5s ease both;
 }
 
@@ -184,9 +186,16 @@ function goUpload() {
 }
 
 .activity-row:hover,
+.activity-row:focus-visible,
+.activity-row:focus-within {
+  background: linear-gradient(110deg, color-mix(in srgb, var(--xt-primary) 10%, transparent), color-mix(in srgb, var(--xt-primary) 3%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--xt-primary) 60%, transparent),
+    0 6px 18px color-mix(in srgb, var(--xt-primary) 10%, transparent);
+}
+
 .activity-row:focus-visible {
-  background: rgba(232, 230, 224, 0.04);
-  transform: translateX(4px);
+  outline: 2px solid var(--xt-primary);
+  outline-offset: 2px;
 }
 
 .row-icon {
@@ -204,11 +213,66 @@ function goUpload() {
   background: #0d0d12;
   border: 1px solid var(--xt-card-border);
   color: var(--xt-text-on-dark);
+  transition: color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-.activity-row:hover .row-icon {
-  color: #e8a33d;
-  border-color: rgba(232, 163, 61, 0.35);
+.activity-row:is(:hover, :focus-visible, :focus-within) .row-icon {
+  color: var(--xt-primary);
+  border-color: var(--xt-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--xt-primary) 9%, transparent);
+}
+
+.activity-row:is(:hover, :focus-visible, :focus-within) .row-ghost-btn {
+  color: var(--xt-primary);
+  border-color: color-mix(in srgb, var(--xt-primary) 65%, transparent);
+  background: color-mix(in srgb, var(--xt-primary) 8%, transparent);
+}
+
+.activity-empty {
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease, translate 0.28s ease;
+}
+
+.empty-icon {
+  transition: transform 0.28s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.activity-empty:is(:hover, :focus-within) {
+  border-color: color-mix(in srgb, var(--xt-primary) 65%, transparent);
+  background-image: linear-gradient(135deg, color-mix(in srgb, var(--xt-primary) 9%, transparent), transparent 65%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--xt-primary) 22%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--xt-primary) 12%, transparent),
+    0 12px 30px color-mix(in srgb, var(--xt-primary) 12%, transparent);
+}
+
+.activity-empty:is(:hover, :focus-within) .empty-icon {
+  border-color: var(--xt-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--xt-primary) 10%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .activity-row:is(:hover, :focus-visible, :focus-within) {
+    translate: 0 -2px;
+  }
+
+  .activity-row:is(:hover, :focus-visible, :focus-within) .row-icon {
+    transform: translateY(-2px) scale(1.06);
+  }
+
+  .activity-empty:is(:hover, :focus-within) {
+    translate: 0 -3px;
+  }
+
+  .activity-empty:is(:hover, :focus-within) .empty-icon {
+    transform: translateY(-2px) scale(1.06);
+  }
+}
+
+@media (hover: none) {
+  .activity-row:active,
+  .activity-empty:active {
+    translate: 0 1px;
+    box-shadow: inset 0 0 0 1px var(--xt-primary);
+  }
 }
 
 .row-info {
@@ -301,6 +365,15 @@ function goUpload() {
 
   .activity-row:hover {
     transform: none;
+  }
+
+  .activity-row,
+  .activity-row .row-icon,
+  .activity-empty,
+  .empty-icon {
+    transition: none;
+    translate: none !important;
+    transform: none !important;
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <section class="journey-section" aria-label="你的星途">
+  <section ref="sectionEl" class="journey-section" :class="{ 'journey-entered': hasEntered }" aria-label="你的星途">
     <div class="section-header">
       <h2 class="section-title">你的星途</h2>
       <p class="section-subtitle">五段航程，按你的真实数据依序点亮</p>
@@ -16,7 +16,7 @@
             @click="goStep(step)"
           >
             <span class="jnode-dot">
-              <el-icon :size="18"><component :is="step.icon" /></el-icon>
+              <component :is="step.icon" class="journey-icon" />
             </span>
             <span class="jnode-label">{{ step.label }}</span>
             <span class="jnode-desc">{{ step.desc }}</span>
@@ -26,6 +26,7 @@
           v-if="i < steps.length - 1"
           class="jlink"
           :class="{ lit: i < stage }"
+          :style="{ '--link-delay': `${i * 140}ms` }"
           aria-hidden="true"
         />
       </template>
@@ -49,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { journeySteps, type JourneyStep } from '@/composables/useHomeJourney'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'
@@ -63,6 +65,21 @@ const props = defineProps<{
 const router = useRouter()
 const { promptLogin } = useLoginPrompt()
 const steps = journeySteps
+const sectionEl = ref<HTMLElement | null>(null)
+const hasEntered = ref(false)
+let entryObserver: IntersectionObserver | undefined
+
+onMounted(() => {
+  if (!sectionEl.value) return
+  entryObserver = new IntersectionObserver(([entry]) => {
+    if (!entry?.isIntersecting) return
+    hasEntered.value = true
+    entryObserver?.disconnect()
+  }, { threshold: 0.25 })
+  entryObserver.observe(sectionEl.value)
+})
+
+onUnmounted(() => entryObserver?.disconnect())
 
 function nodeClass(index: number) {
   if (index <= props.stage) return 'completed'
@@ -137,6 +154,18 @@ function goStep(step: JourneyStep) {
   border: none;
   cursor: pointer;
   font-family: inherit;
+  border-radius: var(--xt-radius-sm);
+}
+
+.jnode:focus-visible {
+  outline: 2px solid var(--xt-primary);
+  outline-offset: 4px;
+}
+
+.journey-icon {
+  width: 20px;
+  height: 20px;
+  transition: translate 0.25s ease;
 }
 
 .jnode-dot {
@@ -147,32 +176,44 @@ function goStep(step: JourneyStep) {
   display: grid;
   place-items: center;
   color: var(--xt-text-on-dark-disabled);
-  background: #0d0d12;
-  border: 1px solid rgba(232, 230, 224, 0.14);
-  transition: box-shadow 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  background: var(--xt-card-bg);
+  border: 1px solid var(--xt-card-border);
+  transition: box-shadow 0.25s ease, color 0.25s ease, border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
 }
 
-/* 已完成节点：琥珀点亮 */
+.current .jnode-dot::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border: 1px solid var(--xt-primary);
+  border-radius: inherit;
+  opacity: 0.2;
+  pointer-events: none;
+  animation: journey-breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes journey-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.16; }
+  50% { transform: scale(1.08); opacity: 0.45; }
+}
+
+/* 已完成节点：浅金底与金色线稿，避免大面积实心圆抢占文字层次。 */
 .completed .jnode-dot {
-  color: #0d0d12;
-  border-color: #e8a33d;
-  background: #e8a33d;
+  color: var(--xt-primary);
+  border-color: color-mix(in srgb, var(--xt-primary) 48%, transparent);
+  background: color-mix(in srgb, var(--xt-primary) 10%, var(--xt-card-bg));
 }
 
-/* 当前节点：琥珀脉冲呼吸 */
+/* 当前节点：静态细环强调下一步。 */
 .current .jnode-dot {
-  color: #e8a33d;
-  border-color: rgba(232, 163, 61, 0.8);
-  animation: node-pulse 2s ease-in-out infinite;
+  color: var(--xt-primary);
+  border-color: var(--xt-primary);
+  background: color-mix(in srgb, var(--xt-primary) 6%, var(--xt-card-bg));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--xt-primary) 9%, transparent);
 }
 
 .current .jnode-label {
-  color: #e8a33d;
-}
-
-@keyframes node-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 163, 61, 0.35); }
-  50% { box-shadow: 0 0 0 10px rgba(232, 163, 61, 0); }
+  color: var(--xt-primary);
 }
 
 /* 未到达节点：暗淡 */
@@ -187,20 +228,23 @@ function goStep(step: JourneyStep) {
 
 .jnode:hover .jnode-dot,
 .jnode:focus-visible .jnode-dot {
-  border-color: rgba(232, 163, 61, 0.7);
-  color: #e8a33d;
+  border-color: var(--xt-primary);
+  color: var(--xt-primary);
+  background: color-mix(in srgb, var(--xt-primary) 15%, var(--xt-card-bg));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--xt-primary) 10%, transparent);
   opacity: 1;
 }
 
 .jnode-label {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--xt-text-on-dark);
+  transition: color 0.2s ease;
 }
 
 .jnode-desc {
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.8;
   color: var(--xt-text-on-dark-muted);
   text-align: center;
   max-width: 150px;
@@ -208,15 +252,61 @@ function goStep(step: JourneyStep) {
 
 /* 节点间连线：点亮段为琥珀光线 */
 .jlink {
+  position: relative;
   flex: 1;
-  height: 2px;
+  height: 1px;
   margin-top: 27px;
   background: rgba(232, 230, 224, 0.1);
   border-radius: 2px;
+  overflow: hidden;
+}
+
+.journey-entered .jlink.lit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--xt-primary-light);
+  transform-origin: left;
+  opacity: 0;
+  animation: journey-trace 0.9s ease-out var(--link-delay) 1;
+}
+
+@keyframes journey-trace {
+  0% { transform: scaleX(0); opacity: 0; }
+  25% { opacity: 1; }
+  75% { transform: scaleX(1); opacity: 0.8; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .jnode:is(:hover, :focus-visible) .jnode-dot {
+    transform: scale(1.06);
+  }
+
+  .jnode:is(:hover, :focus-visible) .journey-icon {
+    translate: 0 -2px;
+  }
+
+  .jnode:is(:hover, :focus-visible) .jnode-label {
+    color: var(--xt-primary);
+    opacity: 1;
+  }
+
+  .jnode.future:is(:hover, :focus-visible) .jnode-dot {
+    background: color-mix(in srgb, var(--xt-primary) 7%, var(--xt-card-bg));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--xt-primary) 6%, transparent);
+  }
+}
+
+@media (hover: none) {
+  .jnode:active .jnode-dot {
+    transform: scale(0.95);
+    border-color: var(--xt-primary);
+  }
 }
 
 .jlink.lit {
-  background: #e8a33d;
+  background: color-mix(in srgb, var(--xt-primary) 55%, transparent);
 }
 
 /* —— 统计行 —— */
@@ -225,7 +315,7 @@ function goStep(step: JourneyStep) {
   justify-content: center;
   gap: 48px;
   padding-top: 20px;
-  border-top: 1px solid rgba(232, 230, 224, 0.1);
+  border-top: 1px solid var(--xt-card-border);
 }
 
 .count-item {
@@ -237,10 +327,10 @@ function goStep(step: JourneyStep) {
 
 .count-value {
   font-family: var(--xt-font-display);
-  font-size: 28px;
-  font-weight: 800;
-  color: #e8a33d;
-  line-height: 1;
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--xt-primary);
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
 
@@ -299,15 +389,20 @@ function goStep(step: JourneyStep) {
 
   .jlink {
     flex: none;
-    width: 2px;
+    width: 1px;
     height: 26px;
     margin-top: 0;
-    margin-left: 27px;
+    margin-left: 22px;
     background: rgba(232, 230, 224, 0.1);
   }
 
   .jlink.lit {
-    background: #e8a33d;
+    background: color-mix(in srgb, var(--xt-primary) 55%, transparent);
+  }
+
+  .journey-entered .jlink.lit::after {
+    animation-name: journey-trace-vertical;
+    transform-origin: top;
   }
 
   .journey-counts {
@@ -320,10 +415,37 @@ function goStep(step: JourneyStep) {
   }
 }
 
+@keyframes journey-trace-vertical {
+  0% { transform: scaleY(0); opacity: 0; }
+  25% { opacity: 1; }
+  75% { transform: scaleY(1); opacity: 0.8; }
+  100% { transform: scaleY(1); opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .current .jnode-dot {
-    animation: none;
-    box-shadow: 0 0 0 3px rgba(232, 163, 61, 0.25);
+  .jnode-dot,
+  .journey-icon,
+  .jnode-label {
+    transition: none;
+    transform: none !important;
+    translate: none !important;
   }
+
+  .current .jnode-dot::after,
+  .journey-entered .jlink.lit::after {
+    animation: none;
+  }
+}
+
+/* 仅为本模块补齐破晓态，保留相同的节点层级。 */
+:global(html[data-theme='dawn'] .journey-section .completed .jnode-dot) {
+  color: var(--xt-primary);
+  border-color: color-mix(in srgb, var(--xt-primary) 48%, transparent);
+  background: color-mix(in srgb, var(--xt-primary) 10%, var(--xt-card-bg));
+}
+
+:global(html[data-theme='dawn'] .journey-section .current .jnode-dot) {
+  border-color: var(--xt-primary);
+  background: color-mix(in srgb, var(--xt-primary) 6%, var(--xt-card-bg));
 }
 </style>

@@ -1,22 +1,19 @@
 <template>
   <div class="resume-list-page">
-    <div class="xt-section-head hero">
-      <div class="hero-text">
-        <p class="xt-eyebrow list-eyebrow">星途 · 简历库</p>
-        <h1 class="xt-section-title">我的简历</h1>
-        <p class="xt-section-desc">管理已保存的简历，支持解析上传或从空白开始填写。</p>
-      </div>
-      <div class="hero-actions">
-        <StarLaunchButton type="primary" size="large" @click="goUpload">
-          <el-icon class="btn-icon"><Upload /></el-icon>
-          上传解析
-        </StarLaunchButton>
-        <el-button size="large" @click="goBlank">
-          <el-icon class="btn-icon"><DocumentAdd /></el-icon>
-          空白简历
-        </el-button>
-      </div>
-    </div>
+    <SectionPageHeader
+      title="我的简历"
+      eyebrow="星途 · 简历库"
+      description="管理已保存的简历，支持解析上传或从空白开始填写。"
+    >
+      <StarLaunchButton type="primary" size="large" @click="goUpload">
+        <el-icon class="btn-icon"><Upload /></el-icon>
+        上传解析
+      </StarLaunchButton>
+      <el-button size="large" @click="goBlank">
+        <el-icon class="btn-icon"><DocumentAdd /></el-icon>
+        空白简历
+      </el-button>
+    </SectionPageHeader>
 
     <el-skeleton v-if="loading" :rows="6" animated class="skel" />
 
@@ -30,7 +27,7 @@
         <el-button @click="goBlank">从空白创建</el-button>
       </el-empty>
 
-      <OrbitalCard v-else class="plugin-banner" shadow="never" @click="openPluginGuide">
+      <OrbitalCard v-else class="plugin-banner" clickable shadow="never" @click="openPluginGuide">
         <div class="plugin-banner-content">
           <div class="plugin-banner-text">
             <h3 class="plugin-banner-title">
@@ -93,6 +90,7 @@ import { deleteResume, listMyResumes } from '@/api/resume'
 import { formatDateTime } from '@/utils/format'
 import OrbitalCard from '@/components/OrbitalCard.vue'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
+import SectionPageHeader from '@/components/SectionPageHeader.vue'
 import PluginGuideDialog from '@/components/home/PluginGuideDialog.vue'
 
 const router = useRouter()
@@ -165,25 +163,6 @@ async function onDelete(row: ResumeListItemVO) {
   flex-direction: column;
   gap: 24px;
   overflow-x: clip;
-}
-
-.list-eyebrow {
-  color: var(--xt-primary);
-  margin-bottom: 6px;
-}
-
-.hero {
-  position: relative;
-}
-
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.hero-actions :deep(.el-button) {
-  cursor: pointer;
 }
 
 .btn-icon {

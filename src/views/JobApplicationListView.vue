@@ -1,18 +1,15 @@
 <template>
   <div class="job-applications">
-    <div class="xt-section-head hero">
-      <div>
-        <p class="xt-eyebrow list-eyebrow">星途 · 投递记录</p>
-        <h1 class="xt-section-title">投递记录</h1>
-        <p class="xt-section-desc">
-          把每一次投递都记下来：投了哪家公司、哪个岗位、进度到哪一步，支持组合筛选与行内编辑。
-        </p>
-      </div>
+    <SectionPageHeader
+      title="投递记录"
+      eyebrow="星途 · 投递记录"
+      description="把每一次投递都记下来：投了哪家公司、哪个岗位、进度到哪一步，支持组合筛选与行内编辑。"
+    >
       <StarLaunchButton type="primary" size="large" @click="onAdd">
         <el-icon class="btn-ico"><Plus /></el-icon>
         新建投递记录
       </StarLaunchButton>
-    </div>
+    </SectionPageHeader>
 
     <!-- 筛选区：任一条件变化即带参重新请求（服务端筛选） -->
     <div class="filter-bar">
@@ -332,6 +329,7 @@ import {
   type JobApplicationProgressOption,
 } from '@/api/jobApplication'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
+import SectionPageHeader from '@/components/SectionPageHeader.vue'
 
 /** 新增草稿行的占位 id（真实 id 为正数，不会冲突） */
 const NEW_ROW_KEY = -1
@@ -570,15 +568,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 22px;
-}
-
-.list-eyebrow {
-  color: var(--xt-primary);
-  margin-bottom: 6px;
-}
-
-.hero {
-  position: relative;
 }
 
 .btn-ico {

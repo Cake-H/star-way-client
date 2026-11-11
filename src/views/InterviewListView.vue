@@ -1,18 +1,15 @@
 <template>
   <div class="interview-list">
-    <div class="xt-section-head hero">
-      <div>
-        <p class="xt-eyebrow list-eyebrow">星途 · 面试复盘</p>
-        <h1 class="xt-section-title">面试问题记录</h1>
-        <p class="xt-section-desc">
-          面试结束后快速复盘：支持手动录入或语音口述，AI 帮你整理问题、回答、评价与参考答案，随时进入练习模式自测。
-        </p>
-      </div>
+    <SectionPageHeader
+      title="面试问题记录"
+      eyebrow="星途 · 面试复盘"
+      description="面试结束后快速复盘：支持手动录入或语音口述，AI 帮你整理问题、回答、评价与参考答案，随时进入练习模式自测。"
+    >
       <StarLaunchButton type="primary" size="large" @click="goNew">
         <el-icon class="btn-ico"><Microphone /></el-icon>
         语音新建复盘
       </StarLaunchButton>
-    </div>
+    </SectionPageHeader>
 
     <el-skeleton v-if="loading" :rows="5" animated />
 
@@ -66,6 +63,7 @@ import { deleteInterviewSession, listInterviewSessions } from '@/services/interv
 import { formatDateTime } from '@/utils/format'
 import OrbitalCard from '@/components/OrbitalCard.vue'
 import StarLaunchButton from '@/components/StarLaunchButton.vue'
+import SectionPageHeader from '@/components/SectionPageHeader.vue'
 
 const router = useRouter()
 const loading = ref(true)
@@ -118,19 +116,6 @@ async function onDelete(row: InterviewSessionListItemVO) {
   display: flex;
   flex-direction: column;
   gap: 24px;
-}
-
-.list-eyebrow {
-  color: var(--xt-primary);
-  margin-bottom: 6px;
-}
-
-.hero {
-  position: relative;
-}
-
-.hero :deep(.el-button) {
-  cursor: pointer;
 }
 
 .btn-ico {

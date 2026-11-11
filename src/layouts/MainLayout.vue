@@ -38,7 +38,15 @@
     <header class="bar">
       <div class="left">
         <router-link class="brand" to="/">
-          <StarLogo size="sm" />
+          <img
+            v-if="isHome"
+            class="home-brand-logo"
+            :src="dawnTheme === 'dawn' ? logoBDawn : logoB"
+            width="32"
+            height="32"
+            alt="星途·智能求职助手"
+          />
+          <StarLogo v-else size="sm" />
           <span class="brand-text">
             <span class="brand-name">星途</span>
             <span class="brand-tag">智能简历投递助手</span>
@@ -184,6 +192,8 @@ import {
   Wallet,
 } from '@element-plus/icons-vue'
 import StarLogo from '@/components/StarLogo.vue'
+import logoB from '@/assets/xingtu-logo-b.svg'
+import logoBDawn from '@/assets/xingtu-logo-b-dawn.svg'
 import StarryBackground from '@/components/StarryBackground.vue'
 import LoginRequiredDialog from '@/components/LoginRequiredDialog.vue'
 import QuotaInsufficientDialog from '@/components/QuotaInsufficientDialog.vue'
@@ -313,6 +323,12 @@ function onSettingsCommand(command: string) {
 </script>
 
 <style scoped>
+.home-brand-logo {
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
 .layout {
   position: relative;
   min-height: 100vh;
@@ -423,6 +439,11 @@ function onSettingsCommand(command: string) {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+
+/* 组件库的相邻按钮默认外边距会叠加到 gap，工具栏统一由 gap 控制。 */
+.right-actions > .el-button {
+  margin-left: 0;
 }
 
 .quota-btn {

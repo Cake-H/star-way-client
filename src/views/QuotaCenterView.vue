@@ -396,15 +396,10 @@ function maskRedeemCode(text: string) {
   gap: 16px;
   padding: 14px 4px;
   border-bottom: 1px solid rgba(232, 230, 224, 0.06);
-  transition: background 0.2s ease;
 }
 
 .transaction-item:last-child {
   border-bottom: none;
-}
-
-.transaction-item:hover {
-  background: rgba(232, 230, 224, 0.03);
 }
 
 .item-left {
